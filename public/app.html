@@ -1551,16 +1551,14 @@
       <div class="content-panel" id="panel-microphone">
         <div class="card">
           <div class="card-title"><span class="card-title-icon">🎙️</span> Microphone Input</div>
-          <p class="field-hint" style="margin:0 0 10px;">Demo limit: 60 seconds per recording so the in-browser speech model stays responsive. Stop anytime; recording auto-stops at the limit.</p>
+          <p class="field-hint" style="margin:0 0 10px;">Click Start recording and speak clearly into your microphone. Your speech will be detected and recognized in real-time as you speak.</p>
           <div class="row" style="margin-bottom:12px;">
             <button id="recordBtn" class="btn btn-secondary">● Start recording</button>
-            <button id="transcribeBtn" class="btn btn-primary">Transcribe</button>
             <span id="micStatus" class="status-badge" role="status" aria-live="polite">Idle</span>
             <span id="micTimer" class="status-badge" aria-hidden="true" hidden>0:00 / 1:00</span>
           </div>
-          <p id="micFallbackNote" class="field-hint" role="note" hidden style="margin:0 0 10px; color:var(--ink-3);">Using the slower WASM speech model — WebGPU isn't available in this browser.</p>
           <label class="field-label" for="transcription">Transcription</label>
-          <textarea id="transcription" placeholder="Transcription will appear here…"></textarea>
+          <textarea id="transcription" placeholder="Transcription will appear here in real-time as you speak…"></textarea>
         </div>
       </div>
 
@@ -3625,11 +3623,12 @@
     const MEDIA_MAX_FILE_SIZE_BYTES = MEDIA_MAX_FILE_SIZE_MB * 1024 * 1024;
 
     const recordBtn = document.getElementById('recordBtn');
-    const transcribeBtn = document.getElementById('transcribeBtn');
     const micStatus = document.getElementById('micStatus');
     const micTimer = document.getElementById('micTimer');
     const transcription = document.getElementById('transcription');
 
+    let speechRecognition = null;
+    let isMicRecording = false;
     let mediaRecorder = null;
     let recordedChunks = [];
     let recordStartedAt = 0;
@@ -3804,81 +3803,159 @@
 
     function fmtSec(s){ const m=Math.floor(s/60), r=Math.floor(s%60); return m + ':' + (r<10?'0':'') + r; }
 
-    function stopRecording(reason){
-      if (!mediaRecorder) return;
-      try { mediaRecorder.stop(); } catch (_e) {}
-      mediaRecorder = null;
-      if (recordTimerInterval){ clearInterval(recordTimerInterval); recordTimerInterval = null; }
-      if (recordAutoStopTimeout){ clearTimeout(recordAutoStopTimeout); recordAutoStopTimeout = null; }
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    function startSpeechRecognition() {
+      if (!SpeechRecognitionAPI) return false;
+      try {
+        speechRecognition = new SpeechRecognitionAPI();
+        speechRecognition.continuous = true;
+        speechRecognition.interimResults = true;
+        
+        const langMap = {
+          en: 'en-US', de: 'de-DE', fr: 'fr-FR', es: 'es-ES',
+          pl: 'pl-PL', nl: 'nl-NL', el: 'el-GR', hi: 'hi-IN'
+        };
+        const currentLang = (typeof getInputLang === 'function') ? getInputLang() : 'en';
+        speechRecognition.lang = langMap[currentLang] || currentLang || 'en-US';
+
+        let finalTranscript = '';
+
+        speechRecognition.onresult = (event) => {
+          let interim = '';
+          finalTranscript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            const res = event.results[i];
+            if (res.isFinal) {
+              finalTranscript += res[0].transcript + ' ';
+            } else {
+              interim += res[0].transcript;
+            }
+          }
+          const fullText = (finalTranscript + interim).trim();
+          if (fullText) {
+            transcription.value = fullText;
+            const textInEl = document.getElementById('textIn');
+            if (textInEl) {
+              textInEl.value = fullText;
+              textInEl.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+        };
+
+        speechRecognition.onerror = (event) => {
+          console.warn('[speechRecognition error]', event.error);
+          if (event.error === 'no-speech') return;
+          if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+            micStatus.textContent = 'Microphone permission denied. Please allow microphone access.';
+            micStatus.className = 'status-badge';
+            stopRecordingProcess('error');
+          }
+        };
+
+        speechRecognition.onend = () => {
+          if (isMicRecording && speechRecognition) {
+            try { speechRecognition.start(); } catch (_) {}
+          }
+        };
+
+        speechRecognition.start();
+        return true;
+      } catch (err) {
+        console.warn('[SpeechRecognition init error]', err);
+        return false;
+      }
+    }
+
+    function stopRecordingProcess(reason) {
+      isMicRecording = false;
+      if (speechRecognition) {
+        try { speechRecognition.stop(); } catch (_) {}
+        speechRecognition = null;
+      }
+      if (mediaRecorder) {
+        try { mediaRecorder.stop(); } catch (_) {}
+        mediaRecorder = null;
+      }
+      if (recordTimerInterval) { clearInterval(recordTimerInterval); recordTimerInterval = null; }
+      if (recordAutoStopTimeout) { clearTimeout(recordAutoStopTimeout); recordAutoStopTimeout = null; }
+
       recordBtn.textContent = '● Start recording';
       recordBtn.classList.remove('btn-primary'); recordBtn.classList.add('btn-secondary');
       micTimer.hidden = true;
-      const sizeMb = (recordedChunks.reduce((s,b)=>s+b.size,0)/1024/1024).toFixed(1);
-      const elapsed = (Date.now() - recordStartedAt) / 1000;
-      const note = reason === 'limit' ? ' — auto-stopped at limit' : '';
-      micStatus.textContent = 'Recorded ' + sizeMb + ' MB · ' + fmtSec(elapsed) + note;
-      micStatus.className = 'status-badge';
+
+      if (reason !== 'error') {
+        const textHasValue = transcription.value && transcription.value.trim().length > 0;
+        if (textHasValue) {
+          micStatus.textContent = 'Listening complete ✓ — text captured';
+          micStatus.className = 'status-badge ready';
+        } else {
+          micStatus.textContent = 'Recording stopped. No speech detected.';
+          micStatus.className = 'status-badge';
+        }
+      }
     }
 
     recordBtn.addEventListener('click', async () => {
-      if (!mediaRecorder){
-        try{
-          const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
-          recordedChunks = [];
-          mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-          mediaRecorder.ondataavailable = (e)=>{ if(e.data.size>0) recordedChunks.push(e.data); };
-          mediaRecorder.onstop = ()=>{ stream.getTracks().forEach(t=>t.stop()); };
-          mediaRecorder.start();
-          recordStartedAt = Date.now();
-          recordBtn.textContent = '■ Stop recording';
-          recordBtn.classList.remove('btn-secondary'); recordBtn.classList.add('btn-primary');
-          micStatus.textContent = 'Recording…'; micStatus.className = 'status-badge loading';
-          micTimer.hidden = false;
-          micTimer.textContent = '0:00 / ' + fmtSec(MEDIA_MAX_DURATION_S);
-          recordTimerInterval = setInterval(function () {
-            const elapsed = (Date.now() - recordStartedAt) / 1000;
-            micTimer.textContent = fmtSec(elapsed) + ' / ' + fmtSec(MEDIA_MAX_DURATION_S);
-          }, 250);
-          recordAutoStopTimeout = setTimeout(function () { stopRecording('limit'); }, MEDIA_MAX_DURATION_S * 1000);
-        }catch(e){
-          var why = window.describeError ? window.describeError(e) : ((e && e.message) || String(e));
-          console.warn('[mic]', why);
-          micStatus.textContent = window.userMessageForMic(why);
-          micStatus.className = 'status-badge';
+      if (!isMicRecording) {
+        transcription.value = '';
+        isMicRecording = true;
+        recordStartedAt = Date.now();
+        recordBtn.textContent = '■ Stop recording';
+        recordBtn.classList.remove('btn-secondary'); recordBtn.classList.add('btn-primary');
+        micStatus.textContent = 'Listening… Speak into your microphone';
+        micStatus.className = 'status-badge loading';
+        micTimer.hidden = false;
+        micTimer.textContent = '0:00 / ' + fmtSec(MEDIA_MAX_DURATION_S);
+
+        recordTimerInterval = setInterval(function () {
+          const elapsed = (Date.now() - recordStartedAt) / 1000;
+          micTimer.textContent = fmtSec(elapsed) + ' / ' + fmtSec(MEDIA_MAX_DURATION_S);
+        }, 250);
+
+        recordAutoStopTimeout = setTimeout(function () {
+          stopRecordingProcess('limit');
+        }, MEDIA_MAX_DURATION_S * 1000);
+
+        const started = startSpeechRecognition();
+        if (!started) {
+          // MediaRecorder fallback if Web Speech API is not supported in browser
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = async () => {
+              stream.getTracks().forEach(t => t.stop());
+              if (recordedChunks.length) {
+                micStatus.textContent = 'Processing audio…';
+                try {
+                  const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                  const rawText = await transcribeWithFallback(blob);
+                  if (rawText) {
+                    transcription.value = rawText;
+                    const textInEl = document.getElementById('textIn');
+                    if (textInEl) {
+                      textInEl.value = rawText;
+                      textInEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    micStatus.textContent = 'Transcribed ✓';
+                    micStatus.className = 'status-badge ready';
+                  }
+                } catch (_) {}
+              }
+            };
+            mediaRecorder.start();
+          } catch (e) {
+            var why = window.describeError ? window.describeError(e) : ((e && e.message) || String(e));
+            console.warn('[mic]', why);
+            micStatus.textContent = window.userMessageForMic ? window.userMessageForMic(why) : 'Microphone error: ' + why;
+            micStatus.className = 'status-badge';
+            stopRecordingProcess('error');
+          }
         }
       } else {
-        stopRecording('manual');
-      }
-    });
-
-    transcribeBtn.addEventListener('click', async () => {
-      if (!recordedChunks.length){ micStatus.textContent = 'Nothing recorded.'; return; }
-      micStatus.textContent = 'Loading speech model…'; micStatus.className = 'status-badge loading';
-      try{
-        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-        micStatus.textContent = 'Transcribing…';
-        const rawText = await transcribeWithFallback(blob);
-        transcription.value = rawText;
-        if (!rawText) {
-          micStatus.textContent = 'No speech detected — try recording again with a clearer voice.';
-          micStatus.className = 'status-badge';
-          return;
-        }
-        // Fill the textarea with the transcription in the input language.
-        // Translation to the target sign language happens internally when
-        // the user presses Translate — the text body stays in the source
-        // language (mirrors the text-tab flow).
-        textIn.value = rawText;
-        micStatus.textContent = 'Transcribed ✓ — open the Translate tab to sign it'; micStatus.className = 'status-badge ready';
-      }catch(e){
-        // Pass the dev string through the mic mapper. We tag the cue
-        // with "transcribe" so the catch-all on this branch resolves to
-        // the transcription copy ("Couldn't transcribe this clip…")
-        // rather than the recording-side fallback.
-        var why = window.describeError ? window.describeError(e) : ((e && e.message) || String(e));
-        console.warn('[mic]', why);
-        micStatus.textContent = window.userMessageForMic('transcribe failed: ' + why);
-        micStatus.className = 'status-badge';
+        stopRecordingProcess('manual');
       }
     });
   </script>
