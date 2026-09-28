@@ -316,17 +316,37 @@
     }
 
     .sidebar-icon {
-      width: 28px; height: 28px;
+      width: 30px; height: 30px;
       border-radius: 8px;
       background: var(--paper-2);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
       flex-shrink: 0;
+      color: var(--ink-2);
+      transition: all 0.2s ease;
+    }
+    .sidebar-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.2s ease;
+    }
+    .sidebar-item:hover .sidebar-icon {
+      color: var(--accent);
+      background: var(--paper);
     }
     .sidebar-item.active .sidebar-icon {
-      background: var(--accent-light);
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(196, 81, 44, 0.25);
+    }
+    .sidebar-item.active .sidebar-icon svg {
+      stroke: #ffffff;
     }
 
     .sidebar-divider {
@@ -383,11 +403,27 @@
       margin-bottom: 14px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .card-title-icon {
-      font-size: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: rgba(196, 81, 44, 0.1);
+      color: var(--accent);
+    }
+    .card-title-icon svg {
+      width: 15px;
+      height: 15px;
+      stroke: var(--accent);
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     label.field-label {
@@ -1454,17 +1490,23 @@
       <div class="sidebar-section-label">Input</div>
 
       <button class="sidebar-item active" data-panel="translate" onclick="switchPanel('translate', this)">
-        <div class="sidebar-icon">🤟</div>
+        <div class="sidebar-icon">
+          <svg viewBox="0 0 24 24"><path d="m5 8 6 6M4 14l6-6 2 3M2 5h12M7 2v3M22 22l-5-10-5 10M14 18h6"/></svg>
+        </div>
         Translate
       </button>
 
       <button class="sidebar-item" data-panel="microphone" onclick="switchPanel('microphone', this)">
-        <div class="sidebar-icon">🎙️</div>
+        <div class="sidebar-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        </div>
         Microphone
       </button>
 
       <button class="sidebar-item" data-panel="video" onclick="switchPanel('video', this)">
-        <div class="sidebar-icon">🎬</div>
+        <div class="sidebar-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+        </div>
         Audio / Video
       </button>
 
@@ -1472,12 +1514,16 @@
       <div class="sidebar-section-label">Configuration</div>
 
       <button class="sidebar-item" data-panel="database" onclick="switchPanel('database', this)">
-        <div class="sidebar-icon">🗄️</div>
+        <div class="sidebar-icon">
+          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        </div>
         Database
       </button>
 
       <button class="sidebar-item" data-panel="advanced" onclick="switchPanel('advanced', this)">
-        <div class="sidebar-icon">⚙️</div>
+        <div class="sidebar-icon">
+          <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg>
+        </div>
         Advanced
       </button>
 
@@ -1485,7 +1531,9 @@
       <div class="sidebar-section-label">Debug</div>
 
       <button class="sidebar-item" data-panel="planner" onclick="switchPanel('planner', this)">
-        <div class="sidebar-icon">📋</div>
+        <div class="sidebar-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
         Planner Log
       </button>
     </aside>
@@ -1509,7 +1557,7 @@
 
       <div class="content-panel active" id="panel-translate">
         <div class="card">
-          <div class="card-title"><span class="card-title-icon">✏️</span> Text Input</div>
+          <div class="card-title"><span class="card-title-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span> Text Input</div>
 
           <div class="lang-strip" role="group" aria-label="Translation language settings">
             <div class="lang-slot">
@@ -1531,7 +1579,7 @@
           <div class="char-count" id="charCount" aria-live="polite"></div>
 
           <button id="translateBtn" class="btn-translate" style="margin-top: 16px;" aria-label="Translate to sign language">
-            🤟 Translate to Sign
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px; vertical-align:middle;"><path d="m5 8 6 6M4 14l6-6 2 3M2 5h12M7 2v3M22 22l-5-10-5 10M14 18h6"/></svg> Translate to Sign
           </button>
 
           <!-- Prompt-polish 10 §7: inline error recovery block. Sits in the
@@ -1550,7 +1598,7 @@
 
       <div class="content-panel" id="panel-microphone">
         <div class="card">
-          <div class="card-title"><span class="card-title-icon">🎙️</span> Microphone Input</div>
+          <div class="card-title"><span class="card-title-icon"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></span> Microphone Input</div>
           <p class="field-hint" style="margin:0 0 10px;">Click Start recording and speak clearly into your microphone. Your speech will be detected and recognized in real-time as you speak.</p>
           <div class="row" style="margin-bottom:12px;">
             <button id="recordBtn" class="btn btn-secondary">● Start recording</button>
@@ -1564,7 +1612,7 @@
 
       <div class="content-panel" id="panel-video">
         <div class="card">
-          <div class="card-title"><span class="card-title-icon">🎬</span> Audio / Video Upload → Sign</div>
+          <div class="card-title"><span class="card-title-icon"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg></span> Audio / Video Upload → Sign</div>
           <p class="field-hint" style="margin:0 0 10px;">
             Demo limits: <strong>up to 60 seconds</strong> and <strong>50 MB</strong>. We extract the audio in your browser, transcribe it locally, then translate. Longer or larger files would freeze the tab on most laptops while the local model warms up.
           </p>
@@ -1585,7 +1633,7 @@
 
       <div class="content-panel" id="panel-database">
         <div class="card">
-          <div class="card-title"><span class="card-title-icon">🗄️</span> Sign Database</div>
+          <div class="card-title"><span class="card-title-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span> Sign Database</div>
 
           <label class="field-label" for="dbUrlInput">Sign database URL</label>
           <div class="row" style="margin-bottom:14px;">
@@ -1605,14 +1653,14 @@
         </div>
 
         <div class="card">
-          <div class="card-title"><span class="card-title-icon">📚</span> Loaded Vocabulary</div>
+          <div class="card-title"><span class="card-title-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span> Loaded Vocabulary</div>
           <div id="allowedOut" style="font-family: ui-monospace, monospace; font-size:12px; color:var(--ink-3); max-height:160px; overflow:auto; line-height:1.8;"></div>
         </div>
       </div>
 
       <div class="content-panel" id="panel-advanced">
         <div class="card">
-          <div class="card-title"><span class="card-title-icon">⚙️</span> Text Processing</div>
+          <div class="card-title"><span class="card-title-icon"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg></span> Text Processing</div>
 
           <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
             <label class="check-label"><input type="checkbox" id="eduNlpToggle" /> Use advanced text processing</label>
@@ -1639,7 +1687,7 @@
              through to fingerspelling rather than serving a
              questionable sign. -->
         <div class="card" style="margin-top:16px;">
-          <div class="card-title"><span class="card-title-icon">✅</span> Review preferences</div>
+          <div class="card-title"><span class="card-title-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> Review preferences</div>
           <label class="check-label" style="margin-bottom:8px;">
             <input type="checkbox" id="reviewedOnlyToggle" />
             Only play Deaf-native-reviewed signs (fall through to fingerspelling otherwise)
@@ -1654,7 +1702,7 @@
 
       <div class="content-panel" id="panel-planner">
         <div class="card">
-          <div class="card-title"><span class="card-title-icon">📋</span> Planner Diagnostics</div>
+          <div class="card-title"><span class="card-title-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Planner Diagnostics</div>
 
           <label class="field-label">Planner log</label>
           <div id="planLog" class="log-area" style="margin-bottom:14px;" aria-live="polite" role="log"></div>
