@@ -1,0 +1,2066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signify — Text and Speech to Sign Language</title>
+  <meta name="description" content="Signify translates text and speech into sign language animations. Free, open-source, and supports multiple sign languages.">
+  <meta property="og:title" content="Signify — Text and Speech to Sign Language">
+  <meta property="og:description" content="Translate text and speech into sign language animations. Free and open-source.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kozha-translate.com">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://kozha-translate.com/">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Signify",
+    "url": "https://kozha-translate.com",
+    "description": "Translates text and speech into sign language animations. Supports multiple sign languages.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web"
+  }
+  </script>
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/cwa/cwasa.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script defer src="/sigml-validator.js"></script>
+  <script defer src="/i18n.js"></script>
+
+  <!-- The landing-page hero uses the server-side Gladia proxy at
+       /api/transcribe for mic + video transcription. The in-browser
+       Whisper pipeline (transformers.js + onnxruntime-web) lives only
+       on /app.html; the imports / importmap / __nativeWebAssembly
+       snapshot it required have been removed from this page. -->
+  <script>
+    // CWASA avatar bundle is ~4.6 MB — inject only on first user intent
+    // so mobile LCP doesn't have to wait on the download. The hero demo
+    // polls for window.CWASA with an 8s timeout and degrades to a "Try
+    // the full app" affordance if the script never arrives.
+    (function () {
+      var injected = false;
+      function inject() {
+        if (injected) return;
+        injected = true;
+        var s = document.createElement('script');
+        s.src = '/cwa/allcsa.js';
+        s.crossOrigin = 'anonymous';
+        s.referrerPolicy = 'no-referrer';
+        s.async = true;
+        document.head.appendChild(s);
+        off();
+      }
+      var TRIGGERS = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+      function on()  { TRIGGERS.forEach(function (t) { window.addEventListener(t, inject, { passive: true, once: false }); }); }
+      function off() { TRIGGERS.forEach(function (t) { window.removeEventListener(t, inject); }); }
+      on();
+      // Inject after a couple seconds idle so users on slow phones who
+      // never interact still see a working demo.
+      window.addEventListener('load', function () { setTimeout(inject, 2500); });
+    })();
+  </script>
+  <meta name="theme-color" content="#f5f1eb" />
+  <style>
+    :root {
+      --ink: #1a1612;
+      --ink-2: #3d3630;
+      --ink-3: #5e5c57;
+      --paper: #f5f1eb;
+      --paper-2: #ede8e0;
+      --paper-3: #e4ddd3;
+      /* --accent is used for text/links on paper; must clear WCAG AA at
+         small text (≥4.5:1) so axe/pa11y CI stays clean.
+         #b3441b on paper = 4.80:1, on accent-light = 4.74:1. */
+      --accent: #b3441b;
+      --accent-bright: #c96a2e;
+      --accent-2: #c96a2e;
+      --accent-light: #faeee0;
+      --green: #2d6a4f;
+      --border: rgba(26,22,18,0.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    /* Box-sizing reset only — the legacy "* { padding: 0 }" was
+       wiping padding on the unified .kz-header (components.css uses
+       :where() for zero specificity by design), pulling the logo to
+       the left edge and clipping the rightmost link. Margins are
+       reset on the per-element types we actually want flush, not
+       universally. */
+    *, *::before, *::after { box-sizing: border-box; }
+    body, h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote {
+      margin: 0;
+    }
+    ul, ol { padding-left: 0; list-style: none; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    /* The landing's old top-of-page nav lived in a bare <nav> with
+       .nav-logo / .nav-links / .nav-cta children. The unified header
+       (prompt-11 §nav) replaced that markup with .kz-header, but the
+       old rules stayed behind. The bare ``nav { position: fixed; top: 0 }``
+       was matching the footer's <nav class="kz-footer__cols"> and
+       pulling the footer columns to the top of every viewport. The
+       block is removed entirely; .kz-header in components.css owns the
+       fixed top bar now. */
+    .btn-ghost {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-2);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 18px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { background: var(--paper-2); color: var(--ink); }
+
+    .btn-primary {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 20px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover { background: var(--accent-2); transform: translateY(-1px); }
+
+    .hero {
+      padding: 140px 48px 100px;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-light);
+      border: 1px solid rgba(201,106,46,0.2);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 28px;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(44px, 6vw, 72px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 24px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--ink-3);
+      max-width: 480px;
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-large {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      padding: 14px 28px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-large:hover {
+      background: var(--accent-2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(201,106,46,0.3);
+    }
+
+    .btn-large-ghost {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink-2);
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 28px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s;
+    }
+    .btn-large-ghost:hover {
+      background: var(--paper-2);
+      transform: translateY(-1px);
+    }
+
+    .hero-contribute-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 24px;
+      padding: 12px 18px 12px 14px;
+      background: linear-gradient(135deg, rgba(250,238,224,0.9), rgba(245,241,235,0.9));
+      border: 1px solid rgba(201,106,46,0.25);
+      border-radius: 999px;
+      text-decoration: none;
+      color: var(--ink);
+      transition: all 0.25s ease;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 6px 18px rgba(201,106,46,0.06);
+    }
+    .hero-contribute-pill:hover {
+      transform: translateY(-1px);
+      border-color: rgba(201,106,46,0.45);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 28px rgba(201,106,46,0.14);
+    }
+    .hero-contribute-pill__icon {
+      width: 26px; height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .hero-contribute-pill__label {
+      display: inline-flex;
+      flex-direction: column;
+      line-height: 1.25;
+    }
+    .hero-contribute-pill__label strong {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.01em;
+    }
+    .hero-contribute-pill__label span {
+      font-size: 12px;
+      color: var(--ink-3);
+      font-weight: 400;
+    }
+
+    .hero-stat {
+      display: flex;
+      gap: 32px;
+      margin-top: 36px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 32px;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 4px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-demo-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 24px 64px rgba(26,22,18,0.08), 0 4px 12px rgba(26,22,18,0.04);
+      position: relative;
+    }
+
+    .demo-input-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .demo-input {
+      width: 100%;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--ink);
+      outline: none;
+      resize: none;
+      transition: border-color 0.2s;
+      min-height: 56px;
+    }
+    .demo-input:focus { border-color: var(--accent); }
+
+    .demo-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .demo-chip {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .demo-chip:hover, .demo-chip.active {
+      background: var(--accent-light);
+      border-color: rgba(201,106,46,0.3);
+      color: var(--accent);
+    }
+
+    .demo-translate-btn {
+      margin-left: auto;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .demo-translate-btn:hover:not(:disabled) {
+      background: var(--accent-2);
+      transform: translateY(-1px);
+    }
+    .demo-translate-btn:disabled { opacity: 0.55; cursor: default; }
+
+    .demo-tab-panel { display: none; }
+    .demo-tab-panel.active { display: block; }
+
+    .demo-record-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .demo-record-btn:hover { background: var(--accent-2); }
+    .demo-record-btn.recording {
+      background: #c0392b;
+    }
+    .demo-record-btn.recording:hover { background: #e74c3c; }
+
+    .demo-status {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
+    .demo-file-input {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--ink-3);
+      margin-bottom: 10px;
+    }
+
+    .demo-process-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .demo-process-btn:hover { background: var(--accent-2); }
+    .demo-process-btn:disabled { opacity: 0.5; cursor: default; }
+
+    .demo-lang-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .demo-lang-select {
+      flex: 1;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--ink);
+      outline: none;
+      cursor: pointer;
+    }
+    .demo-lang-select:focus { border-color: var(--accent); }
+    .demo-lang-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 3px;
+    }
+
+    .demo-avatar-area {
+      background: var(--paper);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      height: 260px;
+    }
+
+    #heroAvatar {
+      width: 364px;
+      height: 240px;
+    }
+
+    .avatar-loading {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--ink-3);
+      font-size: 13px;
+      z-index: 2;
+      background: var(--paper);
+    }
+    .avatar-loading .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .demo-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+    .status-dot::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+    }
+    .status-dot.ready { color: var(--green); }
+    .status-dot.ready::before { background: var(--green); }
+    .status-dot.loading { color: var(--ink-3); }
+    .status-dot.loading::before { background: var(--ink-3); animation: pulse 1.5s ease-in-out infinite; }
+
+    .section {
+      padding: 96px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(32px, 4vw, 48px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 56px;
+      max-width: 600px;
+    }
+    .section-title em { font-style: italic; color: var(--accent); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      transition: all 0.25s;
+    }
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(26,22,18,0.08);
+      border-color: rgba(201,106,46,0.2);
+    }
+
+    .feature-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 20px;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .feature-body {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--ink-3);
+    }
+
+    .how-section {
+      background: var(--ink);
+      padding: 96px 48px;
+    }
+    .how-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .how-section .section-label { color: var(--accent-2); }
+    .how-section .section-title { color: var(--paper); }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .step-item {
+      background: rgba(26,22,18,0.95);
+      padding: 40px 32px;
+      position: relative;
+    }
+
+    .step-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 56px;
+      color: var(--accent-bright);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .step-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 22px;
+      color: var(--paper);
+      margin-bottom: 12px;
+    }
+
+    .step-body {
+      font-size: 14px;
+      line-height: 1.7;
+      color: rgba(245,241,235,0.75);
+    }
+
+    .contribute-section {
+      position: relative;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(201,106,46,0.10), transparent 45%),
+        radial-gradient(circle at 88% 82%, rgba(201,106,46,0.07), transparent 50%),
+        var(--accent-light);
+      border: 1px solid rgba(201,106,46,0.2);
+      border-radius: 28px;
+      padding: 64px 64px 56px;
+      overflow: hidden;
+    }
+
+    .contribute-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(201,106,46,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,106,46,0.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(circle at 50% 0%, black 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(circle at 50% 0%, black 30%, transparent 75%);
+    }
+
+    .contribute-head {
+      position: relative;
+      max-width: 720px;
+      margin: 0 auto 48px;
+      text-align: center;
+    }
+
+    .contribute-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid rgba(201,106,46,0.25);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 22px;
+    }
+    .contribute-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .contribute-section h2 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(34px, 4.5vw, 52px);
+      line-height: 1.1;
+      color: var(--ink);
+      margin-bottom: 18px;
+      letter-spacing: -0.02em;
+    }
+    .contribute-section h2 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .contribute-lede {
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--ink-2);
+      max-width: 580px;
+      margin: 0 auto;
+      font-weight: 300;
+    }
+    .contribute-lede strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .contribute-paths {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .contribute-path {
+      background: white;
+      border: 1px solid rgba(26,22,18,0.08);
+      border-radius: var(--radius);
+      padding: 26px 24px 24px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .contribute-path:hover {
+      transform: translateY(-3px);
+      border-color: rgba(201,106,46,0.35);
+      box-shadow: 0 16px 40px rgba(26,22,18,0.08);
+    }
+    .contribute-path::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .contribute-path:hover::after {
+      transform: scaleX(1);
+    }
+
+    .contribute-path__icon {
+      width: 44px; height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 12px;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      font-family: 'Instrument Serif', serif;
+    }
+
+    .contribute-path__title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 22px;
+      color: var(--ink);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .contribute-path__body {
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--ink-3);
+      margin-bottom: 14px;
+    }
+
+    .contribute-path__time {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .contribute-path__time::before {
+      content: '◷';
+      font-size: 14px;
+    }
+
+    .contribute-actions {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .contribute-actions .btn-large {
+      box-shadow: 0 4px 16px rgba(201,106,46,0.2);
+    }
+    .contribute-actions .btn-large:hover {
+      box-shadow: 0 12px 32px rgba(201,106,46,0.35);
+    }
+
+    .contribute-note {
+      font-size: 13px;
+      color: var(--ink-3);
+      text-align: center;
+      margin-top: 18px;
+      position: relative;
+    }
+    .contribute-note a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(201,106,46,0.3);
+    }
+    .contribute-note a:hover {
+      border-bottom-color: var(--accent);
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 48px;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .footer-logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 18px;
+      color: var(--ink);
+    }
+    .footer-logo span { color: var(--accent); }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-size: 13px;
+      color: var(--ink-3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--accent); }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up {
+      animation: fadeUp 0.6s ease forwards;
+    }
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.4s; opacity: 0; }
+    .delay-5 { animation-delay: 0.5s; opacity: 0; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-eyebrow::before, .status-dot.loading::before { animation: none; }
+      .fade-up { animation: none; opacity: 1; }
+      html { scroll-behavior: auto; }
+    }
+
+    @media (max-width: 900px) {
+      /* Old .nav-* mobile rules removed alongside their parent
+         block (line ~94). Mobile header behaviour is now owned by
+         .kz-header / .kz-header__nav / .kz-header__hamburger in
+         components.css. */
+      .btn-primary { padding: 8px 16px; font-size: 13px; }
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 100px 20px 48px;
+        gap: 32px;
+      }
+      .hero-demo-card { padding: 20px; }
+      .hero h1 { font-size: clamp(36px, 8vw, 48px); }
+      .hero-sub { font-size: 16px; }
+      .hero-stat { gap: 20px; flex-wrap: wrap; }
+      .demo-chip { padding: 8px 16px; font-size: 13px; }
+      .demo-translate-btn { padding: 8px 16px; font-size: 13px; }
+      .demo-avatar-area { height: 220px; }
+      #heroAvatar { width: 100%; max-width: 364px; height: 200px; }
+      .demo-record-btn, .demo-process-btn { padding: 14px 20px; font-size: 15px; }
+      .section { padding: 64px 20px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .contribute-section { padding: 44px 24px 36px; border-radius: 22px; }
+      .contribute-paths { grid-template-columns: 1fr; gap: 12px; margin-bottom: 32px; }
+      .contribute-section h2 { font-size: clamp(28px, 7vw, 38px); }
+      .contribute-lede { font-size: 15px; }
+      .hero-contribute-pill { width: 100%; justify-content: flex-start; }
+      footer { padding: 32px 20px; }
+      .footer-inner { flex-direction: column; gap: 20px; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+      .how-section { padding: 64px 20px; }
+      .step-item { padding: 32px 24px; }
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 16px;
+      background: var(--accent);
+      color: white;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 200;
+      text-decoration: none;
+    }
+    .skip-link:focus {
+      top: 8px;
+    }
+
+    @media (max-width: 400px) {
+      .hero { padding: 90px 16px 40px; }
+      .hero-demo-card { padding: 16px; }
+      .demo-lang-row { flex-direction: column; gap: 10px; }
+      .section { padding: 48px 16px; }
+      .how-section { padding: 48px 16px; }
+      .contribute-section { padding: 32px 18px 28px; }
+      .contribute-path { padding: 22px 20px; }
+      .contribute-actions { flex-direction: column; align-items: stretch; }
+      .contribute-actions .btn-large, .contribute-actions .btn-large-ghost { text-align: center; }
+      footer { padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link kz-skip-link" data-i18n="common.skip_to_main">Skip to main content</a>
+
+  <div class="SToCA"></div>
+  <header class="kz-header" aria-label="Main navigation">
+    <a href="/" class="kz-header__logo">Sign<span>ify</span></a>
+    <ul class="kz-header__nav">
+      <li><a href="/app.html" class="kz-header__link" data-i18n="common.nav_translate">Translate</a></li>
+      <li><a href="/contribute.html" class="kz-header__link" data-i18n="common.nav_contribute">Contribute</a></li>
+      <li><a href="/progress" class="kz-header__link" data-i18n="common.nav_progress">Progress</a></li>
+      <li><a href="/credits" class="kz-header__link" data-i18n="common.nav_about">About</a></li>
+    </ul>
+    <button class="kz-header__hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="kzPrimaryNav">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </header>
+
+  <main id="main-content">
+  <section class="hero">
+    <div>
+      <div class="hero-eyebrow fade-up delay-1">Open-source research project</div>
+      <h1 class="fade-up delay-2" data-i18n="landing.hero_heading">Text and speech<br>to <em>sign language.</em></h1>
+      <p class="hero-sub fade-up delay-3" data-i18n="landing.hero_body">
+        Kozha converts typed text, recorded speech, or uploaded video into sign language animations. It runs entirely in your browser — no accounts, no installs, no cost.
+      </p>
+      <div class="hero-actions fade-up delay-4">
+        <a href="/app.html" class="btn-large kz-btn-primary" data-i18n="landing.hero_cta_open_translator">Open translator</a>
+        <a href="#how-it-works" class="btn-large-ghost kz-btn-secondary">How it works</a>
+      </div>
+      <a href="/contribute.html" class="hero-contribute-pill fade-up delay-5" aria-label="Contribute a sign to the dictionary">
+        <span class="hero-contribute-pill__icon" aria-hidden="true">✦</span>
+        <span class="hero-contribute-pill__label">
+          <strong>Add a sign →</strong>
+          <span>The dictionary grows when you help.</span>
+        </span>
+      </a>
+      <div class="hero-stat fade-up delay-5">
+        <div class="stat-item">
+          <div class="stat-num">12</div>
+          <div class="stat-label">Sign languages</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">On-device</div>
+          <div class="stat-label">Speech recognition</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">Free</div>
+          <div class="stat-label">for educators, always</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-demo-card fade-up delay-3">
+      <div class="demo-controls">
+        <button class="demo-chip active" data-tab="text" id="chip-text">✏️ Text</button>
+        <button class="demo-chip" data-tab="voice" id="chip-mic">🎙 Speech</button>
+        <button class="demo-chip" data-tab="video" id="chip-video">🎬 Video</button>
+        <button class="demo-translate-btn" id="heroTranslateBtn" disabled aria-label="Translate to sign language">Translate ▶</button>
+      </div>
+
+      <div class="demo-lang-row">
+        <div style="flex:1;">
+          <div class="demo-lang-label">Input language</div>
+          <select class="demo-lang-select" id="heroLangHint" aria-label="Input language">
+            <optgroup label="Common">
+              <option value="en" selected>English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="zh">Chinese</option>
+              <option value="ar">Arabic</option>
+              <option value="ru">Russian</option>
+              <option value="pt">Portuguese</option>
+              <option value="ja">Japanese</option>
+              <option value="hi">Hindi</option>
+              <option value="ko">Korean</option>
+              <option value="it">Italian</option>
+              <option value="tr">Turkish</option>
+            </optgroup>
+            <optgroup label="More">
+              <option value="af">Afrikaans</option>
+              <option value="bn">Bengali</option>
+              <option value="bg">Bulgarian</option>
+              <option value="ca">Catalan</option>
+              <option value="hr">Croatian</option>
+              <option value="cs">Czech</option>
+              <option value="da">Danish</option>
+              <option value="nl">Dutch</option>
+              <option value="et">Estonian</option>
+              <option value="fi">Finnish</option>
+              <option value="el">Greek</option>
+              <option value="he">Hebrew</option>
+              <option value="hu">Hungarian</option>
+              <option value="id">Indonesian</option>
+              <option value="lv">Latvian</option>
+              <option value="lt">Lithuanian</option>
+              <option value="ms">Malay</option>
+              <option value="no">Norwegian</option>
+              <option value="fa">Persian</option>
+              <option value="pl">Polish</option>
+              <option value="ro">Romanian</option>
+              <option value="sr">Serbian</option>
+              <option value="sk">Slovak</option>
+              <option value="sl">Slovenian</option>
+              <option value="sv">Swedish</option>
+              <option value="th">Thai</option>
+              <option value="uk">Ukrainian</option>
+              <option value="ur">Urdu</option>
+              <option value="vi">Vietnamese</option>
+            </optgroup>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <div class="demo-lang-label">Sign language</div>
+          <select class="demo-lang-select" id="heroSignLang" aria-label="Sign language">
+            <option value="bsl" selected>BSL (British)</option>
+            <option value="asl">ASL (American)</option>
+            <option value="dgs">DGS (German)</option>
+            <option value="lsf">LSF (French)</option>
+            <option value="lse">LSE (Spanish) — coming soon</option>
+            <option value="pjm">PJM (Polish)</option>
+            <option value="gsl">GSL (Greek)</option>
+            <option value="rsl">RSL (Russian) — coming soon</option>
+            <option value="algerian">Algerian SL</option>
+            <option value="bangla">Bangla SL</option>
+            <option value="ngt">NGT (Dutch)</option>
+            <option value="fsl">FSL (Filipino)</option>
+            <option value="isl">ISL (Indian)</option>
+            <option value="kurdish">Kurdish SL</option>
+            <option value="vsl">VSL (Vietnamese)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="demo-tab-panel active" id="tab-text">
+        <div class="demo-input-wrap">
+          <label for="heroInput" class="visually-hidden" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">Text to translate</label>
+          <textarea class="demo-input kz-input" id="heroInput" placeholder="Type a sentence to translate…">Good morning, everyone.</textarea>
+        </div>
+      </div>
+
+      <div class="demo-tab-panel" id="tab-voice">
+        <button class="demo-record-btn" id="heroRecordBtn">● Start recording</button>
+        <div class="demo-status" id="heroMicStatus" role="status" aria-live="polite">Tap to record. We'll transcribe and translate.</div>
+        <!-- Read-only preview of what the recogniser heard. Stays visible
+             after the tab auto-switches to Text so users can verify the
+             transcription matches their utterance before translating. -->
+        <label for="heroMicTranscript" class="demo-lang-label" style="display:block;margin:8px 0 6px;">Transcription</label>
+        <textarea id="heroMicTranscript" class="demo-input kz-input" rows="2" readonly placeholder="Transcription will appear here…" style="font-size:13px;"></textarea>
+      </div>
+
+      <div class="demo-tab-panel" id="tab-video">
+        <label for="heroVideoFile" class="demo-lang-label" style="display:block;margin-bottom:6px;">Video file</label>
+        <input type="file" accept="video/*" class="demo-file-input" id="heroVideoFile" />
+        <button class="demo-process-btn" id="heroVideoBtn">Process video</button>
+        <div class="demo-status" id="heroVideoStatus" role="status" aria-live="polite">Upload a video to extract and transcribe audio.</div>
+        <label for="heroVideoTranscript" class="demo-lang-label" style="display:block;margin:8px 0 6px;">Transcription</label>
+        <textarea id="heroVideoTranscript" class="demo-input kz-input" rows="2" readonly placeholder="Transcription will appear here…" style="font-size:13px;"></textarea>
+      </div>
+      <div class="demo-avatar-area" id="avatarContainer" role="img" aria-label="Sign language avatar animation">
+        <div class="avatar-loading" id="avatarLoading">
+          <div class="spinner" aria-hidden="true"></div>
+          <span>Loading avatar…</span>
+        </div>
+        <div class="CWASAAvatar av0" id="heroAvatar"></div>
+      </div>
+
+
+      <div class="demo-status-bar">
+        <span class="status-dot loading" id="statusDot" role="status" aria-live="polite">Connecting…</span>
+        <a href="/app.html" style="color: var(--accent); font-weight:600; font-size:12px; text-decoration:none;">Open full app →</a>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="features">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">What <em>Kozha</em> does.</h2>
+
+    <div class="features-grid">
+      <div class="feature-card kz-card">
+        <div class="feature-title">Speech input</div>
+        <p class="feature-body">Record speech in your browser. Transcription uses your device's built-in speech recognition — no audio leaves your machine.</p>
+      </div>
+      <div class="feature-card kz-card">
+        <div class="feature-title">Text-to-Sign</div>
+        <p class="feature-body">Type a sentence and see it translated into sign language animations. Words not in the dictionary are fingerspelled automatically.</p>
+      </div>
+      <div class="feature-card kz-card">
+        <div class="feature-title">Video Input</div>
+        <p class="feature-body">Upload a recorded video. Kozha extracts the audio track, transcribes it, and generates the corresponding sign sequence.</p>
+      </div>
+      <div class="feature-card kz-card">
+        <div class="feature-title">STEM Vocabulary</div>
+        <p class="feature-body">Pre-loaded with scientific abbreviation packs. "Carbon dioxide" becomes "CO₂" before planning — no manual editing needed.</p>
+      </div>
+      <div class="feature-card kz-card">
+        <div class="feature-title">Automatic Planning</div>
+        <p class="feature-body">Input text is normalized, lemmatized, and mapped to available signs. The planner reorders words to match sign language grammar.</p>
+      </div>
+      <div class="feature-card kz-card">
+        <div class="feature-title">Deaf-governed Contributions</div>
+        <p class="feature-body">Every new sign is reviewed by two Deaf native signers before it ships. The Deaf advisory board is currently being seated; until it is, community drafts are queued rather than published. <a href="/governance.html" style="color:var(--accent);font-weight:600;">Governance →</a></p>
+      </div>
+    </div>
+  </section>
+  <div class="how-section" id="how-it-works">
+    <div class="how-inner">
+      <div class="section-label">The process</div>
+      <h2 class="section-title" style="margin-bottom:48px;">How it <em>works.</em></h2>
+
+      <div class="steps-grid">
+        <div class="step-item">
+          <div class="step-num">01</div>
+          <div class="step-title">Provide input</div>
+          <p class="step-body">Type text, record speech with your microphone, or upload a video file. All three modes work in the same session.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-num">02</div>
+          <div class="step-title">Plan the translation</div>
+          <p class="step-body">The planner normalizes your text, applies abbreviations, and looks up each token in the sign database. Unknown words are queued for fingerspelling.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-num">03</div>
+          <div class="step-title">Animate the signs</div>
+          <p class="step-body">The matched signs are rendered as a 3D avatar animation using SiGML data. Everything runs client-side in your browser.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section" id="contribute">
+    <div class="contribute-section">
+      <div class="contribute-head">
+        <span class="contribute-eyebrow">The project lives on contributions</span>
+        <h2>Without contributors,<br>this dictionary <em>stays small.</em></h2>
+        <p class="contribute-lede">
+          Most sign-language vocabularies on the web cover only a few hundred everyday words.
+          Kozha can only animate what its dictionary contains — so <strong>every sign you add unblocks
+          a translation that would otherwise come back blank</strong>. This is how the project grows.
+        </p>
+      </div>
+
+      <div class="contribute-paths">
+        <article class="contribute-path">
+          <div class="contribute-path__icon" aria-hidden="true">✋</div>
+          <h3 class="contribute-path__title">Add a sign</h3>
+          <p class="contribute-path__body">Describe a sign in plain language. Our editor turns it into HamNoSys/SiGML notation; a Deaf reviewer validates before it ships.</p>
+          <span class="contribute-path__time">5–10 minutes</span>
+        </article>
+
+        <article class="contribute-path">
+          <div class="contribute-path__icon" aria-hidden="true">★</div>
+          <h3 class="contribute-path__title">Review &amp; refine</h3>
+          <p class="contribute-path__body">Native signers, teachers, and learners — flag awkward translations, fix mistranslations, and help us pick the right regional variant.</p>
+          <span class="contribute-path__time">A few minutes per sign</span>
+        </article>
+
+        <article class="contribute-path">
+          <div class="contribute-path__icon" aria-hidden="true">{ }</div>
+          <h3 class="contribute-path__title">Code or report</h3>
+          <p class="contribute-path__body">Improve the planner, the avatar, or the multilingual pipeline — or just open an issue when something feels off. Every signal helps.</p>
+          <span class="contribute-path__time">Bug reports welcome</span>
+        </article>
+      </div>
+
+      <div class="contribute-actions">
+        <a href="/contribute.html" class="btn-large kz-btn-primary" data-i18n="landing.hero_cta_contribute">Contribute a sign</a>
+        <a href="https://github.com/zhan-a/Kozha" class="btn-large-ghost kz-btn-secondary" target="_blank" rel="noopener noreferrer">Open on GitHub</a>
+      </div>
+
+      <p class="contribute-note">
+        Every contribution is reviewed by Deaf native signers before it ships.
+        Read the <a href="/governance.html">Deaf-led governance →</a>
+      </p>
+    </div>
+  </section>
+  </main>
+  <footer class="kz-footer" role="contentinfo">
+    <div class="kz-footer__inner">
+      <div class="kz-footer__brand">
+        <a href="/" class="kz-footer__logo">Sign<span>ify</span></a>
+        <p class="kz-footer__mission" data-i18n="common.footer_mission">Open-source translator from text and speech into sign language. Built with the Deaf community.</p>
+      </div>
+      <nav class="kz-footer__cols" aria-label="Footer">
+        <div class="kz-footer__col">
+          <h2  class="kz-footer__col-title" data-i18n="common.footer_col_use">Use</h2>
+          <ul>
+            <li><a href="/app.html" data-i18n="common.nav_translate">Translate</a></li>
+            <li><a href="/contribute.html" data-i18n="common.nav_contribute">Contribute</a></li>
+          </ul>
+        </div>
+        <div class="kz-footer__col">
+          <h2  class="kz-footer__col-title" data-i18n="common.footer_col_project">Project</h2>
+          <ul>
+            <li><a href="/progress" data-i18n="common.nav_progress">Progress</a></li>
+            <li><a href="/credits" data-i18n="common.nav_credits">Credits</a></li>
+            <li><a href="/governance.html" data-i18n="common.nav_governance">Governance</a></li>
+            <li><a href="/whats-new.html" data-i18n="common.nav_whats_new">What's new</a></li>
+          </ul>
+        </div>
+        <div class="kz-footer__col">
+          <h2  class="kz-footer__col-title" data-i18n="common.footer_col_community">Community</h2>
+          <ul>
+            <li><a href="https://github.com/zhan-a/Kozha" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="mailto:deaf-feedback@kozha.dev">deaf-feedback@kozha.dev</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="kz-footer__meta">
+        <p class="kz-footer__copy" data-i18n="landing.footer_copyright">© 2025–2026 Kozha. Open-source research project.</p>
+        <p class="kz-footer__os"><span data-i18n="common.footer_open_source">Open source on</span> <a href="https://github.com/zhan-a/Kozha" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/nav.js"></script>
+  <script>
+    const chips = document.querySelectorAll('.demo-chip');
+    chips.forEach(c => {
+      c.addEventListener('click', () => {
+        chips.forEach(x => x.classList.remove('active'));
+        c.classList.add('active');
+        document.querySelectorAll('.demo-tab-panel').forEach(p => p.classList.remove('active'));
+        const tab = c.getAttribute('data-tab');
+        if (tab) document.getElementById('tab-' + tab).classList.add('active');
+      });
+    });
+
+    let cwasaReady = false;
+
+    function initCWASA() {
+      const statusDot = document.getElementById('statusDot');
+      const loadingEl = document.getElementById('avatarLoading');
+      const translateBtn = document.getElementById('heroTranslateBtn');
+
+      if (!window.CWASA) {
+        statusDot.textContent = 'Avatar not available';
+        statusDot.className = 'status-dot loading';
+        if (loadingEl) loadingEl.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;">Avatar could not load.<br><a href="/app.html" style="color:var(--accent);font-weight:600;">Try the full app →</a></div>';
+        return;
+      }
+
+      try {
+        CWASA.init({
+          useClientConfig: false,
+          useCwaConfig: true,
+          avSettings: [{
+            width: 364,
+            height: 240,
+            avList: 'avsfull',
+            initAv: 'luna',
+            ambIdle: true,
+            allowFrameSteps: false,
+            allowSiGMLText: false
+          }]
+        });
+
+        if (CWASA.ready && typeof CWASA.ready.then === 'function') {
+          CWASA.ready.then(function() {
+            if (loadingEl) loadingEl.style.display = 'none';
+            statusDot.textContent = 'Ready';
+            statusDot.className = 'status-dot ready';
+            translateBtn.disabled = false;
+            cwasaReady = true;
+          }).catch(function(err) {
+            console.warn('CWASA init warning:', err);
+            showAvatarError(statusDot, loadingEl);
+          });
+        } else {
+          setTimeout(function() {
+            if (loadingEl) loadingEl.style.display = 'none';
+            statusDot.textContent = 'Ready';
+            statusDot.className = 'status-dot ready';
+            translateBtn.disabled = false;
+            cwasaReady = true;
+          }, 300);
+        }
+      } catch(err) {
+        console.error('CWASA init error:', err);
+        showAvatarError(statusDot, loadingEl);
+      }
+    }
+
+    function showAvatarError(statusDot, loadingEl) {
+      statusDot.textContent = 'Avatar unavailable';
+      statusDot.className = 'status-dot loading';
+      if (loadingEl) loadingEl.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;">Avatar could not load.<br><a href="/app.html" style="color:var(--accent);font-weight:600;">Try the full app →</a></div>';
+    }
+
+    // Poll for the lazily-injected CWASA bundle — see the <head> loader.
+    // Gives up after 8s and the status dot flips to "Avatar unavailable".
+    function awaitCWASAThen(cb) {
+      var waited = 0, tick = 100, limit = 8000;
+      (function check() {
+        if (window.CWASA) { cb(); return; }
+        waited += tick;
+        if (waited >= limit) { cb(); return; }
+        setTimeout(check, tick);
+      })();
+    }
+
+    window.addEventListener('load', function() {
+      awaitCWASAThen(function () {
+        try { initCWASA(); } catch(e) {
+          console.error(e);
+          document.getElementById('statusDot').textContent = 'Avatar failed to load';
+        }
+      });
+    });
+
+    const glossToSign = new Map();
+    const letterToSign = new Map();
+    const baseToGloss = new Map();
+    const conceptToGloss = new Map();
+
+    function glossBase(gloss) {
+      return String(gloss).toLowerCase().replace(/\(.*?\)/g,'').replace(/#\d+$/g,'').replace(/\d+[a-z]?\^?$/g,'').replace(/^_num-/g,'').replace(/_\(.*?\)/g,'').replace(/[^a-z0-9À-ɏͰ-ϿЀ-ӿĀ-ſ]+/g,' ').trim();
+    }
+
+    function rebuildBaseIndex() {
+      baseToGloss.clear();
+      for (const g of glossToSign.keys()) {
+        const b = glossBase(g);
+        if (!baseToGloss.has(b)) baseToGloss.set(b, g);
+      }
+    }
+
+    async function loadSigmlUrl(url) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        const res = await fetch(url, { signal: controller.signal, cache: 'no-cache' });
+        clearTimeout(timeout);
+        if (!res.ok) return;
+        const xmlText = await res.text();
+        const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+        const signs = Array.from(doc.querySelectorAll('hns_sign'));
+        for (const s of signs) {
+          const gloss = (s.getAttribute('gloss')||'').trim().toLowerCase();
+          if (!gloss) continue;
+          glossToSign.set(gloss, s.outerHTML);
+        }
+        rebuildBaseIndex();
+      } catch(e) { console.warn('[index] DB load error:', e); }
+    }
+
+    async function loadAlphabetSigmlUrl(url) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        const res = await fetch(url, { signal: controller.signal, cache: 'no-cache' });
+        clearTimeout(timeout);
+        if (!res.ok) return;
+        const xmlText = await res.text();
+        const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+        const signs = Array.from(doc.querySelectorAll('hns_sign'));
+        for (const s of signs) {
+          const gloss = (s.getAttribute('gloss')||'').trim().toUpperCase();
+          if (gloss.length === 1 && gloss >= 'A' && gloss <= 'Z') {
+            letterToSign.set(gloss, s.outerHTML);
+          }
+        }
+      } catch(e) { console.warn('[index] Alphabet load error:', e); }
+    }
+
+    async function loadConceptCsvUrl(url) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        const res = await fetch(url, { signal: controller.signal, cache: 'no-cache' });
+        clearTimeout(timeout);
+        if (!res.ok) return;
+        let txt = await res.text();
+        if (txt.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
+        const delim = txt.includes('\t') ? '\t' : ',';
+        const lines = txt.split(/\r?\n/).filter(l => l.trim());
+        const header = (lines.shift()||'').split(delim).map(s => s.trim().toLowerCase());
+        const ci = header.indexOf('concept'), gi = header.indexOf('gloss');
+        if (ci < 0 || gi < 0) return;
+        for (const line of lines) {
+          const cols = line.split(delim);
+          const concept = (cols[ci]||'').trim().toLowerCase();
+          const gloss = (cols[gi]||'').trim().toLowerCase();
+          if (concept && gloss) conceptToGloss.set(glossBase(concept), gloss);
+        }
+      } catch(e) { console.warn('[index] Concept CSV error:', e); }
+    }
+
+    var SIGN_LANG_DB = {
+      bsl:      { sigml: ['/data/hamnosys_bsl_version1.sigml', '/data/BSL_bobsl_authored.sigml'], csv: '/data/hamnosys_bsl.csv', alphabet: '/data/bsl_alphabet_sigml.sigml' },
+      asl:      { sigml: ['/data/American_SL_ASL.sigml', '/data/ASL_wlasl_msasl_authored.sigml'], csv: '/data/asl_concepts.csv', alphabet: '/data/asl_alphabet_sigml.sigml' },
+      dgs:      { sigml: ['/data/German_SL_DGS.sigml'], csv: '/data/hamnosys_dgs.csv', alphabet: '/data/dgs_alphabet_sigml.sigml' },
+      lsf:      { sigml: ['/data/French_SL_LSF.sigml'], csv: '/data/hamnosys_lsf.csv', alphabet: '/data/lsf_alphabet_sigml.sigml' },
+      lse:      { sigml: [], csv: null, alphabet: null },
+      pjm:      { sigml: ['/data/Polish_SL_PJM.sigml'], csv: '/data/hamnosys_pjm.csv', alphabet: '/data/pjm_alphabet_sigml.sigml' },
+      gsl:      { sigml: ['/data/Greek_SL_GSL.sigml'], csv: '/data/hamnosys_gsl.csv', alphabet: null },
+      rsl:      { sigml: [], csv: null, alphabet: null },
+      algerian: { sigml: [], csv: null, alphabet: null },
+      bangla:   { sigml: ['/data/Bangla_SL.sigml'], csv: null, alphabet: null },
+      ngt:      { sigml: ['/data/Dutch_SL_NGT.sigml'], csv: '/data/hamnosys_ngt.csv', alphabet: '/data/ngt_alphabet_sigml.sigml' },
+      fsl:      { sigml: [], csv: null, alphabet: null },
+      isl:      { sigml: ['/data/Indian_SL.sigml', '/data/ISL_authored.sigml'], csv: null, alphabet: null },
+      kurdish:  { sigml: ['/data/Kurdish_SL.sigml'], csv: null, alphabet: null },
+      vsl:      { sigml: ['/data/Vietnamese_SL.sigml'], csv: null, alphabet: null },
+      ksl:      { sigml: [], csv: null, alphabet: null },
+    };
+
+    function extractEmbeddedAlphabet() {
+      for (var entry of glossToSign.entries()) {
+        var upper = entry[0].toUpperCase();
+        if (upper.length === 1 && upper >= 'A' && upper <= 'Z' && !letterToSign.has(upper)) {
+          letterToSign.set(upper, entry[1]);
+        }
+      }
+    }
+
+    var _heroSwitchId = 0;
+    var FALLBACK_ALPHABET = '/data/bsl_alphabet_sigml.sigml';
+
+    async function switchSignLanguage(langCode) {
+      var myId = ++_heroSwitchId;
+      glossToSign.clear();
+      letterToSign.clear();
+      baseToGloss.clear();
+      conceptToGloss.clear();
+
+      var db = SIGN_LANG_DB[langCode];
+      if (!db) return;
+
+      for (var i = 0; i < db.sigml.length; i++) {
+        if (_heroSwitchId !== myId) return;
+        await loadSigmlUrl(db.sigml[i]);
+      }
+      if (_heroSwitchId !== myId) return;
+      if (db.csv) await loadConceptCsvUrl(db.csv);
+      if (_heroSwitchId !== myId) return;
+      if (db.alphabet) await loadAlphabetSigmlUrl(db.alphabet);
+
+      if (_heroSwitchId !== myId) return;
+      extractEmbeddedAlphabet();
+
+      if (letterToSign.size < 26) {
+        await loadAlphabetSigmlUrl(FALLBACK_ALPHABET);
+      }
+
+      if (_heroSwitchId !== myId) return;
+    }
+
+    document.getElementById('heroSignLang').addEventListener('change', async function() {
+      var statusDot = document.getElementById('statusDot');
+      statusDot.textContent = 'Loading…';
+      statusDot.className = 'status-dot loading';
+      await switchSignLanguage(this.value);
+      if (glossToSign.size === 0) {
+        statusDot.textContent = 'No sign database available — fingerspelling only';
+        statusDot.className = 'status-dot loading';
+      } else {
+        statusDot.textContent = 'Ready (' + glossToSign.size + ' signs)';
+        statusDot.className = 'status-dot ready';
+      }
+    });
+
+    window.addEventListener('load', async function() {
+      await switchSignLanguage('bsl');
+    });
+
+    const STOPWORDS = new Set(['a','an','the','and','or','but','if','then','than','of','to','in','on','at','for','from','with','as','by','is','are','am','be','been','was','were','do','does','did','that','this','those','these','it','my','your','our']);
+
+    function levenshtein(a,b) {
+      const m=a.length, n=b.length;
+      if(!m) return n; if(!n) return m;
+      const dp = new Array(n+1);
+      for(let j=0;j<=n;j++) dp[j]=j;
+      for(let i=1;i<=m;i++){
+        let prev = dp[0]; dp[0]=i;
+        for(let j=1;j<=n;j++){
+          const temp = dp[j];
+          dp[j] = Math.min(dp[j]+1, dp[j-1]+1, prev+(a[i-1]===b[j-1]?0:1));
+          prev = temp;
+        }
+      }
+      return dp[n];
+    }
+
+    function similarity(a,b) {
+      if (!a||!b) return 0;
+      return 1 - levenshtein(a,b) / Math.max(a.length, b.length);
+    }
+
+    function mapToAvailable(tokens, cutoff) {
+      cutoff = cutoff || 0.82;
+      const mapped = [], missing = [];
+      if (!glossToSign.size) return { mapped: tokens, missing: [] };
+
+      for (const t of tokens) {
+        if (glossToSign.has(t)) { mapped.push(t); continue; }
+        const tBase = glossBase(t);
+        if (conceptToGloss.has(tBase)) { const g = conceptToGloss.get(tBase); if (glossToSign.has(g)) { mapped.push(g); continue; } }
+        if (baseToGloss.has(tBase)) { const g = baseToGloss.get(tBase); if (glossToSign.has(g)) { mapped.push(g); continue; } }
+        let bestBase = null, bestScore = 0;
+        for (const b of baseToGloss.keys()) {
+          const s = similarity(tBase, b);
+          if (s > bestScore) { bestScore = s; bestBase = b; }
+        }
+        if (bestBase && bestScore >= cutoff) { mapped.push(baseToGloss.get(bestBase)); continue; }
+        if (letterToSign.size > 0 && /[A-Za-z]/.test(t)) { mapped.push(t); }
+        else { missing.push(t); }
+      }
+      return { mapped, missing };
+    }
+
+    function fingerspellWord(word) {
+      const blocks = [];
+      for (const char of (word||'').toUpperCase()) {
+        if (char >= 'A' && char <= 'Z') {
+          const lb = letterToSign.get(char);
+          if (lb) blocks.push(lb);
+        }
+      }
+      return blocks;
+    }
+
+    window.__heroLastMalformedSigns = [];
+
+    function buildSigml(tokens) {
+      const blocks = [];
+      const malformed = [];
+      const validator = window.SigmlValidator || null;
+      for (const t of tokens) {
+        const b = glossToSign.get(t);
+        let accepted = false;
+        if (typeof b === 'string') {
+          const v = validator ? validator.validateHnsSignXml(b) : { valid: true };
+          if (v.valid) {
+            blocks.push(b);
+            accepted = true;
+          } else {
+            malformed.push({ gloss: t, reason: v.reason || 'unknown-tags', unknownTags: v.unknownTags || [] });
+            console.warn('[hero sigml] skipping malformed sign "' + t + '": ' + (v.reason || 'unknown-tags') + ' ' + (v.unknownTags||[]).join(','));
+          }
+        } else if (b != null) {
+          malformed.push({ gloss: t, reason: 'not-a-string', receivedType: typeof b });
+          console.warn('[hero sigml] glossToSign["' + t + '"] is not a string (got ' + (typeof b) + '); skipping');
+        }
+        if (!accepted && letterToSign.size > 0) {
+          const lb = fingerspellWord(t);
+          if (lb.length > 0) blocks.push(...lb);
+        }
+      }
+      window.__heroLastMalformedSigns = malformed;
+      if (!blocks.length) return null;
+      const composed = '<?xml version="1.0" encoding="utf-8"?>\n<sigml>\n' + blocks.join('\n') + '\n</sigml>';
+      if (validator && validator.sigmlHasObjectLiteral(composed)) {
+        console.error('[hero sigml] refusing to emit: composed SiGML contains "[object Object]"');
+        return null;
+      }
+      return composed;
+    }
+
+    var SIGN_LANG_GLOSS = {
+      bsl: 'en', asl: 'en', dgs: 'en', lsf: 'fr',
+      lse: 'es', pjm: 'pl', gsl: 'en', rsl: 'ru',
+      algerian: null, bangla: 'en', ngt: 'nl', fsl: null,
+      isl: 'en', kurdish: 'ku', vsl: 'en', ksl: 'kk'
+    };
+
+    function getHeroInputLang() { return document.getElementById('heroLangHint').value; }
+    function getHeroSignLang() { return document.getElementById('heroSignLang').value; }
+    function getHeroTargetLang() { return SIGN_LANG_GLOSS[getHeroSignLang()] || 'en'; }
+
+    async function heroTranslateText(text, srcLang, tgtLang) {
+      if (!text.trim() || srcLang === tgtLang) return text;
+      try {
+        var resp = await fetch('/api/translate-text', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({text: text, source_lang: srcLang, target_lang: tgtLang})
+        });
+        if (!resp.ok) throw new Error('Translation request failed: ' + resp.status);
+        var data = await resp.json();
+        var coerce = (window.SigmlValidator && window.SigmlValidator.coerceTranslationResult) || null;
+        var raw = coerce ? coerce(data.translated, text) : (typeof data.translated === 'string' ? data.translated : text);
+        if (coerce && typeof data.translated !== 'string' && data.translated != null) {
+          console.warn('[hero translate] server returned non-string translated:', data.translated);
+        }
+        return (raw || text).trim();
+      } catch (err) {
+        console.warn('[index] Translation failed:', err);
+        var statusDot = document.getElementById('statusDot');
+        statusDot.textContent = 'Translation unavailable — using original text';
+        statusDot.className = 'status-dot loading';
+        return text;
+      }
+    }
+
+    async function heroTranslateIfNeeded(text, statusFn) {
+      var src = getHeroInputLang();
+      var glossLang = SIGN_LANG_GLOSS[getHeroSignLang()];
+      var tgt = glossLang || 'en';
+      if (src === tgt) return text;
+      if (statusFn) statusFn('Translating ' + src.toUpperCase() + ' → ' + tgt.toUpperCase() + '…');
+      return await heroTranslateText(text, src, tgt);
+    }
+
+    document.getElementById('heroTranslateBtn').addEventListener('click', async function() {
+      var btn = this;
+      var inputText = document.getElementById('heroInput').value.trim();
+      if (!inputText) return;
+
+      btn.disabled = true;
+      btn.textContent = 'Translating…';
+
+      try {
+        var translatedText = await heroTranslateIfNeeded(inputText, function(msg) { btn.textContent = msg; });
+
+        var planTokens = [];
+        // Whole-input concept match (e.g. "Thank you!" → THANK-YOU): play that
+        // sign directly, mirroring app.html's concept-map short-circuit, so an
+        // exact phrase never round-trips through the backend planner.
+        var phraseGloss = conceptToGloss.get(glossBase(translatedText));
+        if (phraseGloss && glossToSign.has(phraseGloss)) {
+          planTokens = [phraseGloss];
+        }
+        if (!planTokens.length) try {
+          var apiController = new AbortController();
+          var apiTimeout = setTimeout(function() { apiController.abort(); }, 10000);
+          var resp = await fetch('/api/plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: translatedText, language: getHeroTargetLang(), sign_language: getHeroSignLang() }),
+            signal: apiController.signal
+          });
+          clearTimeout(apiTimeout);
+          if (resp.ok) {
+            var data = await resp.json();
+            var finalText = String(data.final || '').replace(/[.\n]/g, ' ').trim();
+            planTokens = finalText.split(/\s+/).filter(Boolean);
+          }
+        } catch(e) {
+          console.warn('[index] /api/plan unavailable, using heuristic:', e);
+        }
+
+        if (!planTokens.length) {
+          planTokens = translatedText.toLowerCase()
+            .replace(/[^\w\s]/g, ' ')
+            .split(/\s+/)
+            .filter(function(w) { return w && !STOPWORDS.has(w); });
+        }
+
+        const { mapped } = mapToAvailable(planTokens);
+        if (!mapped.length) {
+          btn.textContent = 'No signs found';
+          setTimeout(function() { btn.textContent = 'Translate ▶'; btn.disabled = false; }, 2000);
+          return;
+        }
+        const sigml = buildSigml(mapped);
+        const heroMalformed = window.__heroLastMalformedSigns || [];
+        if (heroMalformed.length) {
+          var heroLangLabel = (getHeroSignLang() || '').toString().toUpperCase();
+          var statusDot2 = document.getElementById('statusDot');
+          statusDot2.textContent = 'A database entry for "' + heroMalformed[0].gloss + '" (' + heroLangLabel + ') is malformed. This word cannot be signed yet. Please report this in the contribute page.';
+          statusDot2.className = 'status-dot loading';
+        }
+        if (!sigml) {
+          btn.textContent = heroMalformed.length ? 'Malformed DB entry' : 'No signs found';
+          setTimeout(function() { btn.textContent = 'Translate ▶'; btn.disabled = false; }, 2000);
+          return;
+        }
+        if (window.SigmlValidator && window.SigmlValidator.sigmlHasObjectLiteral(sigml)) {
+          console.error('[hero] refusing to play: SiGML contains [object Object]');
+          btn.textContent = 'Malformed DB entry';
+          setTimeout(function() { btn.textContent = 'Translate ▶'; btn.disabled = false; }, 2000);
+          return;
+        }
+
+        if (cwasaReady) {
+          CWASA.playSiGMLText(sigml, 0);
+          btn.textContent = heroMalformed.length ? 'Playing partial…' : 'Playing…';
+        } else {
+          var statusDot = document.getElementById('statusDot');
+          statusDot.textContent = 'Avatar unavailable — showing text output';
+          statusDot.className = 'status-dot loading';
+          btn.textContent = 'Planned: ' + mapped.slice(0, 6).join(', ');
+        }
+        setTimeout(function() {
+          btn.textContent = 'Translate ▶';
+          btn.disabled = false;
+        }, 4000);
+      } catch(err) {
+        console.warn('[index] Translate error:', err);
+        btn.textContent = 'Translate ▶';
+        btn.disabled = false;
+      }
+    });
+
+    // Convert any audio Blob (webm/Opus from MediaRecorder, mp4/AAC
+    // from Safari, etc.) to a 16 kHz mono PCM WAV using Web Audio.
+    // WAV is the format Gladia handles most reliably end-to-end —
+    // posting raw webm/Opus from MediaRecorder produced a non-zero
+    // rate of upload-side rejections that surfaced as the user-
+    // visible "We couldn't transcribe this clip" copy.
+    async function heroBlobToWav(srcBlob) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) throw new Error('AudioContext unavailable');
+      const arrayBuffer = await srcBlob.arrayBuffer();
+      const audioCtx = new Ctx();
+      let audioBuffer;
+      try {
+        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+      } finally {
+        try { audioCtx.close(); } catch (_e) {}
+      }
+      // Down-mix any stereo input to mono by averaging channels.
+      const ch = audioBuffer.numberOfChannels;
+      const samples = audioBuffer.length;
+      const mono = new Float32Array(samples);
+      for (let c = 0; c < ch; c++) {
+        const data = audioBuffer.getChannelData(c);
+        for (let i = 0; i < samples; i++) mono[i] += data[i] / ch;
+      }
+      // 16-bit little-endian PCM WAV header + samples (no resample —
+      // Gladia accepts the source rate verbatim).
+      const sampleRate = audioBuffer.sampleRate;
+      const dataBytes = mono.length * 2;
+      const buffer = new ArrayBuffer(44 + dataBytes);
+      const view = new DataView(buffer);
+      const w = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+      w(0, 'RIFF');
+      view.setUint32(4, 36 + dataBytes, true);
+      w(8, 'WAVE'); w(12, 'fmt ');
+      view.setUint32(16, 16, true);   // PCM chunk size
+      view.setUint16(20, 1, true);    // format = PCM
+      view.setUint16(22, 1, true);    // channels = mono
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true); // byte rate
+      view.setUint16(32, 2, true);    // block align
+      view.setUint16(34, 16, true);   // bits per sample
+      w(36, 'data');
+      view.setUint32(40, dataBytes, true);
+      let off = 44;
+      for (let i = 0; i < mono.length; i++) {
+        const s = Math.max(-1, Math.min(1, mono[i]));
+        view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        off += 2;
+      }
+      return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    // POST the audio Blob to /api/transcribe (Gladia proxy) and
+    // return the transcript string. Throws an Error tagged with the
+    // HTTP status on a non-2xx response, or a "No speech detected"
+    // error when Gladia returned 200 but with empty text.
+    //
+    // This is the ONLY transcription path on the landing-page hero —
+    // the in-browser Whisper / transformers.js pipeline has been
+    // stripped from this surface. The full translator at /app.html
+    // still has both legs; this surface intentionally does not.
+    async function heroTranscribeWithFallback(blob) {
+      // Always send WAV to the server. If decode fails for some odd
+      // codec, fall back to the original blob and let Gladia try.
+      let toSend = blob;
+      try {
+        toSend = await heroBlobToWav(blob);
+      } catch (e) {
+        console.warn('[hero-asr] webm→wav failed, sending source blob as-is:', (e && e.message) || e);
+      }
+      const lang = (getHeroInputLang && getHeroInputLang()) || '';
+      const headers = {};
+      if (toSend && toSend.type) headers['content-type'] = toSend.type;
+      if (lang) headers['x-input-language'] = lang;
+      let resp;
+      try {
+        resp = await fetch('/api/transcribe', { method: 'POST', headers, body: toSend });
+      } catch (e) {
+        // fetch() rejected — DNS, offline, certificate, etc.
+        const why = (e && e.message) || String(e);
+        console.warn('[hero-asr] /api/transcribe network error:', why);
+        throw new Error('NetworkError: ' + why);
+      }
+      if (!resp.ok) {
+        let detail = '';
+        try { detail = await resp.text(); } catch (_e) {}
+        const tag = resp.status === 413 ? '413 too large'
+                  : resp.status === 503 ? '503 unconfigured'
+                  : 'HTTP ' + resp.status;
+        // Server body logged for debugging; never surfaced to UI.
+        console.warn('[hero-asr] /api/transcribe failed', tag, detail.slice(0, 200));
+        throw new Error(tag);
+      }
+      const data = await resp.json();
+      const text = ((data && data.text) || '').trim();
+      if (text) return text;
+      throw new Error('No speech detected — try recording again with a clearer voice.');
+    }
+
+    // Renders a status message with a trailing "Open full translator
+    // →" deep link. Used on the hero mic + video tabs so a user who
+    // hits a failure on the demo widget always has a one-click route
+    // to /app.html instead of being stuck on a dead error.
+    function setHeroStatusWithFallbackLink(el, message) {
+      if (!el) return;
+      el.textContent = '';
+      el.appendChild(document.createTextNode(message + ' '));
+      const a = document.createElement('a');
+      a.href = '/app.html';
+      a.textContent = 'Open full translator →';
+      a.style.color = 'var(--accent)';
+      a.style.fontWeight = '600';
+      a.style.textDecoration = 'underline';
+      a.style.whiteSpace = 'nowrap';
+      el.appendChild(a);
+    }
+
+    // Map a caught exception to plain-language copy for the hero
+    // demo. The /lib/error-copy.js mappers are too aggressive for
+    // this surface — anything containing the substring "transcrib"
+    // collapses to a generic "Couldn't transcribe this clip…" copy,
+    // which then masks legitimate sub-errors like "No speech
+    // detected" once we tag them with a "transcribe failed:" prefix.
+    // We keep our own short table so a clean message we threw
+    // ourselves passes through verbatim.
+    function heroPlainMicCue(err, kind) {
+      const raw = (err && err.message) || String(err || '');
+      const m = raw.toLowerCase();
+      // Mic-permission / device errors during getUserMedia.
+      if (kind === 'record') {
+        if (m.indexOf('permission') !== -1 || m.indexOf('notallowed') !== -1 || m.indexOf('denied') !== -1) {
+          return "Microphone access was blocked. Allow mic access in your browser's site settings and reload.";
+        }
+        if (m.indexOf('notfound') !== -1 || m.indexOf('no device') !== -1 || m.indexOf('overconstrained') !== -1) {
+          return 'No microphone found. Connect a microphone and reload.';
+        }
+        return 'Microphone capture failed. Reload the page and try again.';
+      }
+      // Transcribe-time errors. Clean messages we threw ourselves
+      // pass through verbatim so the user sees the intended copy.
+      if (raw.indexOf('No speech detected') === 0) return raw;
+      if (m.indexOf('failed to fetch') !== -1 || m.indexOf('networkerror') !== -1 || m.indexOf('offline') !== -1) {
+        return 'Network problem — check your connection and try again.';
+      }
+      if (m.indexOf('413') !== -1 || m.indexOf('too large') !== -1) {
+        return 'Clip is too long for the demo. Try something under a minute.';
+      }
+      // Server-side proxy reported a non-2xx (502/503/etc.) and the
+      // local fallback also failed.
+      return "We couldn't transcribe this clip. Try again, or open the full translator.";
+    }
+    function heroPlainUploadCue(err) {
+      const raw = (err && err.message) || String(err || '');
+      const m = raw.toLowerCase();
+      if (raw.indexOf('No speech detected') === 0) return raw;
+      if (m.indexOf('413') !== -1 || m.indexOf('too large') !== -1) {
+        return 'Video is too large. Try a clip under a minute.';
+      }
+      if (m.indexOf('failed to fetch') !== -1 || m.indexOf('networkerror') !== -1 || m.indexOf('offline') !== -1) {
+        return 'Network problem — check your connection and try again.';
+      }
+      return "We couldn't process this clip. Try a different file, or open the full translator.";
+    }
+
+    (function() {
+      const recordBtn = document.getElementById('heroRecordBtn');
+      const micStatus = document.getElementById('heroMicStatus');
+      const micTranscript = document.getElementById('heroMicTranscript');
+      const heroInput = document.getElementById('heroInput');
+      let mediaRecorder = null;
+      let recordedChunks = [];
+
+      recordBtn.addEventListener('click', async () => {
+        if (!mediaRecorder) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = () => { stream.getTracks().forEach(t => t.stop()); };
+            mediaRecorder.start();
+            recordBtn.textContent = '■ Stop recording';
+            recordBtn.classList.add('recording');
+            micStatus.textContent = 'Recording…';
+            if (micTranscript) micTranscript.value = '';
+          } catch (e) {
+            console.warn('[hero-mic] capture failed:', e);
+            setHeroStatusWithFallbackLink(micStatus, heroPlainMicCue(e, 'record'));
+          }
+        } else {
+          // MediaRecorder fires dataavailable + stop asynchronously
+          // *after* stop() returns. Reading recordedChunks
+          // synchronously here yields an empty array — the blob is
+          // 0 bytes, /api/transcribe replies 400 "Empty audio body",
+          // and the user sees "We couldn't transcribe this clip."
+          // The translator at /app.html avoids this because its
+          // separate Transcribe button fires well after dataavailable.
+          const recorder = mediaRecorder;
+          mediaRecorder = null;
+          const stopped = new Promise((resolve) => {
+            recorder.addEventListener('stop', resolve, { once: true });
+          });
+          recorder.stop();
+          recordBtn.textContent = 'Transcribing…';
+          recordBtn.classList.remove('recording');
+          recordBtn.disabled = true;
+          micStatus.textContent = 'Preparing speech recognition…';
+          await stopped;
+
+          try {
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            if (!blob.size) {
+              micStatus.textContent = 'Nothing was recorded — try again.';
+              recordBtn.textContent = '● Start recording';
+              recordBtn.disabled = false;
+              return;
+            }
+            micStatus.textContent = 'Transcribing audio…';
+            const rawText = await heroTranscribeWithFallback(blob);
+            // Show the raw transcription in-panel BEFORE translating
+            // so the user can verify what was heard even if the
+            // subsequent translate or tab-switch fails.
+            if (micTranscript) micTranscript.value = rawText;
+            const text = await heroTranslateIfNeeded(rawText, (msg) => { micStatus.textContent = msg; });
+            heroInput.value = text;
+            micStatus.textContent = 'Transcribed! Hit Translate to see signs.';
+            chips.forEach(x => x.classList.remove('active'));
+            document.getElementById('chip-text').classList.add('active');
+            document.querySelectorAll('.demo-tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('tab-text').classList.add('active');
+          } catch (e) {
+            console.warn('[hero-mic] transcribe failed:', e);
+            setHeroStatusWithFallbackLink(micStatus, heroPlainMicCue(e, 'transcribe'));
+          }
+          recordBtn.textContent = '● Start recording';
+          recordBtn.disabled = false;
+        }
+      });
+    })();
+
+    (function() {
+      const videoFile = document.getElementById('heroVideoFile');
+      const videoBtn = document.getElementById('heroVideoBtn');
+      const videoStatus = document.getElementById('heroVideoStatus');
+      const videoTranscript = document.getElementById('heroVideoTranscript');
+      const heroInput = document.getElementById('heroInput');
+
+      async function ensureFFmpeg() {
+        if (!window.__ffmpeg) {
+          if (typeof FFmpeg === 'undefined') {
+            await new Promise(function(resolve, reject) {
+              var s = document.createElement('script');
+              s.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js';
+              s.onload = resolve;
+              s.onerror = reject;
+              document.head.appendChild(s);
+            });
+          }
+          const { createFFmpeg, fetchFile } = FFmpeg;
+          const ffmpeg = createFFmpeg({ log: false });
+          await ffmpeg.load();
+          window.__ffmpeg = { ffmpeg, fetchFile };
+        }
+        return window.__ffmpeg;
+      }
+
+      videoBtn.addEventListener('click', async () => {
+        const file = videoFile?.files?.[0];
+        if (!file) { videoStatus.textContent = 'Choose a video file first.'; return; }
+        videoBtn.disabled = true;
+        if (videoTranscript) videoTranscript.value = '';
+
+        try {
+          videoStatus.textContent = 'Preparing…';
+          const { ffmpeg, fetchFile } = await ensureFFmpeg();
+
+          videoStatus.textContent = 'Extracting audio from video…';
+          ffmpeg.FS('writeFile', 'in', await fetchFile(file));
+          await ffmpeg.run('-i', 'in', '-vn', '-ac', '1', '-ar', '16000', '-f', 'wav', 'out.wav');
+          const data = ffmpeg.FS('readFile', 'out.wav');
+          const wavBlob = new Blob([data.buffer], { type: 'audio/wav' });
+
+          videoStatus.textContent = 'Transcribing audio…';
+          const rawText = await heroTranscribeWithFallback(wavBlob);
+          // Show the raw transcription on the Video panel itself
+          // before translating + switching tabs, so it's visible
+          // here even if translation or the tab swap fails.
+          if (videoTranscript) videoTranscript.value = rawText;
+          const text = await heroTranslateIfNeeded(rawText, (msg) => { videoStatus.textContent = msg; });
+          heroInput.value = text;
+          videoStatus.textContent = 'Transcribed! Hit Translate to see signs.';
+
+          chips.forEach(x => x.classList.remove('active'));
+          document.getElementById('chip-text').classList.add('active');
+          document.querySelectorAll('.demo-tab-panel').forEach(p => p.classList.remove('active'));
+          document.getElementById('tab-text').classList.add('active');
+        } catch (e) {
+          console.warn('[hero-video] processing failed:', e);
+          setHeroStatusWithFallbackLink(videoStatus, heroPlainUploadCue(e));
+        }
+        videoBtn.disabled = false;
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sigml_collection language="Algerian_SL" count="1">
+
+  <hns_sign gloss="$ALPHA:K-N-O-W">
+  		<hamnosys_nonmanual>
+  			<hnm_head tag="TR" />
+  			<hnm_eyegaze tag="RD" />
+  		</hamnosys_nonmanual>
+  		<hamnosys_manual>
+  			<hamflathand />
+  			<hamextfingerui />
+  			<hampalmdl />
+  			<hambetween />
+  			<hampalmul />
+  			<hamear />
+  			<hamlrbeside />
+  			<hambetween />
+  			<hamforehead />
+  			<hamlrbeside />
+  			<hamseqbegin />
+  			<hamclose />
+  			<hamindexfinger />
+  			<hammiddlefinger />
+  			<hamringfinger />
+  			<hampinky />
+  			<hamseqend />
+  			<hammovel />
+  			<hamsmallmod />
+  			<hamear />
+  			<hamlrbeside />
+  			<hambetween />
+  			<hamforehead />
+  			<hamlrbeside />
+  			<hamseqbegin />
+  			<hamtouch />
+  			<hamindexfinger />
+  			<hammiddlefinger />
+  			<hamringfinger />
+  			<hampinky />
+  			<hamseqend />
+  			<hamrepeatfromstart />
+  		</hamnosys_manual>
+  	</hns_sign>
+
+
+</sigml_collection>

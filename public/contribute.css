@@ -1,0 +1,6018 @@
+/* ------------------------------------------------------------------
+ * Contribute page — reconciled to the main-page design system.
+ *
+ * Every value here resolves to a --kozha-* token from
+ * /styles/tokens.css. No new literals, no drifted palette. If a value
+ * appears hardcoded it is a last-resort fallback that still points at
+ * the token's documented value.
+ *
+ * Architecture: the stylesheet composes the existing token set; it does
+ * NOT redeclare :root custom properties, override them, or introduce
+ * new ones. The one exception the prompt permitted — adding a mono
+ * token to tokens.css if missing — is unnecessary because
+ * --kozha-font-mono already exists.
+ * ------------------------------------------------------------------ */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  line-height: var(--kozha-leading-normal);
+  color: var(--kozha-color-ink);
+  background: var(--kozha-color-paper);
+  -webkit-font-smoothing: antialiased;
+  /* min-height twice: legacy 100vh first, then 100dvh for browsers
+     that support the dynamic-viewport unit so iOS Safari doesn't
+     leave a phantom strip below the footer when the URL bar
+     collapses. overscroll-behavior stops the rubber-band scroll
+     past the page edges that otherwise reads as "scrolling past
+     the footer". */
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior-y: contain;
+  display: flex;
+  flex-direction: column;
+}
+
+[hidden] { display: none !important; }
+
+/* -------------------- skip link -------------------- */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--kozha-space-4);
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  padding: var(--kozha-space-2) var(--kozha-space-4);
+  border-radius: var(--kozha-radius-sm);
+  font-size: var(--kozha-text-body);
+  font-weight: var(--kozha-weight-semibold);
+  z-index: var(--kozha-z-skip);
+  text-decoration: none;
+}
+.skip-link:focus { top: var(--kozha-space-2); }
+
+/* -------------------- global focus ring -------------------- */
+:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+}
+
+/* -------------------- visually hidden (SR-only) -------------------- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ==================================================================
+ * Top nav — same visual language as app.html's .app-nav, extended
+ * to host a three-item link list plus the wordmark badge.
+ * ================================================================== */
+.app-nav {
+  position: sticky; top: 0;
+  z-index: var(--kozha-z-nav);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kozha-space-4);
+  padding: 0 var(--kozha-space-8);
+  height: var(--kozha-layout-app-nav-h);
+  background: var(--kozha-color-paper-translucent-strong);
+  backdrop-filter: blur(var(--kozha-blur-nav));
+  -webkit-backdrop-filter: blur(var(--kozha-blur-nav));
+  border-bottom: 1px solid var(--kozha-color-border);
+}
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-3);
+}
+.nav-logo {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-step-title);
+  color: var(--kozha-color-ink);
+  text-decoration: none;
+  letter-spacing: var(--kozha-tracking-tight);
+}
+.nav-logo span { color: var(--kozha-color-accent); }
+
+.nav-badge {
+  background: var(--kozha-color-accent-light);
+  color: var(--kozha-color-accent);
+  font-size: var(--kozha-text-caption);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wider);
+  padding: 3px var(--kozha-space-3);
+  border-radius: var(--kozha-radius-pill);
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav-link {
+  color: var(--kozha-color-ink-3);
+  font-size: var(--kozha-text-body-sm);
+  font-weight: var(--kozha-weight-medium);
+  text-decoration: none;
+  transition: color var(--kozha-duration-base) var(--kozha-ease-standard);
+  padding: var(--kozha-space-2) 0;
+  position: relative;
+}
+.nav-link:hover,
+.nav-link:focus-visible { color: var(--kozha-color-accent); }
+.nav-link.is-active {
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-semibold);
+}
+.nav-link.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  height: 2px;
+  background: var(--kozha-color-accent);
+  border-radius: var(--kozha-radius-pill);
+}
+
+.hamburger {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-2);
+  cursor: pointer;
+  color: var(--kozha-color-ink-2);
+  line-height: 1;
+}
+
+/* ==================================================================
+ * Main layout
+ * ================================================================== */
+.contribute-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--kozha-layout-page-max);
+  margin: 0 auto;
+  /* Top padding clears the fixed .kz-header (layout-nav-h). Bottom
+     padding is intentionally modest so the footer sits close to the
+     last section instead of leaving a tall empty strip above it. */
+  padding: calc(var(--kozha-layout-nav-h) + var(--kozha-space-8)) var(--kozha-space-8) var(--kozha-space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-6);
+}
+
+.contribute-header {
+  margin-bottom: var(--kozha-space-8);
+}
+.contribute-eyebrow {
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-widest);
+  text-transform: uppercase;
+  color: var(--kozha-color-accent);
+  margin: 0 0 var(--kozha-space-3);
+}
+.contribute-h1 {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-hero-h1);
+  line-height: var(--kozha-leading-tight);
+  font-weight: var(--kozha-weight-regular);
+  letter-spacing: var(--kozha-tracking-tightest);
+  color: var(--kozha-color-ink);
+  margin: 0 0 var(--kozha-space-4);
+}
+.contribute-lede {
+  font-size: var(--kozha-text-hero-sub);
+  line-height: var(--kozha-leading-loose);
+  color: var(--kozha-color-ink-2);
+  margin: 0 0 var(--kozha-space-6);
+  max-width: 62ch;
+}
+
+/* Anchor offset so smooth-scroll lands the picker below the fixed
+   header instead of being clipped under it. */
+.kz-anchor-offset {
+  display: block;
+  height: 0;
+  margin-top: calc(var(--kozha-layout-nav-h, 64px) * -1);
+  padding-top: var(--kozha-layout-nav-h, 64px);
+  visibility: hidden;
+}
+
+/* ==================================================================
+ * Workspace gating
+ *
+ * The interactive form (language picker, byo-key, masthead, banners,
+ * authoring root, submission, confirmation) lives inside
+ * #contributeWorkspace. Pre-2026-04c builds gated the workspace behind
+ * a hero "Open the contribution form" CTA — that buried the chips and
+ * made the page look like a marketing stub with no action surface.
+ * Now the workspace is visible from first paint; the hero CTA simply
+ * scrolls the page down to it. .has-session still hides the marketing
+ * layer above once real drafting begins so the workspace owns the
+ * viewport.
+ * ================================================================== */
+.contribute-workspace { display: block; }
+/* Once a real session exists the marketing layer collapses so the
+   workspace owns the viewport. The quickstart card hides too: the
+   user has already picked a language (the masthead carries the
+   active selection + a "Change" affordance), so leaving the big
+   dark chip card above the form is just visual noise. */
+.contribute-main.has-session .c2-hero,
+.contribute-main.has-session .c2-why,
+.contribute-main.has-session .c2-walk,
+.contribute-main.has-session .qs {
+  display: none;
+}
+
+/* ==================================================================
+ * Missing-font fallback
+ *
+ * The HamNoSys binaries live at /public/fonts/HamNoSysUnicode.{woff2,
+ * ttf} and are preloaded from the page <head>. The probe in <head>
+ * removes the .no-hamnosys-font class once it confirms shaping
+ * actually happened, so this fallback only kicks in when the binary
+ * really isn't reachable (operator stripped the directory, network
+ * fault, very old browser). Replace the glyph row with an inline
+ * caption rather than just hiding it, so the hero card doesn't
+ * look like something failed to load.
+ * ================================================================== */
+.no-hamnosys-font .c2-hero__card-glyphs > .hamnosys {
+  display: none;
+}
+.no-hamnosys-font .c2-hero__card-glyphs::before {
+  content: "HamNoSys preview unavailable";
+  display: block;
+  font-family: var(--kozha-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--kozha-color-ink-3);
+  text-transform: uppercase;
+  padding: 8px 0;
+  border-top: 1px dashed var(--kozha-color-border);
+  border-bottom: 1px dashed var(--kozha-color-border);
+  text-align: center;
+}
+.no-hamnosys-font .c2-hero__card {
+  gap: var(--kozha-space-3);
+}
+
+/* ==================================================================
+ * Card shell
+ *
+ * .card and .kz-card both apply; .kz-card already provides the base
+ * visual from components.css. Here we define .card at equivalent
+ * specificity so legacy JS and markup that references .card alone
+ * still gets the shell (and we override the hover-lift for non-
+ * interactive info cards that shouldn't nudge on hover).
+ * ================================================================== */
+.card {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  padding: var(--kozha-space-6) var(--kozha-space-8);
+}
+/* Neutralise the kz-card hover-lift: a tool page card shouldn't move
+   when the user hovers on empty chrome. */
+.card:where(.kz-card):hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--kozha-color-border);
+}
+
+.card-title {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-card-title);
+  color: var(--kozha-color-ink);
+  margin: 0 0 var(--kozha-space-4);
+  line-height: var(--kozha-leading-snug);
+  font-weight: var(--kozha-weight-regular);
+}
+
+/* ==================================================================
+ * Language picker — uses the lang-strip pattern from app.html (prompt 4)
+ * so the dropdown is the same visual widget across translator and
+ * contribute surfaces.
+ * ================================================================== */
+.lang-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--kozha-space-3);
+  padding: var(--kozha-space-3);
+  background: var(--kozha-color-paper-2);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+}
+.lang-slot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-1);
+  min-width: 0;
+}
+.lang-slot-label {
+  font-size: var(--kozha-text-caption);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-widest);
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+  margin: 0;
+}
+.lang-slot select,
+.lang-slot .field-input {
+  width: 100%;
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  font-size: var(--kozha-text-body);
+  cursor: pointer;
+}
+.lang-slot-note {
+  font-size: var(--kozha-text-caption);
+  color: var(--kozha-color-ink-3);
+  line-height: var(--kozha-leading-normal);
+  min-height: var(--kozha-space-4);
+}
+.lang-slot-note.limited {
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-medium);
+}
+
+/* ==================================================================
+ * Persistent language masthead (shown after a language is chosen)
+ * ================================================================== */
+.lang-masthead .language-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kozha-space-4);
+  flex-wrap: wrap;
+}
+.language-badge {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-feature-title);
+  line-height: var(--kozha-leading-snug);
+  color: var(--kozha-color-ink);
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-1);
+}
+.language-badge-code {
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wide);
+}
+.language-badge-sep { color: var(--kozha-color-ink-3); }
+.language-badge-name { font-weight: var(--kozha-weight-regular); }
+
+.change-btn {
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: var(--kozha-text-body-sm);
+}
+
+.context-strip {
+  margin-top: var(--kozha-space-3);
+  padding-top: var(--kozha-space-3);
+  border-top: 1px solid var(--kozha-color-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-4);
+  align-items: center;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+}
+.context-gloss {
+  color: var(--kozha-color-ink-2);
+  font-weight: var(--kozha-weight-medium);
+}
+.context-gloss.is-empty {
+  color: var(--kozha-color-ink-3);
+  font-weight: var(--kozha-weight-regular);
+}
+.context-state {
+  font-size: var(--kozha-text-caption);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wider);
+  text-transform: uppercase;
+  padding: 3px var(--kozha-space-3);
+  border-radius: var(--kozha-radius-pill);
+  background: var(--kozha-color-paper-2);
+  color: var(--kozha-color-ink-3);
+}
+.context-session {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption-lg);
+}
+.context-session-id { color: var(--kozha-color-ink-3); }
+.context-copy-btn {
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+}
+
+/* ==================================================================
+ * Offline / paused banners
+ * ================================================================== */
+.contribute-offline {
+  border-color: var(--kozha-color-border-accent);
+  background: var(--kozha-color-accent-light);
+}
+.contribute-offline-body {
+  margin: 0;
+  color: var(--kozha-color-ink-2);
+}
+
+.contribute-paused .contribute-paused-body {
+  margin: 0 0 var(--kozha-space-3);
+  color: var(--kozha-color-ink-2);
+}
+.contribute-paused-email {
+  margin: 0 0 var(--kozha-space-3);
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+}
+.contribute-paused-links {
+  margin: 0;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+}
+.contribute-paused-links a { color: var(--kozha-color-accent); }
+
+/* ==================================================================
+ * BYO OpenAI key (details/summary)
+ * ================================================================== */
+.byo-key {
+  padding: 0;
+}
+/* When the API returns ``llm_config_error`` (no project key + no
+   user-supplied key), contribute.js opens this panel and adds the
+   .is-required class so the contributor can find it at a glance. */
+.byo-key.is-required {
+  border-color: var(--kozha-color-accent);
+  box-shadow: 0 0 0 3px var(--kozha-color-accent-light);
+}
+.byo-key.is-required > summary.byo-key-summary {
+  color: var(--kozha-color-accent);
+}
+.byo-key > summary.byo-key-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: var(--kozha-space-4) var(--kozha-space-8);
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-2);
+  font-weight: var(--kozha-weight-medium);
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+}
+.byo-key > summary::-webkit-details-marker { display: none; }
+.byo-key > summary::before {
+  content: '+';
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-accent);
+  display: inline-block;
+  width: var(--kozha-space-4);
+  text-align: center;
+}
+.byo-key[open] > summary::before { content: '−'; }
+.byo-key-body {
+  padding: 0 var(--kozha-space-8) var(--kozha-space-6);
+}
+.byo-key-lede {
+  margin: 0 0 var(--kozha-space-4);
+  color: var(--kozha-color-ink-3);
+  font-size: var(--kozha-text-body-sm);
+  line-height: var(--kozha-leading-relaxed);
+}
+.byo-key-form { display: block; }
+.byo-key-input {
+  font-family: var(--kozha-font-mono);
+  margin-top: var(--kozha-space-2);
+}
+.byo-key-actions {
+  display: flex;
+  gap: var(--kozha-space-2);
+  margin-top: var(--kozha-space-3);
+  flex-wrap: wrap;
+}
+.byo-key-status,
+.byo-key-error {
+  margin-top: var(--kozha-space-3);
+}
+
+/* ==================================================================
+ * Form primitives — field, label, input, check
+ *
+ * These match app.html's textarea/input rules so the control shapes
+ * are identical between translator and contribute.
+ * ================================================================== */
+.field { margin-bottom: var(--kozha-space-5); }
+.field:last-of-type { margin-bottom: 0; }
+
+.field-label {
+  display: block;
+  font-size: var(--kozha-text-caption);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-widest);
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+  margin-bottom: var(--kozha-space-2);
+}
+
+.field-input,
+select.field-input,
+input.field-input,
+textarea.field-input {
+  width: 100%;
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-3) var(--kozha-space-4);
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink);
+  outline: none;
+  transition: border-color var(--kozha-duration-base) var(--kozha-ease-standard),
+              box-shadow var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.field-input:focus,
+.field-input:focus-visible {
+  border-color: var(--kozha-color-accent);
+  box-shadow: var(--kozha-shadow-focus-ring);
+}
+textarea.field-input { min-height: 96px; resize: vertical; line-height: var(--kozha-leading-relaxed); }
+select.field-input { cursor: pointer; }
+
+.field-input-gloss {
+  font-family: var(--kozha-font-mono);
+  text-transform: uppercase;
+  letter-spacing: var(--kozha-tracking-wide);
+}
+
+.field-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--kozha-space-2);
+  margin-top: var(--kozha-space-1);
+}
+.field-hint {
+  margin: 0;
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+  line-height: var(--kozha-leading-normal);
+}
+.field-count {
+  margin: 0;
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+  font-family: var(--kozha-font-mono);
+  min-width: 3ch;
+  text-align: right;
+}
+.field-error {
+  margin: var(--kozha-space-2) 0 0;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-danger);
+  font-weight: var(--kozha-weight-medium);
+}
+
+.field-check {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink-2);
+  cursor: pointer;
+  margin: var(--kozha-space-4) 0;
+}
+.field-check input[type="checkbox"] {
+  width: auto;
+  accent-color: var(--kozha-color-accent);
+}
+
+/* ==================================================================
+ * Buttons — two-pattern system matching app.html (primary + secondary),
+ * plus small sizes used in toolbars.
+ * ================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kozha-space-2);
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  font-weight: var(--kozha-weight-semibold);
+  padding: var(--kozha-space-3) var(--kozha-space-5);
+  border-radius: var(--kozha-radius-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--kozha-duration-base) var(--kozha-ease-standard),
+              color var(--kozha-duration-base) var(--kozha-ease-standard),
+              border-color var(--kozha-duration-base) var(--kozha-ease-standard),
+              transform var(--kozha-duration-base) var(--kozha-ease-standard),
+              box-shadow var(--kozha-duration-base) var(--kozha-ease-standard);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+.btn-primary {
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  border-color: var(--kozha-color-accent);
+}
+.btn-primary:not(:disabled):hover,
+.btn-primary:not(:disabled):focus-visible {
+  background: var(--kozha-color-accent-hover);
+  border-color: var(--kozha-color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--kozha-shadow-btn-hover-sm);
+}
+
+.btn-secondary {
+  background: var(--kozha-color-white);
+  color: var(--kozha-color-ink-2);
+  border-color: var(--kozha-color-border);
+}
+.btn-secondary:not(:disabled):hover,
+.btn-secondary:not(:disabled):focus-visible {
+  background: var(--kozha-color-paper-2);
+}
+
+/* Large primary-submit variant — "Start authoring", "Submit for review". */
+.authoring-submit,
+.submission-submit {
+  padding: var(--kozha-space-3) var(--kozha-space-6);
+  font-size: var(--kozha-text-button-lg);
+  border-radius: var(--kozha-radius-sm);
+}
+
+/* .kz-link — plain text action link (labels "Save draft", "edit", "Discard"). */
+.kz-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kozha-space-1);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: var(--kozha-text-body-sm);
+  font-weight: var(--kozha-weight-medium);
+  color: var(--kozha-color-ink-2);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.kz-link:hover,
+.kz-link:focus-visible { color: var(--kozha-color-accent); }
+
+/* ==================================================================
+ * Authoring form card
+ * ================================================================== */
+.authoring-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-4);
+}
+.authoring-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-4);
+  flex-wrap: wrap;
+  margin-top: var(--kozha-space-3);
+}
+
+.restored-notice {
+  background: var(--kozha-color-accent-light);
+  color: var(--kozha-color-accent);
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  border-radius: var(--kozha-radius-sm);
+  font-weight: var(--kozha-weight-medium);
+  margin: 0;
+}
+
+/* Resume-previous-draft banner. Sits between the language picker and
+   the authoring form when a stashed session is detected on a fresh
+   load. The action row mirrors the discard-modal layout so
+   "primary action + escape link" reads consistently across the
+   contribute surface. */
+.resume-banner-body {
+  margin: 0 0 var(--kozha-space-3);
+  color: var(--kozha-color-ink-2);
+}
+.resume-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-4);
+  flex-wrap: wrap;
+}
+
+.authoring-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--kozha-space-4);
+  padding: var(--kozha-space-3) 0;
+  border-bottom: 1px solid var(--kozha-color-border);
+  margin-bottom: var(--kozha-space-4);
+}
+.authoring-summary-line { margin: 0; }
+.authoring-summary-lead {
+  color: var(--kozha-color-ink-3);
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-widest);
+  text-transform: uppercase;
+  margin-right: var(--kozha-space-2);
+}
+.authoring-summary-gloss {
+  font-family: var(--kozha-font-mono);
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-ink);
+}
+.authoring-summary-lang {
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-semibold);
+}
+.authoring-summary-desc {
+  color: var(--kozha-color-ink-2);
+}
+
+/* ==================================================================
+ * Chat panel
+ * ================================================================== */
+.chat-panel { display: flex; flex-direction: column; gap: var(--kozha-space-3); }
+.chat-log {
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-3) var(--kozha-space-4);
+  min-height: 120px;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-3);
+}
+.chat-message,
+.chat-msg {
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  border-radius: var(--kozha-radius-sm);
+  max-width: 85%;
+  line-height: var(--kozha-leading-relaxed);
+  font-size: var(--kozha-text-body);
+}
+.chat-message.system,
+.chat-message.bot,
+.chat-message.assistant,
+.chat-msg-system {
+  background: var(--kozha-color-paper-2);
+  color: var(--kozha-color-ink-2);
+  align-self: flex-start;
+}
+.chat-message.user,
+.chat-msg-you {
+  background: var(--kozha-color-accent-light);
+  color: var(--kozha-color-ink);
+  align-self: flex-end;
+}
+.chat-msg-error {
+  background: var(--kozha-color-error-soft, #fbeae6);
+  color: var(--kozha-color-error, #b3441b);
+  align-self: flex-start;
+  border: 1px solid var(--kozha-color-error, #b3441b);
+}
+.chat-msg-notice {
+  background: transparent;
+  color: var(--kozha-color-ink-3, #6b5f52);
+  align-self: flex-start;
+  font-size: var(--kozha-text-body-sm);
+  font-family: var(--kozha-font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.chat-msg-label {
+  display: inline-block;
+  font-weight: var(--kozha-weight-semibold);
+  margin-right: var(--kozha-space-2);
+  color: var(--kozha-color-accent);
+  letter-spacing: var(--kozha-tracking-tight);
+}
+/* Style the label as a chat-app-style speaker name: bold accent text
+   followed by a thin colon. The colon is purely cosmetic (added via
+   ::after), so screen readers announce the label name without an
+   awkward "colon" word. */
+.chat-msg-label::after {
+  content: ':';
+  color: var(--kozha-color-ink-3);
+  font-weight: var(--kozha-weight-regular);
+  margin-left: 1px;
+}
+.chat-msg-error .chat-msg-label,
+.chat-msg-error .chat-msg-label::after {
+  color: var(--kozha-color-error, #b3441b);
+}
+.chat-msg-text {
+  margin: 0;
+  display: inline;
+  white-space: pre-wrap;
+}
+.chat-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-2);
+}
+.chat-option-btn {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  color: var(--kozha-color-ink-2);
+  font-size: var(--kozha-text-body-sm);
+  padding: var(--kozha-space-1) var(--kozha-space-3);
+  border-radius: var(--kozha-radius-pill);
+  cursor: pointer;
+  transition: border-color var(--kozha-duration-base) var(--kozha-ease-standard),
+              background var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.chat-option-btn:hover,
+.chat-option-btn:focus-visible {
+  border-color: var(--kozha-color-accent);
+  background: var(--kozha-color-accent-light);
+}
+
+.chat-progress {
+  height: 2px;
+  background: var(--kozha-color-paper-2);
+  overflow: hidden;
+  border-radius: var(--kozha-radius-pill);
+}
+.chat-progress-bar {
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: var(--kozha-color-accent);
+  animation: chatProgressSlide 1.4s ease-in-out infinite;
+}
+@keyframes chatProgressSlide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+.chat-target-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  background: var(--kozha-color-accent-light);
+  color: var(--kozha-color-accent);
+  padding: var(--kozha-space-1) var(--kozha-space-3);
+  border-radius: var(--kozha-radius-pill);
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-medium);
+  align-self: flex-start;
+}
+.chat-target-pill-clear {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font-size: var(--kozha-text-body);
+  line-height: 1;
+  padding: 0;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: var(--kozha-space-2);
+  align-items: flex-end;
+}
+.chat-input {
+  flex: 1;
+  min-height: 48px;
+  resize: none;
+}
+.chat-send { flex-shrink: 0; }
+
+.chat-error-actions {
+  display: flex;
+  gap: var(--kozha-space-2);
+  flex-wrap: wrap;
+}
+.chat-footer-actions {
+  margin: var(--kozha-space-2) 0 0;
+  text-align: right;
+}
+
+/* ==================================================================
+ * Avatar preview
+ * ================================================================== */
+.avatar-preview { display: flex; flex-direction: column; gap: var(--kozha-space-3); }
+.avatar-stage {
+  position: relative;
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--kozha-color-surface-avatar, #e9e6df);
+  pointer-events: none;
+}
+.CWASAAvatar.av0 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+/* Canvas styling targets every .CWASAAvatar host because the rendered
+   <canvas> is reparented between #avatarCanvas (live preview, the only
+   .av0 host), #heroAvatarMount, and #walkReplayMount. Scoping to .av0
+   would leave the canvas at its default 300x150 once it's reparented
+   into a modal stage. */
+.CWASAAvatar canvas {
+  /* CWASA renders at the avSettings native resolution (we now request
+     720x540 in contribute-preview.js — large enough that the canvas
+     fills the contribute stage at typical desktop widths without
+     upscaling artefacts). object-fit: contain keeps the avatar
+     proportions when the stage is wider/taller than the native ratio. */
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+.avatar-regions {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.avatar-region {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
+  cursor: pointer;
+  transition: fill var(--kozha-duration-fast) var(--kozha-ease-standard),
+              stroke var(--kozha-duration-fast) var(--kozha-ease-standard);
+}
+.avatar-region:hover,
+.avatar-region:focus-visible {
+  fill: var(--kozha-color-focus-ring);
+  stroke: var(--kozha-color-accent);
+  stroke-width: 1;
+}
+.avatar-pulse {
+  position: absolute;
+  inset: 0;
+  background: var(--kozha-color-accent-light);
+  opacity: 0.4;
+  animation: avatarPulse 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes avatarPulse {
+  0%, 100% { opacity: 0.15; }
+  50%      { opacity: 0.45; }
+}
+.avatar-fallback {
+  position: relative;
+  max-width: 52ch;
+  padding: var(--kozha-space-4);
+  color: var(--kozha-color-ink-2);
+  background: var(--kozha-color-white);
+  border-radius: var(--kozha-radius-sm);
+  line-height: var(--kozha-leading-relaxed);
+}
+
+/* When the stage flips to failed, hide every layer that would
+   otherwise crowd the fallback message — the canvas placeholder, the
+   region overlay, and the pulse — so the explanatory card sits alone
+   centered in the 16:9 frame instead of floating off to one side over
+   a blue/grey backdrop. */
+.avatar-stage.is-failed .CWASAAvatar,
+.avatar-stage.is-failed .avatar-regions,
+.avatar-stage.is-failed .avatar-pulse {
+  display: none;
+}
+.avatar-stage.is-failed .avatar-backdrop {
+  /* Quiet the warm avatar-grey so the white fallback card reads as
+     the focal element. */
+  background: var(--kozha-color-paper);
+}
+
+.avatar-status {
+  margin: 0;
+  min-height: var(--kozha-space-5);
+}
+
+.avatar-controls-bar {
+  display: flex;
+  gap: var(--kozha-space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.avatar-loop {
+  margin: 0;
+  font-size: var(--kozha-text-body-sm);
+}
+.avatar-speed {
+  display: inline-flex;
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  overflow: hidden;
+}
+.avatar-speed-btn {
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  border: 0;
+  background: var(--kozha-color-white);
+  color: var(--kozha-color-ink-3);
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+  cursor: pointer;
+  border-right: 1px solid var(--kozha-color-border);
+}
+.avatar-speed-btn:last-child { border-right: 0; }
+.avatar-speed-btn.is-active {
+  background: var(--kozha-color-accent-light);
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-semibold);
+}
+
+.avatar-captions {
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-3) var(--kozha-space-4);
+}
+.avatar-caption-gloss {
+  margin: 0 0 var(--kozha-space-1);
+  font-family: var(--kozha-font-mono);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+  color: var(--kozha-color-ink);
+}
+.avatar-caption-desc {
+  margin: 0;
+  color: var(--kozha-color-ink-2);
+  font-size: var(--kozha-text-body-sm);
+  line-height: var(--kozha-leading-relaxed);
+}
+
+/* ==================================================================
+ * Notation panel
+ * ================================================================== */
+.notation-tabs {
+  display: flex;
+  gap: var(--kozha-space-1);
+  border-bottom: 1px solid var(--kozha-color-border);
+  margin-bottom: var(--kozha-space-4);
+}
+.notation-tab {
+  padding: var(--kozha-space-2) var(--kozha-space-4);
+  background: transparent;
+  border: 0;
+  color: var(--kozha-color-ink-3);
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body-sm);
+  font-weight: var(--kozha-weight-medium);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.notation-tab.is-active {
+  color: var(--kozha-color-accent);
+  border-bottom-color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-semibold);
+}
+
+.notation-tabpanel { display: block; }
+
+.notation-hamnosys-layout {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: var(--kozha-space-4);
+  margin-bottom: var(--kozha-space-4);
+}
+.notation-hamnosys-main { min-width: 0; }
+/* Locally hosted Hamburg HamNoSys 4.0 font. The binaries live at
+   /fonts/HamNoSysUnicode.{woff2,ttf} and /fonts/bgHamNoSysUnicode.ttf
+   (license: see the sibling .LICENSE.txt files). When the binary
+   isn't deployed, browsers fall through to the generic mono stack and
+   render the underlying PUA codepoints with the system font, which
+   never errors but isn't pretty. The unicode-range hint scopes the
+   font to PUA codepoints so the rest of the page keeps using its
+   regular type stack. */
+@font-face {
+  font-family: 'HamNoSysUnicode';
+  src: url('/fonts/HamNoSysUnicode.woff2') format('woff2'),
+       url('/fonts/HamNoSysUnicode.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+E000-E0FF;
+}
+@font-face {
+  font-family: 'bgHamNoSysUnicode';
+  src: url('/fonts/bgHamNoSysUnicode.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+E000-E0FF;
+}
+
+/* Reusable utility for inline HamNoSys snippets (demos, examples,
+   sample-sign cards). Larger than body text because HamNoSys glyphs
+   are dense; line-height tuned to avoid clipping diacritics. */
+.hamnosys {
+  font-family: 'HamNoSysUnicode', 'bgHamNoSysUnicode', var(--kozha-font-mono);
+  font-size: 2em;
+  line-height: 1.4;
+  color: var(--kozha-color-ink);
+  letter-spacing: 0.05em;
+}
+
+.notation-hamnosys-display {
+  font-family: 'HamNoSysUnicode', 'bgHamNoSysUnicode', var(--kozha-font-mono);
+  font-size: var(--kozha-text-hero-sub);
+  line-height: var(--kozha-leading-relaxed);
+  padding: var(--kozha-space-4);
+  min-height: 120px;
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  color: var(--kozha-color-ink);
+  word-break: break-word;
+  overflow-x: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-2);
+  align-items: flex-end;
+}
+.notation-hamnosys-display:focus-visible {
+  border-color: var(--kozha-color-accent);
+  box-shadow: var(--kozha-shadow-focus-ring);
+  outline: 0;
+}
+/* Each PUA codepoint renders as a two-row "chip": the shaped glyph on
+   top (when the bgHamNoSysUnicode font is loaded), the canonical
+   short_name underneath. Two visual layers so HamNoSys is readable
+   whether or not the user has the font installed. */
+.notation-glyph {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: var(--kozha-space-1) var(--kozha-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--kozha-radius-sm);
+  cursor: pointer;
+  text-align: center;
+  transition: background var(--kozha-duration-base) var(--kozha-ease-standard),
+              border-color var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.notation-glyph:hover,
+.notation-glyph:focus-visible,
+.notation-glyph.is-active {
+  background: var(--kozha-color-accent-light);
+  border-color: var(--kozha-color-border-accent);
+  outline: 0;
+}
+.notation-glyph-glyph {
+  font-family: 'HamNoSysUnicode', 'bgHamNoSysUnicode', var(--kozha-font-mono);
+  font-size: 28px;
+  line-height: 1;
+  color: var(--kozha-color-ink);
+}
+/* Transliteration: small monospaced short_name beneath the glyph. */
+.notation-glyph-name {
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--kozha-color-ink-3);
+  text-transform: lowercase;
+  letter-spacing: 0;
+  max-width: 12ch;
+  overflow-wrap: anywhere;
+}
+/* The transliteration is always visible — the bgHamNoSysUnicode font
+   isn't shipped with the deploy (license/distribution constraints),
+   so almost every visitor sees just the .notdef boxes from the glyph
+   row. Keeping the canonical short_name underneath every chip means
+   the notation is readable regardless of which (if any) HamNoSys font
+   is locally installed. The glyph row stays so a reviewer who *does*
+   have the font sees both the shaped symbol and its name at once. */
+.notation-hamnosys-display.is-font-missing .notation-glyph-glyph {
+  /* Only hide the glyph row when we're confident the font isn't there;
+     otherwise we keep it because the glyph adds spatial information
+     (curve direction, finger arrangement) that the short_name can't. */
+  display: none;
+}
+.notation-hamnosys-display.is-font-missing .notation-glyph-name {
+  font-size: 13px;
+  color: var(--kozha-color-ink-2);
+  font-weight: var(--kozha-weight-medium);
+}
+.notation-errors { margin-top: var(--kozha-space-2); }
+.notation-fallback {
+  margin-top: var(--kozha-space-2);
+  color: var(--kozha-color-ink-3);
+  font-style: italic;
+}
+
+/* Prompt-polish 6: review-status notice above the notation tabs.
+   Compact, plain language, paired with the unreviewed badge. */
+.notation-review-status {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  flex-wrap: wrap;
+  margin: var(--kozha-space-2) 0 var(--kozha-space-4);
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-2);
+  line-height: 1.5;
+}
+.notation-review-lang {
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-ink);
+}
+
+.notation-legend {
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-3) var(--kozha-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-1);
+}
+.notation-legend-title {
+  margin: 0;
+}
+.notation-legend-code {
+  margin: 0;
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-feature-title);
+  color: var(--kozha-color-ink);
+}
+.notation-legend-class,
+.notation-legend-name {
+  margin: 0;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+}
+
+.notation-breakdown {
+  margin: 0 0 var(--kozha-space-4);
+  padding: var(--kozha-space-3) 0;
+  border-top: 1px solid var(--kozha-color-border);
+  border-bottom: 1px solid var(--kozha-color-border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--kozha-space-2) var(--kozha-space-4);
+}
+.notation-breakdown-row {
+  display: flex;
+  gap: var(--kozha-space-3);
+  font-size: var(--kozha-text-body-sm);
+}
+.notation-breakdown-row dt {
+  color: var(--kozha-color-ink-3);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+  font-size: var(--kozha-text-caption-lg);
+  min-width: 90px;
+}
+.notation-breakdown-row dd {
+  margin: 0;
+  color: var(--kozha-color-ink-2);
+  font-family: var(--kozha-font-mono);
+}
+
+.notation-actions {
+  display: flex;
+  gap: var(--kozha-space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.notation-sigml {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+  line-height: var(--kozha-leading-relaxed);
+  padding: var(--kozha-space-4) var(--kozha-space-4) var(--kozha-space-4) var(--kozha-space-6);
+  min-height: 120px;
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  color: var(--kozha-color-ink-2);
+  overflow: auto;
+  white-space: pre;
+  margin: 0 0 var(--kozha-space-3);
+  counter-reset: sigml-line;
+  position: relative;
+}
+.notation-sigml code { display: block; }
+.notation-sigml .sigml-line {
+  display: block;
+  counter-increment: sigml-line;
+  position: relative;
+}
+.notation-sigml .sigml-line::before {
+  content: counter(sigml-line);
+  position: absolute;
+  left: calc(-1 * var(--kozha-space-5));
+  width: var(--kozha-space-5);
+  text-align: right;
+  color: var(--kozha-color-ink-3);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--kozha-text-caption);
+  line-height: inherit;
+}
+.notation-sigml-summary { margin: 0 0 var(--kozha-space-3); }
+.notation-sigml-summary code {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-accent);
+}
+
+/* ----- SiGML annotated editor ---------------------------------------
+   The SiGML tab now leads with click-to-swap chips instead of a raw
+   <pre>. Each chip carries the tag name + a short role label and
+   opens a category-scoped picker on click. The raw <pre> is folded
+   into a <details> so contributors who need it can still see it. */
+
+.sigml-annotated {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-2);
+  padding: var(--kozha-space-3);
+  background: var(--kozha-color-paper-2);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-md);
+  margin: 0 0 var(--kozha-space-3);
+  min-height: 80px;
+}
+.sigml-annotated-empty,
+.sigml-annotated-fallback {
+  margin: 0;
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-2);
+  white-space: pre-wrap;
+}
+.sigml-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  cursor: pointer;
+  font-family: var(--kozha-font-sans);
+  text-align: left;
+  transition: border-color var(--kozha-duration-base) var(--kozha-ease-standard),
+              background var(--kozha-duration-base) var(--kozha-ease-standard),
+              transform var(--kozha-duration-fast) var(--kozha-ease-standard);
+}
+.sigml-chip:hover,
+.sigml-chip:focus-visible {
+  border-color: var(--kozha-color-accent);
+  background: var(--kozha-color-accent-light);
+  outline: none;
+}
+.sigml-chip:active { transform: translateY(1px); }
+.sigml-chip-name {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-medium);
+}
+.sigml-chip-role {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-2);
+}
+.sigml-chip.is-unknown .sigml-chip-name {
+  color: var(--kozha-color-danger);
+  text-decoration: underline dotted;
+}
+
+/* Picker popover. Anchored to the parent panel via inline top/left
+   set in JS; absolutely positioned so it floats over the chips. */
+.notation-tabpanel { position: relative; }
+.sigml-picker {
+  position: absolute;
+  z-index: 20;
+  width: min(360px, 92%);
+  max-height: 360px;
+  overflow: auto;
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-md);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  padding: var(--kozha-space-3);
+}
+.sigml-picker-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kozha-space-3);
+  margin: 0 0 var(--kozha-space-2);
+}
+.sigml-picker-title {
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-ink);
+  margin: 0;
+}
+.sigml-picker-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--kozha-text-caption-lg);
+}
+.sigml-picker-current {
+  margin: 0 0 var(--kozha-space-2);
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-2);
+}
+.sigml-picker-search {
+  width: 100%;
+  margin: 0 0 var(--kozha-space-2);
+}
+.sigml-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-1);
+}
+.sigml-picker-item { margin: 0; }
+.sigml-picker-btn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  background: var(--kozha-color-white);
+  border: 1px solid transparent;
+  border-radius: var(--kozha-radius-sm);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--kozha-font-sans);
+}
+.sigml-picker-btn:hover,
+.sigml-picker-btn:focus-visible {
+  background: var(--kozha-color-accent-light);
+  border-color: var(--kozha-color-accent);
+  outline: none;
+}
+.sigml-picker-btn.is-current {
+  background: var(--kozha-color-accent-light);
+  border-color: var(--kozha-color-accent);
+}
+.sigml-picker-btn-name {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-medium);
+}
+.sigml-picker-btn-role {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-2);
+}
+.sigml-picker-empty {
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+}
+
+.sigml-source-details {
+  margin: 0 0 var(--kozha-space-3);
+}
+.sigml-source-details > summary {
+  cursor: pointer;
+  margin-bottom: var(--kozha-space-2);
+}
+.sigml-annotated-fallback {
+  padding: var(--kozha-space-3);
+  background: var(--kozha-color-paper-2);
+  border-radius: var(--kozha-radius-sm);
+}
+
+.notation-sigml-help {
+  margin: 0 0 var(--kozha-space-2);
+}
+
+/* Advanced-option textarea: the SiGML <pre> flips to this editor
+   when the contributor clicks "Edit manually". Shape + font matches
+   the read-only display so the swap is visually quiet. */
+.notation-sigml-editor {
+  width: 100%;
+  min-height: 240px;
+  max-height: 480px;
+  resize: vertical;
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+  line-height: var(--kozha-leading-relaxed);
+  padding: var(--kozha-space-4);
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-accent);
+  border-radius: var(--kozha-radius-sm);
+  color: var(--kozha-color-ink);
+  margin: 0 0 var(--kozha-space-3);
+  white-space: pre;
+  tab-size: 2;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--kozha-color-accent-light);
+}
+.notation-sigml-editor:focus {
+  box-shadow: 0 0 0 3px var(--kozha-color-focus-ring);
+}
+.notation-sigml-edit-error {
+  margin: 0 0 var(--kozha-space-3);
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-danger);
+  background: var(--kozha-color-danger-light);
+  border: 1px solid rgba(192, 57, 43, 0.3);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  white-space: pre-wrap;
+}
+
+/* ==================================================================
+ * Submission panel
+ * ================================================================== */
+.submission-checklist {
+  list-style: none;
+  margin: 0 0 var(--kozha-space-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-2);
+}
+.submission-item {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-3);
+  padding: var(--kozha-space-2) 0;
+  color: var(--kozha-color-ink-2);
+  font-size: var(--kozha-text-body);
+}
+.submission-mark {
+  width: 18px; height: 18px;
+  border-radius: var(--kozha-radius-circle);
+  border: 1.5px solid var(--kozha-color-border);
+  background: var(--kozha-color-white);
+  flex-shrink: 0;
+}
+.submission-item.is-complete .submission-mark {
+  background: var(--kozha-color-success);
+  border-color: var(--kozha-color-success);
+  position: relative;
+}
+.submission-item.is-complete .submission-mark::after {
+  content: '';
+  position: absolute;
+  left: 5px; top: 2px;
+  width: 5px; height: 9px;
+  border: solid var(--kozha-color-white);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.submission-text { flex: 1; }
+.submission-hint,
+.submission-gate-note,
+.submission-optional-note {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+  font-style: italic;
+}
+.submission-gate-note { color: var(--kozha-color-accent); }
+
+.submission-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--kozha-space-4);
+  flex-wrap: wrap;
+  padding-top: var(--kozha-space-3);
+  border-top: 1px solid var(--kozha-color-border);
+}
+.submission-actions-primary {
+  display: flex;
+  gap: var(--kozha-space-2);
+  flex-wrap: wrap;
+}
+
+/* ==================================================================
+ * Submission confirmation view
+ * ================================================================== */
+.confirmation-body {
+  margin: 0 0 var(--kozha-space-4);
+  color: var(--kozha-color-ink-2);
+  line-height: var(--kozha-leading-relaxed);
+}
+.confirmation-link { margin-bottom: var(--kozha-space-4); }
+.confirmation-link-row {
+  display: flex;
+  gap: var(--kozha-space-2);
+  margin-top: var(--kozha-space-2);
+}
+.confirmation-link-input {
+  flex: 1;
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+}
+.confirmation-copy-confirm {
+  margin-top: var(--kozha-space-2);
+  color: var(--kozha-color-success);
+}
+.confirmation-nav {
+  display: flex;
+  gap: var(--kozha-space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: var(--kozha-space-3);
+  border-top: 1px solid var(--kozha-color-border);
+}
+
+/* ==================================================================
+ * Toast (transient confirmations)
+ * ================================================================== */
+.toast {
+  position: fixed;
+  bottom: var(--kozha-space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--kozha-color-ink);
+  color: var(--kozha-color-paper);
+  padding: var(--kozha-space-2) var(--kozha-space-4);
+  border-radius: var(--kozha-radius-pill);
+  box-shadow: var(--kozha-shadow-card-hover);
+  font-size: var(--kozha-text-body-sm);
+  z-index: var(--kozha-z-toast);
+}
+
+/* ==================================================================
+ * Modal
+ * ================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 22, 18, 0.5);
+  z-index: var(--kozha-z-skip);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--kozha-space-4);
+}
+.modal {
+  max-width: 480px;
+  width: 100%;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--kozha-space-3);
+  margin-top: var(--kozha-space-4);
+}
+
+/* ==================================================================
+ * Hint strip (one-time keyboard hint)
+ * ================================================================== */
+.hint-strip {
+  position: fixed;
+  bottom: var(--kozha-space-4);
+  right: var(--kozha-space-4);
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  box-shadow: var(--kozha-shadow-card-hover);
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-3);
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-2);
+  z-index: var(--kozha-z-hint);
+}
+.hint-strip kbd {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption);
+  padding: 1px var(--kozha-space-1);
+  background: var(--kozha-color-paper-2);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 4px;
+  margin-right: 2px;
+}
+.hint-close {
+  background: transparent;
+  border: 0;
+  color: var(--kozha-color-ink-3);
+  cursor: pointer;
+  font-size: var(--kozha-text-button-lg);
+  line-height: 1;
+}
+
+/* ==================================================================
+ * Site footer — identical shape to the landing's .kz-footer.
+ * ================================================================== */
+.site-footer {
+  background: var(--kozha-color-paper);
+}
+.site-footer .footer-inner {
+  max-width: var(--kozha-layout-page-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-3);
+  align-items: flex-start;
+}
+.site-footer .footer-logo {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-step-title);
+  color: var(--kozha-color-ink);
+}
+.site-footer .footer-logo span { color: var(--kozha-color-accent); }
+.site-footer .footer-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: var(--kozha-space-5);
+  flex-wrap: wrap;
+}
+.site-footer .footer-links a {
+  color: var(--kozha-color-ink-2);
+  font-size: var(--kozha-text-body-sm);
+  text-decoration: none;
+}
+.site-footer .footer-links a:hover,
+.site-footer .footer-links a:focus-visible {
+  color: var(--kozha-color-accent);
+}
+.site-footer .footer-copy {
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+}
+
+/* ==================================================================
+ * Responsive
+ * ================================================================== */
+@media (max-width: 1099px) {
+  .app-nav { padding: 0 var(--kozha-space-4); }
+  .contribute-main {
+    padding: calc(var(--kozha-layout-nav-h) + var(--kozha-space-4)) var(--kozha-space-4) var(--kozha-space-12);
+  }
+  .notation-hamnosys-layout { grid-template-columns: 1fr; }
+  .notation-breakdown { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+  .contribute-h1 { font-size: var(--kozha-text-hero-h1-mobile); }
+  .nav-links { gap: var(--kozha-space-3); }
+  .nav-link { font-size: var(--kozha-text-caption-lg); }
+}
+
+@media (max-width: 600px) {
+  .app-nav { flex-wrap: wrap; gap: var(--kozha-space-2); }
+  .hamburger { display: inline-flex; }
+  .nav-links {
+    order: 10;
+    width: 100%;
+    gap: var(--kozha-space-4);
+    display: none;
+  }
+  .app-nav.is-open .nav-links { display: flex; }
+  .contribute-main {
+    padding: calc(var(--kozha-layout-nav-h) + var(--kozha-space-3)) var(--kozha-space-3) var(--kozha-space-10);
+    gap: var(--kozha-space-4);
+  }
+  .card { padding: var(--kozha-space-5) var(--kozha-space-5); }
+  .authoring-actions { flex-direction: column; align-items: stretch; }
+  .authoring-actions .btn { width: 100%; }
+  .submission-actions { flex-direction: column; align-items: stretch; }
+  .submission-actions-primary { flex-direction: column; }
+  .submission-actions-primary .btn { width: 100%; }
+  .chat-input-row { flex-direction: column; align-items: stretch; }
+  .chat-send { width: 100%; }
+  .avatar-controls-bar { justify-content: space-between; }
+  .hint-strip {
+    bottom: var(--kozha-space-3);
+    right: var(--kozha-space-3);
+    left: var(--kozha-space-3);
+    font-size: var(--kozha-text-caption);
+  }
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .nav-link,
+  .field-input { min-height: 44px; }
+}
+
+/* Reduced motion — honor per-user preference. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}
+
+/* ===========================================================
+ * Preview-failure stack: detail line + retry button
+ * =========================================================== */
+
+.avatar-fallback {
+  /* Consolidates the earlier fallback card (line ~854) with the new
+     vertical stack: msg → detail → retry button. The card sits inside
+     the now-empty .avatar-stage (canvas/regions/pulse hidden via the
+     `.is-failed` rules above) and is centered automatically by the
+     parent's flex alignment. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kozha-space-3);
+  padding: var(--kozha-space-6);
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  color: var(--kozha-color-ink-2);
+  line-height: var(--kozha-leading-relaxed);
+}
+.avatar-fallback-msg {
+  margin: 0;
+  font-size: var(--kozha-text-body-lg);
+  line-height: var(--kozha-leading-relaxed);
+  color: var(--kozha-color-ink-2);
+}
+.avatar-fallback-detail {
+  margin: 0;
+  font-size: var(--kozha-text-body-sm);
+  line-height: var(--kozha-leading-relaxed);
+  color: var(--kozha-color-ink-3);
+  font-style: italic;
+}
+.avatar-fallback-retry {
+  margin-top: var(--kozha-space-1);
+  align-self: center;
+}
+.avatar-fallback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-2);
+  justify-content: center;
+}
+
+/* ===========================================================
+ * Debug drawer (opt-in via ?debug=1 or localStorage flag)
+ * =========================================================== */
+
+.kz-debug-toggle {
+  position: fixed;
+  right: var(--kozha-space-4);
+  bottom: var(--kozha-space-4);
+  z-index: var(--kozha-z-toast);
+  background: var(--kozha-color-ink);
+  color: var(--kozha-color-paper);
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--kozha-radius-pill);
+  padding: var(--kozha-space-2) var(--kozha-space-4);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(26, 22, 18, 0.25);
+  opacity: 0.85;
+  transition: opacity var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.kz-debug-toggle:hover,
+.kz-debug-toggle:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+}
+.kz-debug-panel {
+  position: fixed;
+  right: var(--kozha-space-4);
+  bottom: calc(var(--kozha-space-4) + 44px);
+  z-index: var(--kozha-z-toast);
+  width: min(560px, calc(100vw - var(--kozha-space-8)));
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  box-shadow: 0 16px 48px rgba(26, 22, 18, 0.18);
+  overflow: hidden;
+}
+.kz-debug-head {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  padding: var(--kozha-space-3) var(--kozha-space-4);
+  border-bottom: 1px solid var(--kozha-color-border);
+  background: var(--kozha-color-paper);
+}
+.kz-debug-title {
+  flex: 1;
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-ink);
+}
+.kz-debug-action {
+  background: transparent;
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: 2px 10px;
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-2);
+  cursor: pointer;
+  transition: background var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.kz-debug-action:hover {
+  background: var(--kozha-color-paper-2);
+}
+.kz-debug-action:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+}
+.kz-debug-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption-lg);
+  line-height: 1.5;
+  background: var(--kozha-color-white);
+}
+.kz-debug-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--kozha-space-1) 0;
+  border-bottom: 1px dashed var(--kozha-color-border);
+}
+.kz-debug-row:last-child { border-bottom: none; }
+.kz-debug-ts {
+  color: var(--kozha-color-ink-3);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.kz-debug-msg {
+  color: var(--kozha-color-ink);
+  font-weight: var(--kozha-weight-medium);
+}
+.kz-debug-data {
+  margin: 2px 0 0;
+  padding: var(--kozha-space-1) var(--kozha-space-2);
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  font-size: 10px;
+  color: var(--kozha-color-ink-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* ===========================================================
+ * Cross-page polish: governance, contribute-status, contribute-me,
+ * and the shared status-pill component.
+ *
+ * These rules close the visual gap between the polished contribute
+ * authoring page and its sibling sub-pages (status, your
+ * submissions, governance). All values come from the canonical
+ * --kozha-* token set so the look matches the landing reference
+ * documented in docs/polish/02-design-system.md.
+ * =========================================================== */
+
+/* ---------- shared status pill (used by status, me, governance) ---------- */
+.kz-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kozha-space-1);
+  padding: 4px 12px;
+  border-radius: var(--kozha-radius-pill);
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-caption);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.kz-status-pill.is-draft,
+.kz-status-pill.is-pending {
+  color: var(--kozha-color-ink-2);
+  background: var(--kozha-color-paper-2);
+  border-color: var(--kozha-color-border);
+}
+.kz-status-pill.is-review {
+  color: var(--kozha-color-accent);
+  background: var(--kozha-color-accent-light);
+  border-color: var(--kozha-color-border-accent);
+}
+.kz-status-pill.is-validated {
+  color: var(--kozha-color-success);
+  background: var(--kozha-color-success-light);
+  border-color: rgba(45, 106, 79, 0.28);
+}
+.kz-status-pill.is-rejected {
+  color: var(--kozha-color-danger);
+  background: var(--kozha-color-danger-light);
+  border-color: rgba(192, 57, 43, 0.28);
+}
+.kz-status-pill.is-quarantine {
+  color: #6e4400;
+  background: #fbeac6;
+  border-color: rgba(110, 68, 0, 0.28);
+}
+
+/* ---------- contribute-status page ---------- */
+.status-page-title {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-hero-h1);
+  font-weight: var(--kozha-weight-regular);
+  letter-spacing: var(--kozha-tracking-tightest);
+  line-height: var(--kozha-leading-tight);
+  color: var(--kozha-color-ink);
+  margin: 0 0 var(--kozha-space-6);
+}
+.status-loading {
+  font-size: var(--kozha-text-body-lg);
+  color: var(--kozha-color-ink-3);
+  margin: var(--kozha-space-6) 0 0;
+}
+.status-error {
+  background: var(--kozha-color-danger-light);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  border-radius: var(--kozha-radius);
+  padding: var(--kozha-space-6);
+  margin: var(--kozha-space-4) 0;
+}
+.status-error h2 {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-feature-title);
+  font-weight: var(--kozha-weight-regular);
+  color: var(--kozha-color-danger);
+  margin: 0 0 var(--kozha-space-2);
+}
+.status-error p {
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink-2);
+  margin: 0 0 var(--kozha-space-2);
+}
+.status-error a {
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-medium);
+}
+
+.status-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-6);
+}
+.status-header {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  padding: var(--kozha-space-6) var(--kozha-space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-3);
+}
+.status-gloss-line {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-step-title);
+  line-height: var(--kozha-leading-snug);
+  color: var(--kozha-color-ink);
+  margin: 0;
+}
+.status-gloss {
+  font-weight: var(--kozha-weight-regular);
+  letter-spacing: var(--kozha-tracking-tight);
+}
+.status-in {
+  color: var(--kozha-color-ink-3);
+  font-style: italic;
+  font-size: var(--kozha-text-body-lg);
+}
+.status-language {
+  color: var(--kozha-color-ink-2);
+  font-weight: var(--kozha-weight-regular);
+}
+.status-state-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  margin: 0;
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink-2);
+}
+.status-state-label {
+  color: var(--kozha-color-ink-3);
+  font-size: var(--kozha-text-body-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--kozha-tracking-wider);
+  font-weight: var(--kozha-weight-semibold);
+}
+.status-state {
+  font-family: var(--kozha-font-sans);
+  font-weight: var(--kozha-weight-semibold);
+  font-size: var(--kozha-text-body);
+  text-transform: capitalize;
+  color: var(--kozha-color-ink);
+}
+.status-state-note {
+  color: var(--kozha-color-ink-3);
+  font-size: var(--kozha-text-body-sm);
+}
+.status-governance-link {
+  margin: 0;
+  font-size: var(--kozha-text-body-sm);
+}
+.status-governance-link a {
+  color: var(--kozha-color-accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.status-governance-link a:hover,
+.status-governance-link a:focus-visible {
+  border-bottom-color: currentColor;
+}
+.status-dates {
+  margin: 0;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+}
+
+.status-private,
+.status-notation,
+.status-comments,
+.status-token-gate {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  padding: var(--kozha-space-6) var(--kozha-space-8);
+}
+.status-section-heading {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-feature-title);
+  font-weight: var(--kozha-weight-regular);
+  letter-spacing: var(--kozha-tracking-tight);
+  color: var(--kozha-color-ink);
+  margin: 0 0 var(--kozha-space-3);
+}
+.status-description {
+  font-size: var(--kozha-text-body-lg);
+  line-height: var(--kozha-leading-relaxed);
+  color: var(--kozha-color-ink-2);
+  margin: 0;
+  white-space: pre-wrap;
+}
+.status-hamnosys {
+  font-family: 'HamNoSysUnicode', 'bgHamNoSysUnicode', var(--kozha-font-mono);
+  font-size: 24px;
+  line-height: 1.4;
+  color: var(--kozha-color-ink);
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-4);
+  margin: 0 0 var(--kozha-space-3);
+  word-break: break-word;
+}
+.status-sigml-wrap {
+  margin-top: var(--kozha-space-2);
+}
+.status-sigml-wrap > summary {
+  cursor: pointer;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-medium);
+  padding: var(--kozha-space-1) 0;
+}
+.status-sigml-wrap > summary:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+  border-radius: var(--kozha-radius-sm);
+}
+.status-sigml {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-sm);
+  line-height: 1.5;
+  color: var(--kozha-color-ink-2);
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-4);
+  margin: var(--kozha-space-2) 0 0;
+  max-height: 360px;
+  overflow: auto;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.status-comments-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-4);
+}
+.status-comment {
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-4) var(--kozha-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-1);
+}
+.status-comment-verdict {
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wider);
+  text-transform: uppercase;
+  color: var(--kozha-color-ink);
+  margin: 0;
+}
+.status-comment-category {
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+  margin: 0;
+}
+.status-comment-body {
+  font-size: var(--kozha-text-body);
+  line-height: var(--kozha-leading-relaxed);
+  color: var(--kozha-color-ink-2);
+  margin: var(--kozha-space-1) 0 0;
+}
+.status-comment-stamp {
+  font-size: var(--kozha-text-caption);
+  color: var(--kozha-color-ink-3);
+  margin: 0;
+}
+
+.status-token-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-3);
+  align-items: flex-end;
+  margin-top: var(--kozha-space-3);
+}
+.status-token-form label {
+  flex: 0 0 100%;
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-ink-2);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+}
+.status-token-form input {
+  flex: 1 1 240px;
+  min-height: 40px;
+  padding: var(--kozha-space-2) var(--kozha-space-4);
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink);
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  transition: border-color var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.status-token-form input:focus {
+  outline: 0;
+  border-color: var(--kozha-color-accent);
+  box-shadow: var(--kozha-shadow-focus-ring);
+}
+.status-token-form button {
+  min-height: 40px;
+  padding: 0 var(--kozha-space-5);
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  border: none;
+  border-radius: var(--kozha-radius-sm);
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  font-weight: var(--kozha-weight-semibold);
+  cursor: pointer;
+  transition: background var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.status-token-form button:hover {
+  background: var(--kozha-color-accent-hover);
+}
+.status-token-form button:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+}
+.status-token-error {
+  margin: var(--kozha-space-2) 0 0;
+  color: var(--kozha-color-danger);
+  font-size: var(--kozha-text-body-sm);
+}
+
+/* ---------- contribute-me page ---------- */
+.me-loading {
+  font-size: var(--kozha-text-body-lg);
+  color: var(--kozha-color-ink-3);
+  margin: var(--kozha-space-6) 0 0;
+}
+.me-empty {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  padding: var(--kozha-space-6) var(--kozha-space-8);
+  margin-top: var(--kozha-space-4);
+}
+.me-empty p {
+  font-size: var(--kozha-text-body);
+  line-height: var(--kozha-leading-relaxed);
+  color: var(--kozha-color-ink-2);
+  margin: 0 0 var(--kozha-space-3);
+}
+.me-empty p:last-child { margin-bottom: 0; }
+.me-empty a {
+  color: var(--kozha-color-accent);
+  font-weight: var(--kozha-weight-medium);
+}
+
+.me-list {
+  list-style: none;
+  margin: var(--kozha-space-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-3);
+}
+.me-item {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  padding: var(--kozha-space-4) var(--kozha-space-5);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "main state"
+    "meta meta";
+  gap: var(--kozha-space-2) var(--kozha-space-4);
+  align-items: center;
+  transition: border-color var(--kozha-duration-base) var(--kozha-ease-standard),
+              transform var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.me-item:hover {
+  border-color: var(--kozha-color-border-accent);
+  transform: translateY(-1px);
+}
+.me-item-main {
+  grid-area: main;
+  display: flex;
+  align-items: baseline;
+  gap: var(--kozha-space-3);
+  min-width: 0;
+}
+.me-gloss {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-feature-title);
+  letter-spacing: var(--kozha-tracking-tight);
+  color: var(--kozha-color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.me-language {
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+  font-weight: var(--kozha-weight-medium);
+}
+/* The .me-state class is applied by JS along with .is-* modifiers; we
+   alias it onto the shared .kz-status-pill look so all pages share one
+   pill style. */
+.me-state {
+  grid-area: state;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kozha-space-1);
+  padding: 4px 12px;
+  border-radius: var(--kozha-radius-pill);
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-caption);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+  border: 1px solid var(--kozha-color-border);
+  background: var(--kozha-color-paper-2);
+  color: var(--kozha-color-ink-2);
+  white-space: nowrap;
+}
+.me-state.is-validated {
+  color: var(--kozha-color-success);
+  background: var(--kozha-color-success-light);
+  border-color: rgba(45, 106, 79, 0.28);
+}
+.me-state.is-rejected {
+  color: var(--kozha-color-danger);
+  background: var(--kozha-color-danger-light);
+  border-color: rgba(192, 57, 43, 0.28);
+}
+.me-state.is-quarantine {
+  color: #6e4400;
+  background: #fbeac6;
+  border-color: rgba(110, 68, 0, 0.28);
+}
+.me-meta {
+  grid-area: meta;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--kozha-space-1);
+  min-width: 0;
+}
+.me-meta a {
+  color: var(--kozha-color-ink-2);
+  text-decoration: underline;
+  text-decoration-color: var(--kozha-color-border);
+  text-underline-offset: 2px;
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption-lg);
+  word-break: break-all;
+  transition: color var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.me-meta a:hover,
+.me-meta a:focus-visible {
+  color: var(--kozha-color-accent);
+  text-decoration-color: currentColor;
+}
+
+.me-actions {
+  margin-top: var(--kozha-space-6);
+}
+.me-clear-btn {
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  font-weight: var(--kozha-weight-medium);
+  color: var(--kozha-color-ink-2);
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-2) var(--kozha-space-4);
+  cursor: pointer;
+  transition: background var(--kozha-duration-base) var(--kozha-ease-standard),
+              color var(--kozha-duration-base) var(--kozha-ease-standard),
+              border-color var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.me-clear-btn:hover {
+  background: var(--kozha-color-paper-2);
+  color: var(--kozha-color-danger);
+  border-color: rgba(192, 57, 43, 0.4);
+}
+.me-clear-btn:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+}
+.me-error {
+  margin: var(--kozha-space-4) 0 0;
+  padding: var(--kozha-space-4);
+  border-radius: var(--kozha-radius-sm);
+  background: var(--kozha-color-danger-light);
+  color: var(--kozha-color-danger);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  font-size: var(--kozha-text-body-sm);
+}
+
+/* ---------- governance page ---------- */
+.governance-subheading {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-step-title);
+  font-weight: var(--kozha-weight-regular);
+  color: var(--kozha-color-ink);
+  letter-spacing: var(--kozha-tracking-tight);
+  margin: var(--kozha-space-8) 0 var(--kozha-space-3);
+}
+
+.governance-reviewers,
+.governance-board {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  padding: var(--kozha-space-5) var(--kozha-space-6);
+  margin-top: var(--kozha-space-4);
+}
+.governance-reviewers-loading,
+.governance-board-empty {
+  margin: 0;
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink-3);
+  font-style: italic;
+}
+
+.governance-language-list {
+  list-style: none;
+  margin: var(--kozha-space-3) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--kozha-space-2);
+}
+.governance-language-list li {
+  background: var(--kozha-color-paper-2);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-3) var(--kozha-space-4);
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.governance-flow {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  padding: var(--kozha-space-5) var(--kozha-space-6);
+  margin: var(--kozha-space-4) 0 0;
+  list-style: none;
+  counter-reset: flowstep;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-3);
+}
+.governance-flow li {
+  position: relative;
+  padding-left: calc(var(--kozha-space-8) + var(--kozha-space-2));
+  counter-increment: flowstep;
+  font-size: var(--kozha-text-body-lg);
+  line-height: var(--kozha-leading-relaxed);
+  color: var(--kozha-color-ink-2);
+}
+.governance-flow li::before {
+  content: counter(flowstep);
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--kozha-space-8);
+  height: var(--kozha-space-8);
+  border-radius: var(--kozha-radius-circle);
+  background: var(--kozha-color-accent-light);
+  color: var(--kozha-color-accent);
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-feature-title);
+  font-weight: var(--kozha-weight-regular);
+  line-height: 1;
+}
+
+.governance-criteria {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--kozha-space-4);
+  margin: var(--kozha-space-4) 0 0;
+}
+.governance-criterion {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  padding: var(--kozha-space-5) var(--kozha-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-2);
+  transition: border-color var(--kozha-duration-base) var(--kozha-ease-standard),
+              transform var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.governance-criterion:hover {
+  border-color: var(--kozha-color-border-accent);
+  transform: translateY(-2px);
+}
+.governance-criterion dt {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-step-title);
+  font-weight: var(--kozha-weight-regular);
+  letter-spacing: var(--kozha-tracking-tight);
+  color: var(--kozha-color-ink);
+  margin: 0;
+}
+.governance-criterion dd {
+  font-size: var(--kozha-text-body);
+  line-height: var(--kozha-leading-relaxed);
+  color: var(--kozha-color-ink-2);
+  margin: 0;
+}
+
+.governance-email-label,
+.governance-email-plain-label {
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--kozha-tracking-wider);
+  color: var(--kozha-color-ink-3);
+  margin: var(--kozha-space-4) 0 var(--kozha-space-2);
+}
+.governance-email-line {
+  margin: 0 0 var(--kozha-space-3);
+}
+.governance-email-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body-lg);
+  font-weight: var(--kozha-weight-medium);
+  color: var(--kozha-color-accent);
+  text-decoration: none;
+  padding: var(--kozha-space-2) var(--kozha-space-4);
+  background: var(--kozha-color-accent-light);
+  border: 1px solid var(--kozha-color-border-accent);
+  border-radius: var(--kozha-radius-sm);
+  transition: background var(--kozha-duration-base) var(--kozha-ease-standard),
+              color var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.governance-email-link:hover,
+.governance-email-link:focus-visible {
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  outline: 0;
+}
+.governance-email-plain {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink-2);
+  background: var(--kozha-color-paper-2);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: var(--kozha-space-2) var(--kozha-space-4);
+  display: inline-block;
+  user-select: all;
+  margin: 0 0 var(--kozha-space-3);
+}
+.governance-email-note {
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+  font-style: italic;
+  margin: var(--kozha-space-2) 0 0;
+}
+
+.governance-nav {
+  margin-top: var(--kozha-space-12);
+  padding-top: var(--kozha-space-6);
+  border-top: 1px solid var(--kozha-color-border);
+}
+.governance-return {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  font-weight: var(--kozha-weight-medium);
+  color: var(--kozha-color-accent);
+  text-decoration: none;
+  padding: var(--kozha-space-2) var(--kozha-space-4);
+  border: 1px solid var(--kozha-color-border-accent);
+  border-radius: var(--kozha-radius-sm);
+  transition: background var(--kozha-duration-base) var(--kozha-ease-standard);
+}
+.governance-return:hover,
+.governance-return:focus-visible {
+  background: var(--kozha-color-accent-light);
+  outline: 0;
+}
+.governance-return::before {
+  content: '\2190';
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+/* ---------- mobile tweaks for cross-page additions ---------- */
+@media (max-width: 720px) {
+  .status-header,
+  .status-private,
+  .status-notation,
+  .status-comments,
+  .status-token-gate,
+  .governance-reviewers,
+  .governance-board,
+  .governance-flow,
+  .governance-criterion,
+  .me-empty,
+  .me-item {
+    padding: var(--kozha-space-4) var(--kozha-space-5);
+  }
+  .me-item {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "main"
+      "state"
+      "meta";
+    gap: var(--kozha-space-2);
+  }
+  .me-state { justify-self: start; }
+  .governance-flow li {
+    padding-left: calc(var(--kozha-space-6) + var(--kozha-space-3));
+  }
+  .governance-flow li::before {
+    width: var(--kozha-space-6);
+    height: var(--kozha-space-6);
+    font-size: var(--kozha-text-body-lg);
+  }
+}
+
+/* ==================================================================
+ * Contribute page redesign (2026-04) — interactive intro
+ *
+ * The .c2-* block replaces the old `.contribute-header` + `.contribute-demo`
+ * + `.contribute-fontdemo` stack. Keeps the warm-paper palette and serif
+ * headings but lays out the intro as:
+ *   1. compact hero with a signed-card visual on the right
+ *   2. three "why this matters" columns
+ *   3. interactive 5-step walkthrough (tabbed; one step visible at a time)
+ *   4. prominent quickstart card with language chips + embedded picker
+ *
+ * All JS hooks (#pickerSelect, #byoKeyForm, .has-session on main) are
+ * preserved verbatim. Reduced-motion users get no animation/autoplay.
+ * ================================================================== */
+
+.c2-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: var(--kozha-space-12);
+  align-items: center;
+  margin: 0 0 var(--kozha-space-10);
+  padding: var(--kozha-space-8) 0 var(--kozha-space-10);
+  border-bottom: 1px solid var(--kozha-color-border);
+  animation: c2-fade-up 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.c2-hero__text {
+  min-width: 0;
+}
+
+.c2-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  margin: 0 0 var(--kozha-space-5);
+  padding: 6px 14px;
+  background: var(--kozha-color-accent-light);
+  color: var(--kozha-color-accent);
+  border: 1px solid var(--kozha-color-border-accent);
+  border-radius: var(--kozha-radius-pill);
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-widest);
+  text-transform: uppercase;
+}
+.c2-hero__eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--kozha-color-accent);
+  animation: c2-pulse 2s ease-in-out infinite;
+}
+
+.c2-hero__title {
+  font-family: var(--kozha-font-serif);
+  font-size: clamp(44px, 5.5vw, 68px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--kozha-color-ink);
+  font-weight: var(--kozha-weight-regular);
+  margin: 0 0 var(--kozha-space-5);
+}
+.c2-hero__title em {
+  font-style: italic;
+  color: var(--kozha-color-accent);
+}
+
+.c2-hero__lede {
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--kozha-color-ink-2);
+  max-width: 58ch;
+  margin: 0 0 var(--kozha-space-6);
+  font-weight: var(--kozha-weight-regular);
+}
+.c2-hero__lede strong {
+  color: var(--kozha-color-ink);
+  font-weight: var(--kozha-weight-semibold);
+}
+
+.c2-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-4);
+  flex-wrap: wrap;
+  margin: 0 0 var(--kozha-space-6);
+}
+.c2-hero__cta {
+  font-size: 16px;
+  font-weight: var(--kozha-weight-semibold);
+  padding: 14px 26px;
+  border-radius: var(--kozha-radius);
+  box-shadow: 0 6px 18px rgba(201, 106, 46, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.c2-hero__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(201, 106, 46, 0.32);
+}
+.c2-hero__cta-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  font-weight: var(--kozha-weight-regular);
+  font-size: 17px;
+  line-height: 1;
+}
+.c2-hero__actions-note {
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+}
+
+.c2-hero__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--kozha-space-5);
+  margin: 0;
+  padding: var(--kozha-space-5) 0 0;
+  border-top: 1px solid var(--kozha-color-border);
+  list-style: none;
+}
+.c2-hero__stats li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.c2-hero__stats strong {
+  font-family: var(--kozha-font-serif);
+  font-size: 24px;
+  line-height: 1;
+  color: var(--kozha-color-ink);
+  font-weight: var(--kozha-weight-regular);
+}
+.c2-hero__stats span {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+  font-weight: var(--kozha-weight-medium);
+  letter-spacing: 0.04em;
+}
+
+/* Visual card on the right — a mock of a submitted sign with a stylized
+   avatar silhouette, HamNoSys glyph row, and a "reviewed" chip. Pure
+   CSS; no external images. */
+.c2-hero__card {
+  background: linear-gradient(160deg, var(--kozha-color-white) 0%, var(--kozha-color-paper-2) 100%);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 24px;
+  padding: var(--kozha-space-5);
+  box-shadow: 0 24px 60px rgba(26, 22, 18, 0.09), 0 4px 12px rgba(26, 22, 18, 0.04);
+  display: grid;
+  gap: var(--kozha-space-4);
+  position: relative;
+  overflow: hidden;
+}
+.c2-hero__card::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle at 20% 15%, rgba(201, 106, 46, 0.12), transparent 55%);
+  pointer-events: none;
+}
+
+.c2-hero__card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  position: relative;
+}
+.c2-hero__card-chip {
+  font-family: var(--kozha-font-mono);
+  font-size: 11px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.08em;
+  color: var(--kozha-color-accent);
+  background: var(--kozha-color-accent-light);
+  border-radius: var(--kozha-radius-pill);
+  padding: 3px 10px;
+}
+.c2-hero__card-gloss {
+  font-family: var(--kozha-font-mono);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.1em;
+  color: var(--kozha-color-ink);
+  font-size: 14px;
+}
+.c2-hero__card-state {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kozha-color-success);
+  background: var(--kozha-color-success-light);
+  border-radius: var(--kozha-radius-pill);
+  padding: 3px 10px;
+}
+
+.c2-hero__card-stage {
+  position: relative;
+  height: 180px;
+  border-radius: var(--kozha-radius);
+  background:
+    radial-gradient(circle at 50% 35%, rgba(201, 106, 46, 0.08), transparent 60%),
+    var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CWASA mount on the hero snapshot card. Empty by default — the
+   .c2-snapshot-card__snapshot sibling holds the linguistic preview
+   (HamNoSys glyphs + SiGML excerpt) until the play button claims the
+   page's CWASA canvas. The previous SVG silhouette ("CSS-only avatar
+   mock") was removed; see docs/contrib-fix/prompts/03-fake-avatar-audit.md. */
+.c2-hero__avatar {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.c2-hero__cwasa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.c2-hero__cwasa canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* Snapshot-card pattern (Pattern B from the fake-avatar audit): an
+   honest, static representation of a sign — gloss, HamNoSys glyphs,
+   SiGML excerpt — that lives inside any CWASA mount until the live
+   avatar is requested. The :has(canvas) rule below hides the snapshot
+   the moment CWASA injects its WebGL canvas inside the same stage. */
+.c2-snapshot-card__stage {
+  position: relative;
+}
+.c2-snapshot-card__snapshot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  pointer-events: none;
+  text-align: center;
+}
+.c2-snapshot-card__rubric {
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+  margin: 0;
+}
+.c2-snapshot-card__glyphs {
+  font-family: 'HamNoSysUnicode', monospace;
+  font-size: 26px;
+  line-height: 1.1;
+  color: var(--kozha-color-ink);
+  /* The HamNoSysUnicode font likes to render runs as a single
+     uninterruptible glyph cluster, so a plain word-break on this
+     <span> doesn't actually wrap. Force inline-block + width:100%
+     so max-width binds, and use overflow-wrap: anywhere so the
+     codepoints break at any cell. Long sequences (HOUSE has 13
+     codepoints) used to spill past the card on narrow viewports. */
+  display: inline-block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.no-hamnosys-font .c2-snapshot-card__glyphs { display: none; }
+.c2-snapshot-card__sigml {
+  margin: 0;
+  width: 100%;
+  max-width: 220px;
+  max-height: 70px;
+  overflow: hidden;
+  font-family: var(--kozha-font-mono);
+  font-size: 9px;
+  line-height: 1.35;
+  color: var(--kozha-color-ink-2);
+  background: var(--kozha-color-paper-2);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  text-align: left;
+  white-space: pre;
+}
+.c2-snapshot-card__sigml code {
+  font: inherit;
+  color: inherit;
+}
+.c2-snapshot-card__hint {
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+}
+.c2-snapshot-card__cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.c2-snapshot-card__play {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--kozha-font-sans);
+  font-size: 12px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  /* Use --accent (#b3441b) — the WCAG-AA-passing shade on paper. The
+     bright variant (--accent-bright / #c96a2e) fails AA at small text. */
+  color: var(--kozha-color-accent);
+  background: transparent;
+  border: 1px solid var(--kozha-color-accent);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.c2-snapshot-card__play:hover {
+  background: var(--kozha-color-accent-light);
+  transform: translateY(-1px);
+}
+.c2-snapshot-card__play:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+}
+.c2-snapshot-card__play[aria-pressed="true"] {
+  color: var(--kozha-color-paper);
+  background: var(--kozha-color-accent);
+}
+.c2-snapshot-card__attribution {
+  font-family: var(--kozha-font-sans);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--kozha-color-ink-3);
+}
+/* Hide the snapshot when CWASA injects its canvas inside the same
+   stage — same pattern the legacy silhouette poster used. */
+.c2-snapshot-card__stage:has(canvas) .c2-snapshot-card__snapshot { display: none; }
+
+@media (max-width: 480px) {
+  .c2-snapshot-card__sigml { display: none; }
+  .c2-snapshot-card__glyphs { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .c2-snapshot-card__play { transition: none; }
+  .c2-snapshot-card__play:hover { transform: none; }
+}
+
+/* ----- Conversation snapshot card (hero, prompt 04) -----
+   Pattern B variant that shows the chat2hamnosys pipeline trail
+   verbatim from a fixture session: bubbles + HamNoSys + collapsible
+   SiGML + a "Replay in avatar" button that opens #heroReplayModal.
+   Lives inside .c2-hero__card; reuses the snapshot rubric/glyphs
+   typography but adds bubbles and a footer instead of a stage. */
+.c2-conversation-card {
+  /* Slightly tighter than the default hero card gap so the four
+     bubbles + notation + footer don't push the card past the lede
+     column on desktop. */
+  gap: var(--kozha-space-3);
+}
+.c2-conversation-card__badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  /* Honest "fixture session" framing — uses the unreviewed badge
+     family (ink-3 on paper-2) so it reads as informational metadata,
+     not a positive provenance signal. The previous "Reviewed by N
+     Deaf signers" badge was removed because the fixture entry has
+     status=draft and a hearing demo signer; the claim was false. */
+  color: var(--kozha-badge-unreviewed-fg);
+  background: var(--kozha-badge-unreviewed-bg);
+  border: 1px solid var(--kozha-badge-unreviewed-border);
+  border-radius: var(--kozha-radius-pill);
+  padding: 3px 10px;
+}
+.c2-conversation-card__trail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+.c2-conversation-card__bubble {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--kozha-color-border);
+  font-size: var(--kozha-text-body-sm);
+  line-height: 1.4;
+  max-width: 92%;
+}
+.c2-conversation-card__bubble--author {
+  background: var(--kozha-color-white);
+  color: var(--kozha-color-ink);
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+.c2-conversation-card__bubble--system {
+  background: var(--kozha-color-paper-2);
+  color: var(--kozha-color-ink-2);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+.c2-conversation-card__author {
+  font-family: var(--kozha-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+}
+.c2-conversation-card__text {
+  margin: 0;
+  font-family: var(--kozha-font-sans);
+  color: inherit;
+}
+.c2-conversation-card__notation {
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  text-align: center;
+}
+.c2-conversation-card__rubric {
+  margin: 0;
+}
+.c2-conversation-card__glyphs {
+  font-size: 24px;
+  word-break: break-all;
+  max-width: 100%;
+}
+.c2-conversation-card__sigml-details {
+  width: 100%;
+  text-align: left;
+}
+.c2-conversation-card__sigml-summary {
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kozha-color-accent);
+  cursor: pointer;
+  list-style: none;
+  padding: 4px 0;
+}
+.c2-conversation-card__sigml-summary::-webkit-details-marker { display: none; }
+.c2-conversation-card__sigml-summary::before {
+  content: '+';
+  display: inline-block;
+  width: 0.9em;
+  font-weight: var(--kozha-weight-semibold);
+}
+.c2-conversation-card__sigml-details[open] .c2-conversation-card__sigml-summary::before {
+  content: '−';
+}
+.c2-conversation-card__sigml-summary:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.c2-conversation-card__sigml {
+  margin-top: 6px;
+  /* Wider than the default snapshot variant — desktop card has more
+     breathing room and the SiGML text is the linguistic payload, not
+     metadata. Cap height at ~6 lines per the spec; overflow is hidden
+     because the details summary is the disclosure mechanism. */
+  max-width: 100%;
+  max-height: 96px;
+}
+/* Expanded: reveal the FULL SiGML. Overrides the max-height above and the
+   overflow:hidden inherited from .c2-snapshot-card__sigml, which together
+   were clipping the payload to ~6 lines even while the <details> was open. */
+.c2-conversation-card__sigml-details[open] .c2-conversation-card__sigml {
+  max-height: none;
+  overflow: visible;
+}
+.c2-conversation-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kozha-space-2);
+  flex-wrap: wrap;
+}
+.c2-conversation-card__attribution {
+  /* The fixture path is the source-of-truth pointer; keep it scannable
+     but quiet. The session-id <code> is purely visual — the test
+     reads from the fixture's own session.id field, not this string. */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.c2-conversation-card__attribution code {
+  font-family: var(--kozha-font-mono);
+  font-size: inherit;
+  color: var(--kozha-color-ink-2);
+}
+.c2-conversation-card__replay {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 480px) {
+  .c2-conversation-card__sigml-details { display: none; }
+  .c2-conversation-card__bubble { font-size: 13px; padding: 6px 10px; }
+  .c2-conversation-card__glyphs { font-size: 22px; }
+}
+
+/* ----- Avatar replay modal -----
+   Fullscreen overlay opened from the hero card's "Replay in avatar"
+   button. Hosts the live CWASA canvas at viewport scale so the avatar
+   is legible (the inline hero stage is only 150 px tall on phones).
+   Only entry point is the explicit button click — prefers-reduced-motion
+   is satisfied because nothing here auto-plays or auto-opens. */
+.c2-replay-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--kozha-z-skip);
+  background: rgba(26, 22, 18, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--kozha-space-4);
+}
+.c2-replay-modal[hidden] { display: none; }
+.c2-replay-modal__panel {
+  width: 100%;
+  max-width: 720px;
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  box-shadow: 0 32px 80px rgba(26, 22, 18, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-3);
+  padding: var(--kozha-space-5);
+  max-height: calc(100vh - var(--kozha-space-8));
+}
+.c2-replay-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kozha-space-3);
+}
+.c2-replay-modal__title {
+  margin: 0;
+  font-size: var(--kozha-text-h4, 18px);
+  font-family: var(--kozha-font-sans);
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  color: var(--kozha-color-ink);
+}
+.c2-replay-modal__gloss {
+  font-family: var(--kozha-font-mono);
+  letter-spacing: 0.1em;
+}
+.c2-replay-modal__close {
+  background: transparent;
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--kozha-color-ink-2);
+  cursor: pointer;
+}
+.c2-replay-modal__close:hover { background: var(--kozha-color-paper-2); }
+.c2-replay-modal__close:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+}
+.c2-replay-modal__stage {
+  position: relative;
+  width: 100%;
+  /* Square at small widths so the avatar canvas gets at least the
+     280×280 floor required by prompts 04 / 05. Caps at a 4:3 panel on
+     desktop to avoid an unbounded canvas that would scale past the
+     CWASA bundle's optimal render size. min-height enforces the floor
+     even when the panel collapses below 280 px (small viewports).
+     Width is the binding constraint: see the small-viewport @media
+     below where the modal padding is tuned so panel width ≥ 280 px at
+     viewport ≥ 320 px. */
+  min-height: 280px;
+  aspect-ratio: 1 / 1;
+  max-height: min(70vh, 520px);
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.c2-replay-modal__stage canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.c2-replay-modal__caption {
+  margin: 0;
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+}
+.c2-replay-modal__caption code {
+  font-family: var(--kozha-font-mono);
+  color: var(--kozha-color-ink-2);
+}
+@media (max-width: 480px) {
+  /* Stage width = viewport - modal_padding*2 - panel_padding*2.
+     At 320 px viewport: 320 - 16 - 24 = 280 px. Hits the floor. */
+  .c2-replay-modal { padding: var(--kozha-space-2); }
+  .c2-replay-modal__panel { padding: var(--kozha-space-3); gap: var(--kozha-space-2); }
+}
+
+.c2-hero__pulse {
+  position: absolute;
+  top: 24px; right: 34px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--kozha-color-accent);
+  box-shadow: 0 0 0 0 rgba(201, 106, 46, 0.4);
+  animation: c2-ping 2.2s ease-out infinite;
+}
+
+.c2-hero__card-glyphs {
+  position: relative;
+  padding: 10px 14px;
+  background: var(--kozha-color-paper-2);
+  border-radius: var(--kozha-radius-sm);
+  text-align: center;
+  overflow: hidden;
+}
+.c2-hero__card-glyphs .hamnosys {
+  font-size: 24px;
+  color: var(--kozha-color-ink);
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+.c2-hero__card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  position: relative;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+}
+.c2-hero__card-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--kozha-color-success);
+}
+
+/* ----- Why-this-matters row ----- */
+.c2-why {
+  margin: 0 0 var(--kozha-space-12);
+}
+.c2-why__row {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--kozha-space-5);
+}
+.c2-why__item {
+  position: relative;
+  padding: var(--kozha-space-6) var(--kozha-space-5);
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  overflow: hidden;
+}
+.c2-why__item::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+  background: linear-gradient(90deg, var(--kozha-color-accent), var(--kozha-color-accent-bright));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.c2-why__item:hover {
+  transform: translateY(-3px);
+  border-color: var(--kozha-color-border-accent-strong);
+  box-shadow: 0 16px 36px rgba(26, 22, 18, 0.08);
+}
+.c2-why__item:hover::after {
+  transform: scaleX(1);
+}
+.c2-why__num {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.12em;
+  color: var(--kozha-color-accent);
+  display: inline-block;
+  margin: 0 0 var(--kozha-space-3);
+  padding: 4px 10px;
+  background: var(--kozha-color-accent-light);
+  border-radius: var(--kozha-radius-pill);
+}
+.c2-why__title {
+  font-family: var(--kozha-font-serif);
+  font-size: 22px;
+  font-weight: var(--kozha-weight-regular);
+  color: var(--kozha-color-ink);
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--kozha-space-3);
+}
+.c2-why__body {
+  font-size: var(--kozha-text-body);
+  line-height: 1.65;
+  color: var(--kozha-color-ink-3);
+  margin: 0;
+}
+
+/* ==================================================================
+ * Interactive 5-step walkthrough
+ * ================================================================== */
+.c2-walk {
+  margin: 0 0 var(--kozha-space-12);
+  padding: var(--kozha-space-10) var(--kozha-space-8);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(201, 106, 46, 0.06), transparent 45%),
+    var(--kozha-color-paper-2);
+  border-radius: var(--kozha-radius-lg);
+  border: 1px solid var(--kozha-color-border);
+}
+
+.c2-walk__head {
+  margin: 0 0 var(--kozha-space-8);
+  max-width: 640px;
+}
+.c2-walk__kicker {
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-widest);
+  text-transform: uppercase;
+  color: var(--kozha-color-accent);
+  margin: 0 0 var(--kozha-space-3);
+}
+.c2-walk__heading {
+  font-family: var(--kozha-font-serif);
+  font-size: clamp(30px, 3.8vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--kozha-color-ink);
+  font-weight: var(--kozha-weight-regular);
+  margin: 0 0 var(--kozha-space-3);
+}
+.c2-walk__heading em {
+  font-style: italic;
+  color: var(--kozha-color-accent);
+}
+.c2-walk__sub {
+  margin: 0;
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink-3);
+  line-height: 1.6;
+}
+
+.c2-walk__frame {
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: var(--kozha-space-6);
+}
+
+.c2-walk__tabs {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-2);
+  padding: 0;
+  margin: 0;
+}
+
+.c2-walk__tab {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--kozha-space-3);
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 14px;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--kozha-color-ink-2);
+}
+.c2-walk__tab:hover {
+  border-color: var(--kozha-color-border-accent-strong);
+  background: var(--kozha-color-white);
+  transform: translateX(2px);
+}
+.c2-walk__tab.is-active {
+  background: var(--kozha-color-ink);
+  border-color: var(--kozha-color-ink);
+  color: var(--kozha-color-paper);
+  box-shadow: 0 10px 24px rgba(26, 22, 18, 0.18);
+}
+.c2-walk__tab.is-active .c2-walk__tab-num {
+  color: var(--kozha-color-accent-bright);
+}
+.c2-walk__tab.is-active .c2-walk__tab-dur {
+  color: rgba(245, 241, 235, 0.6);
+  background: rgba(245, 241, 235, 0.08);
+  border-color: rgba(245, 241, 235, 0.12);
+}
+.c2-walk__tab:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+}
+
+.c2-walk__tab-num {
+  font-family: var(--kozha-font-mono);
+  font-size: 18px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.04em;
+  color: var(--kozha-color-accent);
+  line-height: 1;
+}
+.c2-walk__tab-name {
+  font-family: var(--kozha-font-sans);
+  font-size: 14px;
+  font-weight: var(--kozha-weight-semibold);
+  line-height: 1.3;
+}
+.c2-walk__tab-dur {
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+  background: var(--kozha-color-paper-2);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-pill);
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.c2-walk__progress {
+  position: absolute;
+  left: -6px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: rgba(26, 22, 18, 0.08);
+  overflow: hidden;
+}
+.c2-walk__progress-bar {
+  display: block;
+  width: 100%;
+  height: var(--c2-progress, 20%);
+  background: linear-gradient(180deg, var(--kozha-color-accent), var(--kozha-color-accent-bright));
+  border-radius: 2px;
+  transition: height 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.c2-walk__panels {
+  min-width: 0;
+  position: relative;
+}
+
+.c2-walk__panel {
+  display: none;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: var(--kozha-space-6);
+  padding: var(--kozha-space-5) var(--kozha-space-6);
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 18px;
+  min-height: 280px;
+  box-shadow: 0 2px 6px rgba(26, 22, 18, 0.02);
+}
+.c2-walk__panel.is-active {
+  display: grid;
+  animation: c2-panel-in 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.c2-walk__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.c2-walk__step-label {
+  font-family: var(--kozha-font-mono);
+  font-size: 11px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kozha-color-accent);
+  margin: 0 0 var(--kozha-space-3);
+}
+.c2-walk__copy-title {
+  font-family: var(--kozha-font-serif);
+  font-size: 28px;
+  font-weight: var(--kozha-weight-regular);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--kozha-color-ink);
+  margin: 0 0 var(--kozha-space-4);
+}
+.c2-walk__copy-body {
+  font-size: var(--kozha-text-body);
+  line-height: 1.65;
+  color: var(--kozha-color-ink-2);
+  margin: 0 0 var(--kozha-space-4);
+}
+.c2-walk__bullets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-2);
+}
+.c2-walk__bullets li {
+  position: relative;
+  padding-left: 22px;
+  font-size: var(--kozha-text-body-sm);
+  line-height: 1.55;
+  color: var(--kozha-color-ink-3);
+}
+.c2-walk__bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 9px;
+  width: 12px; height: 2px;
+  background: var(--kozha-color-accent);
+  border-radius: 2px;
+}
+.c2-walk__bullets code {
+  font-family: var(--kozha-font-mono);
+  font-size: 0.92em;
+  padding: 1px 6px;
+  background: var(--kozha-color-accent-light);
+  color: var(--kozha-color-accent);
+  border-radius: 4px;
+  font-weight: var(--kozha-weight-semibold);
+}
+.c2-walk__bullets a { color: var(--kozha-color-accent); }
+
+.c2-walk__viz {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--kozha-space-3);
+  padding: var(--kozha-space-5);
+  background: var(--kozha-color-paper);
+  border-radius: 14px;
+  border: 1px dashed var(--kozha-color-border);
+  min-height: 260px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ----- Step 1 visual: picker + gloss typer ----- */
+.c2-viz-1 {
+  justify-content: center;
+}
+.c2-viz-1__picker,
+.c2-viz-1__gloss {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 12px rgba(26, 22, 18, 0.04);
+}
+.c2-viz-1__label {
+  display: block;
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+  margin-bottom: 6px;
+}
+.c2-viz-1__value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--kozha-font-sans);
+  font-size: 15px;
+  font-weight: var(--kozha-weight-medium);
+  color: var(--kozha-color-ink);
+}
+.c2-viz-1__flag { font-size: 18px; }
+
+.c2-viz-1__typer {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--kozha-font-mono);
+  font-size: 22px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.1em;
+  color: var(--kozha-color-accent);
+}
+.c2-viz-1__typed {
+  animation: c2-type 4s steps(8, end) infinite;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 10ch;
+}
+.c2-viz-1__caret {
+  display: inline-block;
+  width: 2px;
+  height: 22px;
+  background: var(--kozha-color-accent);
+  animation: c2-blink 1s step-end infinite;
+}
+
+/* ----- Step 2 visual: quoted description with tags ----- */
+.c2-viz-2__quote {
+  position: relative;
+  margin: 0;
+  padding: var(--kozha-space-4) var(--kozha-space-4) var(--kozha-space-4) 32px;
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-left: 3px solid var(--kozha-color-accent);
+  border-radius: 10px;
+  font-family: var(--kozha-font-serif);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--kozha-color-ink-2);
+}
+.c2-viz-2__quote em {
+  color: var(--kozha-color-accent);
+  font-style: italic;
+}
+.c2-viz-2__mark {
+  position: absolute;
+  font-family: var(--kozha-font-serif);
+  font-size: 36px;
+  line-height: 1;
+  color: var(--kozha-color-accent);
+  top: 8px; left: 10px;
+}
+.c2-viz-2__mark--end {
+  top: auto; left: auto;
+  bottom: 0; right: 14px;
+}
+.c2-viz-2__tags {
+  display: flex;
+  gap: var(--kozha-space-2);
+  flex-wrap: wrap;
+}
+.c2-viz-2__tag {
+  font-family: var(--kozha-font-mono);
+  font-size: 11px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.04em;
+  color: var(--kozha-color-accent);
+  background: var(--kozha-color-accent-light);
+  border: 1px solid var(--kozha-color-border-accent);
+  border-radius: var(--kozha-radius-pill);
+  padding: 4px 10px;
+}
+
+/* ----- Step 3 visual: chat dialogue ----- */
+.c2-viz-3__log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-3);
+}
+.c2-viz-3__msg {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: var(--kozha-text-body-sm);
+  line-height: 1.5;
+  max-width: 86%;
+  box-shadow: 0 1px 3px rgba(26, 22, 18, 0.04);
+}
+.c2-viz-3__msg--bot {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  color: var(--kozha-color-ink-2);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+.c2-viz-3__msg--you {
+  background: var(--kozha-color-ink);
+  color: var(--kozha-color-paper);
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+.c2-viz-3__who {
+  display: block;
+  font-family: var(--kozha-font-mono);
+  font-size: 9px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 2px;
+}
+.c2-viz-3__msg--you .c2-viz-3__who { color: var(--kozha-color-accent-bright); opacity: 1; }
+.c2-viz-3__chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-left: 2px;
+}
+.c2-viz-3__chip {
+  font-size: 11px;
+  font-weight: var(--kozha-weight-medium);
+  color: var(--kozha-color-accent);
+  background: var(--kozha-color-accent-light);
+  border: 1px solid var(--kozha-color-border-accent);
+  border-radius: var(--kozha-radius-pill);
+  padding: 4px 10px;
+  transition: transform 0.15s ease;
+}
+.c2-viz-3__chip:hover { transform: translateY(-1px); }
+.c2-viz-3__msg--thinking { min-width: 52px; min-height: 26px; }
+.c2-viz-3__dots {
+  display: inline-flex;
+  gap: 4px;
+}
+.c2-viz-3__dots span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--kozha-color-ink-3);
+  animation: c2-dots 1.2s ease-in-out infinite;
+}
+.c2-viz-3__dots span:nth-child(2) { animation-delay: 0.15s; }
+.c2-viz-3__dots span:nth-child(3) { animation-delay: 0.3s; }
+
+/* ----- Step 4 visual: snapshot card + chip strip + inspector -----
+   The 220 px inline CWASA stage was retired (prompt 05): it crammed the
+   avatar against the chips/inspector and never reached the 280×280
+   floor the spec requires. The playable canvas now lives in
+   #walkReplayModal at viewport scale; this snapshot card is the
+   inline-and-honest representation of the sign (glyphs + collapsible
+   SiGML + attribution + Play button). Heights are tuned to match the
+   step 3 chat log and the step 5 review timeline so the panel grid
+   doesn't wobble between steps. */
+/* Step-4-only viz wrapper override: the default c2-walk__viz has 24px
+   padding + 12px gap, which compounded with the snapshot card and the
+   5-row chip strip used to stretch this panel almost twice the height
+   of the other steps. Tightened just for this panel — Steps 1, 2, 3, 5
+   keep the original breathing room. */
+.c2-walk__viz.c2-viz-4 {
+  padding: var(--kozha-space-4);
+  gap: var(--kozha-space-2);
+  min-height: 0;
+}
+.c2-viz-4__snapshot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(201, 106, 46, 0.08), transparent 60%),
+    var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(26, 22, 18, 0.03);
+}
+/* Compact one-line header: rubric on the left, Play button on the
+   right. The rubric flexes; the Play button is fixed-width so it
+   doesn't shrink on narrow viewports. */
+.c2-viz-4__snapshot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+.c2-viz-4__snapshot-rubric {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+.c2-viz-4__snapshot-play {
+  flex: 0 0 auto;
+}
+.c2-viz-4__snapshot-glyphs {
+  font-size: clamp(24px, 3.6vw, 36px);
+  line-height: 1.1;
+  /* Same fix the hero glyph row needs: HamNoSysUnicode renders runs as
+     one uninterruptible cluster, so plain word-break on an inline span
+     doesn't actually wrap. Force inline-block + width:100% so max-width
+     binds, and overflow-wrap: anywhere so 14-codepoint sequences like
+     HAMBURG1^ break at any cell instead of spilling past the card. */
+  display: inline-block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+/* Fallback shown only when the HamNoSys font fails to shape the PUA
+   glyphs (the .no-hamnosys-font sentinel set in contribute.html). */
+.c2-viz-4__snapshot-gloss-fallback {
+  display: none;
+  font-family: var(--kozha-font-mono);
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  color: var(--kozha-color-ink);
+}
+.no-hamnosys-font .c2-viz-4__snapshot-gloss-fallback { display: inline; }
+
+/* Chip strip — one chip per <ham*/> tag in HAMBURG SiGML. Tags are
+   grouped by phonological slot (Handshape, Modifiers, Orientation,
+   Location, Movement) so the 14-chip wall reads as five short rows
+   instead of a flat scroll. Each chip is keyboard-focusable;
+   Enter/Space opens the read-only inspector below. */
+.c2-viz-4__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--kozha-color-paper-2);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 10px;
+}
+.c2-viz-4__chip-group {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+.c2-viz-4__chip-group-label {
+  font-family: var(--kozha-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+  white-space: nowrap;
+  text-align: right;
+}
+.c2-viz-4__chip-group-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+.c2-viz-4__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: var(--kozha-font-mono);
+  font-size: 10.5px;
+  color: var(--kozha-color-ink);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.c2-viz-4__chip:hover {
+  border-color: var(--kozha-color-accent);
+  transform: translateY(-1px);
+}
+.c2-viz-4__chip:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+  background: var(--kozha-color-accent-light);
+  border-color: var(--kozha-color-accent);
+}
+.c2-viz-4__chip-name {
+  font-family: var(--kozha-font-mono);
+  font-weight: var(--kozha-weight-semibold);
+  font-size: 10.5px;
+  color: var(--kozha-color-ink);
+}
+/* Narrow viewports: stack the slot label above its chip row so the
+   88px label gutter doesn't squeeze the chips into a single column. */
+@media (max-width: 639px) {
+  .c2-viz-4__chip-group {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .c2-viz-4__chip-group-label { text-align: left; }
+}
+
+/* Read-only inspector. Click-to-swap is prompt 05's job; this surface
+   only displays the focused tag's tag name, category, and semantic role
+   from hamnosys-sigml-reference.md § 1. */
+.c2-viz-4__inspector {
+  position: relative;
+  margin-top: 10px;
+  padding: 12px 40px 12px 14px;
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-accent);
+  border-radius: 10px;
+}
+.c2-viz-4__inspector-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--kozha-color-ink-3);
+}
+.c2-viz-4__inspector-close:hover { color: var(--kozha-color-ink); }
+.c2-viz-4__inspector-close:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 2px;
+}
+.c2-viz-4__inspector-tag {
+  margin: 0 0 4px;
+  font-family: var(--kozha-font-mono);
+  font-size: 13px;
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-ink);
+}
+.c2-viz-4__inspector-cat {
+  margin: 0 0 6px;
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--kozha-color-accent);
+}
+.c2-viz-4__inspector-role {
+  margin: 0;
+  font-family: var(--kozha-font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--kozha-color-ink);
+}
+
+/* ----- Step 5 visual: review timeline ----- */
+.c2-viz-5__card {
+  /* Containing block for the timeline's container query. The card is
+     narrow at desktop (the parent panel is a 2-col grid that leaves
+     this card ~250-280 px wide) AND at mobile, so we drive the
+     horizontal/vertical switch off the card width itself instead of
+     the viewport — that way one rule covers both crampings. */
+  container-type: inline-size;
+  container-name: c2-viz-5;
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 14px;
+  padding: var(--kozha-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-3);
+  box-shadow: 0 4px 12px rgba(26, 22, 18, 0.04);
+}
+.c2-viz-5__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kozha-space-3);
+}
+.c2-viz-5__title {
+  font-family: var(--kozha-font-mono);
+  font-weight: var(--kozha-weight-semibold);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--kozha-color-ink);
+}
+.c2-viz-5__title span {
+  color: var(--kozha-color-ink-3);
+  font-weight: var(--kozha-weight-regular);
+}
+.c2-viz-5__state {
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: var(--kozha-radius-pill);
+}
+.c2-viz-5__state--ok {
+  color: var(--kozha-color-success);
+  background: var(--kozha-color-success-light);
+}
+.c2-viz-5__timeline {
+  /* `--c2-tl-gap` is reused by the connector math so the line meets
+     the next dot exactly regardless of which token sets the gap. */
+  --c2-tl-gap: var(--kozha-space-1);
+  --c2-tl-dot: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  /* `minmax(0, 1fr)` is load-bearing — without the explicit `0`
+     minimum, a long label (e.g. `pending_review`) widens its column
+     past 1fr and the last node drifts past the card's right edge. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--c2-tl-gap);
+  position: relative;
+}
+.c2-viz-5__timeline li {
+  position: relative;
+  padding: calc(var(--c2-tl-dot) + var(--kozha-space-2)) 2px 0;
+  text-align: center;
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: var(--kozha-weight-medium);
+  letter-spacing: 0.02em;
+  color: var(--kozha-color-ink-3);
+  /* Long underscored labels carry no soft break opportunity, so allow
+     the wrap to fall anywhere rather than push the column wider. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  /* Reserve room for two wrapped lines so the dot row stays aligned
+     even when one label wraps and the others do not. */
+  min-height: calc(var(--c2-tl-dot) + var(--kozha-space-2) + 2.6em);
+}
+.c2-viz-5__timeline li::before {
+  content: '';
+  position: absolute;
+  top: 2px; left: 50%;
+  transform: translateX(-50%);
+  width: var(--c2-tl-dot); height: var(--c2-tl-dot);
+  border-radius: 50%;
+  background: var(--kozha-color-paper-2);
+  border: 2px solid var(--kozha-color-border);
+  z-index: 1;
+}
+.c2-viz-5__timeline li::after {
+  content: '';
+  position: absolute;
+  top: calc(2px + (var(--c2-tl-dot) - 2px) / 2);
+  left: calc(50% + var(--c2-tl-dot) / 2);
+  /* Reach from this dot's right edge to the next dot's left edge:
+     own width + gap − dot diameter. Using an explicit width (rather
+     than the previous `right: calc(-50% + 7px)` trick) keeps the
+     line strictly inside this column's outer bound. */
+  width: calc(100% + var(--c2-tl-gap) - var(--c2-tl-dot));
+  height: 2px;
+  background: var(--kozha-color-border);
+  z-index: 0;
+}
+.c2-viz-5__timeline li:last-child::after { display: none; }
+.c2-viz-5__timeline li.is-done { color: var(--kozha-color-ink-2); }
+.c2-viz-5__timeline li.is-done::before {
+  background: var(--kozha-color-success);
+  border-color: var(--kozha-color-success);
+}
+.c2-viz-5__timeline li.is-done::after { background: var(--kozha-color-success); }
+.c2-viz-5__timeline li.is-current { color: var(--kozha-color-accent); font-weight: var(--kozha-weight-semibold); }
+.c2-viz-5__timeline li.is-current::before {
+  background: var(--kozha-color-accent);
+  border-color: var(--kozha-color-accent);
+  animation: c2-ping 1.8s ease-out infinite;
+}
+
+/* Vertical layout when the card is too narrow for a 4-up horizontal
+   row of labels — a single column with the connecting line on the
+   left of the dot and the label to its right.
+
+   Threshold 540 px is set so the rule fires (a) on mobile viewports
+   ≤ 600 px (where the card resolves to ≈ 490 px) and (b) on desktop
+   when the card sits in the 2-col panel grid (≈ 250-280 px), but does
+   NOT fire on 1-col-panel mid-range widths (768 px viewport gives a
+   602 px card) where horizontal still reads cleanly. */
+@container c2-viz-5 (max-width: 540px) {
+  .c2-viz-5__timeline {
+    grid-template-columns: 1fr;
+    gap: var(--kozha-space-3);
+  }
+  .c2-viz-5__timeline li {
+    padding: 0 0 0 calc(var(--c2-tl-dot) + var(--kozha-space-3));
+    text-align: left;
+    line-height: var(--c2-tl-dot);
+    min-height: var(--c2-tl-dot);
+  }
+  .c2-viz-5__timeline li::before {
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+  }
+  .c2-viz-5__timeline li::after {
+    /* Vertical connector: from below this dot, straight down through
+       the row gap to the top of the next dot. `bottom: -gap` lets the
+       line stretch with the li, so a wrapped label cannot pull the
+       connector short of the next dot. */
+    top: calc(50% + var(--c2-tl-dot) / 2);
+    bottom: calc(-1 * var(--kozha-space-3));
+    left: calc((var(--c2-tl-dot) - 2px) / 2);
+    width: 2px;
+    height: auto;
+  }
+}
+.c2-viz-5__perma {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--kozha-space-2);
+  border-top: 1px dashed var(--kozha-color-border);
+  margin: 0;
+}
+.c2-viz-5__perma-label {
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+}
+.c2-viz-5__perma-url {
+  font-family: var(--kozha-font-mono);
+  font-size: 12px;
+  color: var(--kozha-color-accent);
+  word-break: break-all;
+}
+
+/* ----- Stepper nav ----- */
+.c2-walk__controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--kozha-space-3);
+  margin-top: var(--kozha-space-5);
+  grid-column: 1 / -1;
+}
+.c2-walk__nav {
+  font-family: var(--kozha-font-sans);
+  font-size: 14px;
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-ink-2);
+  background: transparent;
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-pill);
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.c2-walk__nav:hover:not(:disabled) {
+  background: var(--kozha-color-white);
+  border-color: var(--kozha-color-accent);
+  color: var(--kozha-color-accent);
+  transform: translateY(-1px);
+}
+.c2-walk__nav:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.c2-walk__counter {
+  font-family: var(--kozha-font-mono);
+  font-size: 12px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.1em;
+  color: var(--kozha-color-ink-3);
+}
+.c2-walk__counter #c2-walk-current { color: var(--kozha-color-accent); }
+
+/* ==================================================================
+ * Quickstart card — prominent CTA wrapping the existing picker
+ * ================================================================== */
+.c2-quickstart {
+  margin: 0 0 var(--kozha-space-12);
+  scroll-margin-top: 88px;
+}
+.c2-quickstart__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: var(--kozha-space-10);
+  align-items: start;
+  padding: var(--kozha-space-10) var(--kozha-space-10);
+  background:
+    radial-gradient(circle at 85% 10%, rgba(201, 106, 46, 0.14), transparent 48%),
+    radial-gradient(circle at 5% 90%, rgba(201, 106, 46, 0.08), transparent 42%),
+    var(--kozha-color-ink);
+  color: var(--kozha-color-paper);
+  border-radius: var(--kozha-radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+.c2-quickstart__inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(245, 241, 235, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 241, 235, 0.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(circle at 50% 0%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(circle at 50% 0%, black 30%, transparent 75%);
+  pointer-events: none;
+}
+
+.c2-quickstart__intro { position: relative; }
+.c2-quickstart__kicker {
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-widest);
+  text-transform: uppercase;
+  color: var(--kozha-color-accent-bright);
+  margin: 0 0 var(--kozha-space-3);
+}
+.c2-quickstart__heading {
+  font-family: var(--kozha-font-serif);
+  font-size: clamp(30px, 3.5vw, 42px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: var(--kozha-weight-regular);
+  color: var(--kozha-color-paper);
+  margin: 0 0 var(--kozha-space-4);
+}
+.c2-quickstart__lede {
+  font-size: var(--kozha-text-body-lg);
+  line-height: 1.6;
+  color: rgba(245, 241, 235, 0.72);
+  margin: 0 0 var(--kozha-space-5);
+  max-width: 42ch;
+}
+.c2-quickstart__reminder {
+  display: flex;
+  gap: var(--kozha-space-3);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--kozha-space-3) var(--kozha-space-4);
+  background: rgba(245, 241, 235, 0.06);
+  border: 1px solid rgba(245, 241, 235, 0.12);
+  border-radius: 12px;
+  font-size: var(--kozha-text-body-sm);
+  line-height: 1.5;
+  color: rgba(245, 241, 235, 0.88);
+}
+.c2-quickstart__reminder-icon {
+  width: 20px; height: 20px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: var(--kozha-weight-semibold);
+}
+
+.c2-quickstart__form { position: relative; }
+
+.c2-quickstart__chips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--kozha-space-2);
+  margin: 0 0 var(--kozha-space-5);
+}
+.c2-quickstart__chip {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 16px;
+  background: rgba(245, 241, 235, 0.08);
+  border: 1px solid rgba(245, 241, 235, 0.14);
+  color: var(--kozha-color-paper);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+.c2-quickstart__chip:hover {
+  background: rgba(245, 241, 235, 0.14);
+  border-color: var(--kozha-color-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+.c2-quickstart__chip.is-active {
+  background: var(--kozha-color-accent);
+  border-color: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  box-shadow: 0 10px 24px rgba(201, 106, 46, 0.4);
+}
+.c2-quickstart__chip:focus-visible {
+  outline: 2px solid var(--kozha-color-accent-bright);
+  outline-offset: 2px;
+}
+.c2-quickstart__chip-flag {
+  font-size: 20px;
+  line-height: 1;
+}
+.c2-quickstart__chip-code {
+  font-family: var(--kozha-font-mono);
+  font-size: 14px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.06em;
+}
+.c2-quickstart__chip-name {
+  font-size: 11px;
+  color: rgba(245, 241, 235, 0.6);
+  font-weight: var(--kozha-weight-medium);
+}
+.c2-quickstart__chip.is-active .c2-quickstart__chip-name { color: rgba(255, 255, 255, 0.8); }
+
+.c2-quickstart__divider {
+  position: relative;
+  text-align: center;
+  margin: 0 0 var(--kozha-space-5);
+}
+.c2-quickstart__divider::before,
+.c2-quickstart__divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 100px);
+  height: 1px;
+  background: rgba(245, 241, 235, 0.14);
+}
+.c2-quickstart__divider::before { left: 0; }
+.c2-quickstart__divider::after { right: 0; }
+.c2-quickstart__divider span {
+  display: inline-block;
+  padding: 0 var(--kozha-space-3);
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 235, 0.48);
+}
+
+/* Restyle the embedded .language-picker so it reads as part of the dark
+   quickstart card. The original selectors still apply — we're just
+   overriding paint. */
+.c2-quickstart__picker {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--kozha-space-3);
+}
+.c2-quickstart__strip {
+  background: rgba(245, 241, 235, 0.06);
+  border: 1px solid rgba(245, 241, 235, 0.14);
+  border-radius: 12px;
+  padding: var(--kozha-space-4);
+}
+.c2-quickstart__strip .lang-slot-label {
+  color: rgba(245, 241, 235, 0.7);
+}
+.c2-quickstart__picker select,
+.c2-quickstart__picker .field-input {
+  background: var(--kozha-color-paper);
+  color: var(--kozha-color-ink);
+  border: 1px solid rgba(245, 241, 235, 0.14);
+  font-weight: var(--kozha-weight-medium);
+}
+.c2-quickstart__picker select:focus {
+  border-color: var(--kozha-color-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(201, 106, 46, 0.25);
+}
+.c2-quickstart__picker .lang-slot-note {
+  color: rgba(245, 241, 235, 0.6);
+}
+.c2-quickstart__picker .lang-slot-note.limited {
+  color: var(--kozha-color-accent-bright);
+}
+.c2-quickstart__picker .lang-slot-secondary {
+  margin: var(--kozha-space-3) 0 0;
+}
+.c2-quickstart__picker .lang-slot-secondary .kz-link {
+  color: var(--kozha-color-accent-bright);
+  opacity: 0.9;
+}
+.c2-quickstart__picker .lang-slot-secondary .kz-link:hover { opacity: 1; }
+
+/* BYO-key embedded inside the dark card: the summary reads as a subtle
+   inline link rather than a full card; body uses translucent surfaces. */
+.c2-quickstart__byo {
+  margin-top: var(--kozha-space-3);
+  background: transparent;
+  border: 1px solid rgba(245, 241, 235, 0.14);
+  border-radius: 12px;
+  padding: 0;
+  color: rgba(245, 241, 235, 0.85);
+}
+.c2-quickstart__byo > summary.byo-key-summary {
+  padding: 12px 16px;
+  color: rgba(245, 241, 235, 0.75);
+  font-size: var(--kozha-text-body-sm);
+}
+.c2-quickstart__byo > summary.byo-key-summary:hover {
+  color: var(--kozha-color-paper);
+}
+.c2-quickstart__byo > summary::before {
+  color: rgba(245, 241, 235, 0.5);
+}
+.c2-quickstart__byo[open] {
+  background: rgba(245, 241, 235, 0.04);
+}
+.c2-quickstart__byo .byo-key-body {
+  padding: 0 16px 16px;
+}
+.c2-quickstart__byo .byo-key-lede {
+  color: rgba(245, 241, 235, 0.7);
+  font-size: var(--kozha-text-body-sm);
+}
+.c2-quickstart__byo .field-label {
+  color: rgba(245, 241, 235, 0.7);
+}
+.c2-quickstart__byo .byo-key-input {
+  background: var(--kozha-color-paper);
+  color: var(--kozha-color-ink);
+  border-color: rgba(245, 241, 235, 0.14);
+}
+.c2-quickstart__byo .byo-key-status {
+  color: rgba(245, 241, 235, 0.6);
+}
+
+/* ==================================================================
+ * Animations
+ * ================================================================== */
+@keyframes c2-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes c2-panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes c2-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(0.82); }
+}
+@keyframes c2-ping {
+  0%   { box-shadow: 0 0 0 0 rgba(201, 106, 46, 0.45); }
+  70%  { box-shadow: 0 0 0 12px rgba(201, 106, 46, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 106, 46, 0); }
+}
+@keyframes c2-arm-a {
+  0%, 100% { transform: rotate(22deg); }
+  40%      { transform: rotate(4deg); }
+  60%      { transform: rotate(14deg); }
+}
+@keyframes c2-arm-b {
+  0%, 100% { transform: rotate(-12deg); }
+  40%      { transform: rotate(-30deg); }
+  60%      { transform: rotate(-20deg); }
+}
+@keyframes c2-type {
+  0%, 10%  { max-width: 0; }
+  40%, 60% { max-width: 10ch; }
+  90%, 100% { max-width: 10ch; }
+}
+@keyframes c2-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes c2-dots {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+@keyframes c2-tag-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 106, 46, 0.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(201, 106, 46, 0); }
+}
+
+/* Respect reduced-motion: strip every animation on the redesigned intro. */
+@media (prefers-reduced-motion: reduce) {
+  .c2-hero,
+  .c2-hero__eyebrow-dot,
+  .c2-hero__pulse,
+  .c2-walk__panel.is-active,
+  .c2-viz-1__typed,
+  .c2-viz-1__caret,
+  .c2-viz-3__dots span,
+  .c2-viz-5__timeline li.is-current::before {
+    animation: none !important;
+  }
+  .c2-viz-1__typed { max-width: 10ch; }
+  .c2-walk__tab,
+  .c2-walk__nav,
+  .c2-quickstart__chip,
+  .c2-why__item {
+    transition: none !important;
+  }
+}
+
+/* ==================================================================
+ * Responsive
+ * ================================================================== */
+@media (max-width: 1023px) {
+  .c2-hero {
+    grid-template-columns: 1fr;
+    gap: var(--kozha-space-8);
+    padding: var(--kozha-space-6) 0 var(--kozha-space-8);
+  }
+  .c2-hero__card { order: -1; max-width: 420px; margin: 0 auto; width: 100%; }
+  .c2-why__row { grid-template-columns: 1fr; }
+  .c2-walk {
+    padding: var(--kozha-space-6) var(--kozha-space-5);
+  }
+  .c2-walk__frame {
+    grid-template-columns: 1fr;
+    gap: var(--kozha-space-5);
+  }
+  /* Tabs become a horizontal scroll strip under 1024px. A right-edge
+     fade hints that there are more steps to swipe through without
+     adding a scroll-bar indicator that would fight the paper palette. */
+  .c2-walk__tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 28px 6px 0;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    -webkit-mask-image: linear-gradient(90deg, black 0, black calc(100% - 24px), transparent 100%);
+            mask-image: linear-gradient(90deg, black 0, black calc(100% - 24px), transparent 100%);
+  }
+  .c2-walk__tab {
+    flex: 0 0 220px;
+    scroll-snap-align: start;
+  }
+  .c2-walk__progress { display: none; }
+  .c2-walk__panel {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    gap: var(--kozha-space-5);
+  }
+  .c2-quickstart__inner {
+    grid-template-columns: 1fr;
+    gap: var(--kozha-space-6);
+    padding: var(--kozha-space-8) var(--kozha-space-6);
+  }
+}
+
+@media (max-width: 639px) {
+  .c2-hero__title { font-size: clamp(34px, 9vw, 48px); }
+  .c2-hero__lede  { font-size: 16px; }
+  .c2-hero__stats { grid-template-columns: 1fr; gap: var(--kozha-space-3); }
+  .c2-hero__stats li {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--kozha-space-3);
+  }
+  .c2-hero__card-stage { height: 150px; }
+  .c2-hero__avatar { width: 130px; height: 130px; }
+  .c2-why__item { padding: var(--kozha-space-5) var(--kozha-space-4); }
+  .c2-walk {
+    padding: var(--kozha-space-5) var(--kozha-space-3);
+    border-radius: var(--kozha-radius);
+  }
+  .c2-walk__heading { font-size: clamp(26px, 7vw, 34px); }
+  .c2-walk__panel { padding: var(--kozha-space-4); }
+  .c2-walk__copy-title { font-size: 22px; }
+  .c2-walk__tab { flex: 0 0 200px; padding: 12px 14px; }
+  /* Drop the duration pill on phones — at 200px tab width the pill
+     squeezes the middle column and forces tab-name onto 3 lines. The
+     tab number + name are sufficient signposting at this size. */
+  .c2-walk__tab-dur { display: none; }
+  /* Bump Prev/Next to clear the 44px tap-target floor on mobile. */
+  .c2-walk__nav { padding: var(--kozha-space-3) var(--kozha-space-5); }
+  .c2-walk__viz { padding: var(--kozha-space-3); min-height: 220px; }
+  .c2-quickstart__inner {
+    padding: var(--kozha-space-6) var(--kozha-space-4);
+    border-radius: var(--kozha-radius);
+  }
+  .c2-quickstart__chips { grid-template-columns: repeat(2, 1fr); }
+  .c2-viz-4__tags { grid-template-columns: repeat(2, 1fr); }
+  .c2-viz-4__snapshot-glyphs { font-size: clamp(24px, 7vw, 32px); }
+  .c2-viz-4__snapshot-stage { min-height: 160px; padding: var(--kozha-space-3); }
+  .c2-viz-4__snapshot-footer { gap: var(--kozha-space-2); }
+}
+
+/* ==================================================================
+ * Contribute workspace redesign (2026-04b) — polish pass
+ *
+ * The prior redesign fixed the intro (hero, walkthrough). This block
+ * addresses what a contributor actually uses: the quickstart picker and
+ * the session workspace. Goals:
+ *
+ *   1. Quickstart: BIG tappable chips, one click starts drafting.
+ *   2. Workspace: desktop 2-column grid so chat / preview / notation
+ *      live together instead of stacking forever.
+ *   3. Stage stepper: clear "you are here" signal across 4 stages.
+ *   4. Larger HamNoSys display and avatar stage so the notation and
+ *      preview feel like first-class outputs.
+ *   5. Tighter chat bubbles with a visible speaker bubble.
+ *   6. Submit CTA at card scale, not link scale.
+ *
+ * Everything layered on top of the existing .contribute-* rules — no
+ * original selector is removed. JS hooks (#pickerSelect, #byoKeyForm,
+ * workspace-id ids) untouched.
+ * ================================================================== */
+
+/* ---------- QS (quickstart v2) ---------- */
+.qs {
+  margin: 0 0 var(--kozha-space-12);
+  scroll-margin-top: 88px;
+}
+.qs__inner {
+  padding: var(--kozha-space-12) var(--kozha-space-10);
+  background:
+    radial-gradient(circle at 85% 10%, rgba(201, 106, 46, 0.18), transparent 50%),
+    radial-gradient(circle at 10% 90%, rgba(201, 106, 46, 0.12), transparent 50%),
+    var(--kozha-color-ink);
+  color: var(--kozha-color-paper);
+  border-radius: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.qs__inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(245, 241, 235, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 241, 235, 0.045) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at 50% 0%, black 40%, transparent 85%);
+  -webkit-mask-image: radial-gradient(circle at 50% 0%, black 40%, transparent 85%);
+  pointer-events: none;
+}
+.qs__kicker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kozha-space-2);
+  margin: 0 0 var(--kozha-space-4);
+  padding: 6px 14px;
+  background: rgba(201, 106, 46, 0.18);
+  border: 1px solid rgba(201, 106, 46, 0.32);
+  color: var(--kozha-color-accent-bright);
+  border-radius: 999px;
+  font-family: var(--kozha-font-sans);
+  font-size: 12px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.qs__kicker::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--kozha-color-accent-bright);
+  box-shadow: 0 0 10px var(--kozha-color-accent-bright);
+}
+.qs__heading {
+  position: relative;
+  font-family: var(--kozha-font-serif);
+  font-size: clamp(34px, 4.5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: var(--kozha-weight-regular);
+  color: var(--kozha-color-paper);
+  margin: 0 0 var(--kozha-space-3);
+  max-width: 20ch;
+}
+.qs__lede {
+  position: relative;
+  margin: 0 0 var(--kozha-space-7);
+  font-size: 18px;
+  line-height: 1.55;
+  color: rgba(245, 241, 235, 0.72);
+  max-width: 52ch;
+}
+
+.qs__chips {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 var(--kozha-space-5);
+}
+
+.qs__chip {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 22px 22px;
+  background: rgba(245, 241, 235, 0.06);
+  border: 1px solid rgba(245, 241, 235, 0.14);
+  color: var(--kozha-color-paper);
+  border-radius: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  min-height: 84px;
+  transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+.qs__chip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(201, 106, 46, 0.25), transparent 50%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+.qs__chip:hover {
+  background: rgba(245, 241, 235, 0.12);
+  border-color: var(--kozha-color-accent);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
+}
+.qs__chip:hover::after { opacity: 1; }
+.qs__chip:hover .qs__chip-arrow { transform: translateX(4px); color: var(--kozha-color-accent-bright); }
+.qs__chip.is-active {
+  background: var(--kozha-color-accent);
+  border-color: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  box-shadow: 0 12px 32px rgba(201, 106, 46, 0.4);
+}
+.qs__chip.is-active .qs__chip-name { color: rgba(255, 255, 255, 0.88); }
+.qs__chip.is-active .qs__chip-arrow { color: var(--kozha-color-white); }
+.qs__chip:focus-visible {
+  outline: 2px solid var(--kozha-color-accent-bright);
+  outline-offset: 3px;
+}
+
+.qs__chip-flag {
+  font-size: 32px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  position: relative;
+  z-index: 1;
+}
+.qs__chip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+.qs__chip-code {
+  font-family: var(--kozha-font-mono);
+  font-size: 20px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.qs__chip-name {
+  font-size: 13px;
+  line-height: 1.3;
+  color: rgba(245, 241, 235, 0.6);
+  font-weight: var(--kozha-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qs__chip-arrow {
+  font-family: var(--kozha-font-sans);
+  font-size: 22px;
+  font-weight: var(--kozha-weight-semibold);
+  color: rgba(245, 241, 235, 0.4);
+  transition: transform 0.22s ease, color 0.22s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.qs__chips--more {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: var(--kozha-space-4);
+}
+.qs__chip--small {
+  padding: 14px 16px;
+  min-height: 60px;
+  gap: 12px;
+}
+.qs__chip--small .qs__chip-flag { font-size: 22px; }
+.qs__chip--small .qs__chip-code { font-size: 15px; }
+.qs__chip--small .qs__chip-name { font-size: 11px; }
+.qs__chip--small .qs__chip-arrow { display: none; }
+
+.qs__footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kozha-space-4);
+  flex-wrap: wrap;
+  margin-top: var(--kozha-space-4);
+  padding-top: var(--kozha-space-4);
+  border-top: 1px solid rgba(245, 241, 235, 0.1);
+}
+.qs__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(245, 241, 235, 0.18);
+  color: rgba(245, 241, 235, 0.85);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: var(--kozha-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.qs__more:hover {
+  background: rgba(245, 241, 235, 0.08);
+  border-color: rgba(245, 241, 235, 0.32);
+  color: var(--kozha-color-paper);
+}
+.qs__more[aria-expanded="true"] .qs__more-plus { transform: rotate(45deg); }
+.qs__more-plus {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-accent-bright);
+  transition: transform 0.22s ease;
+}
+.qs__more-count {
+  font-family: var(--kozha-font-mono);
+  font-size: 11px;
+  color: rgba(245, 241, 235, 0.5);
+  margin-left: 4px;
+}
+.qs__coverage-link {
+  font-size: 13px;
+  color: var(--kozha-color-accent-bright);
+  text-decoration: none;
+  font-weight: var(--kozha-weight-medium);
+  opacity: 0.88;
+}
+.qs__coverage-link:hover { opacity: 1; text-decoration: underline; }
+
+/* Hide the fallback <select> widget — chips are the primary surface now,
+   but the <select> stays in the DOM so contribute.js can populate it and
+   keyboard users still reach it via the accessible flow path. */
+.qs__picker-fallback { display: none; }
+.qs__picker-fallback[data-force-show] { display: block; }
+
+.qs__byo {
+  position: relative;
+  margin-top: var(--kozha-space-4);
+  background: transparent;
+  border: 1px solid rgba(245, 241, 235, 0.12);
+  border-radius: 12px;
+  padding: 0;
+  color: rgba(245, 241, 235, 0.85);
+}
+.qs__byo > summary.byo-key-summary {
+  padding: 10px 16px;
+  color: rgba(245, 241, 235, 0.55);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+.qs__byo > summary.byo-key-summary:hover { color: var(--kozha-color-paper); }
+.qs__byo[open] { background: rgba(245, 241, 235, 0.04); }
+.qs__byo[open] > summary.byo-key-summary { color: var(--kozha-color-paper); }
+.qs__byo > summary::before { color: rgba(245, 241, 235, 0.4); }
+.qs__byo .byo-key-body { padding: 0 16px 16px; }
+.qs__byo .byo-key-lede,
+.qs__byo .field-label,
+.qs__byo .byo-key-status { color: rgba(245, 241, 235, 0.7); }
+.qs__byo .byo-key-input {
+  background: var(--kozha-color-paper);
+  color: var(--kozha-color-ink);
+  border-color: rgba(245, 241, 235, 0.14);
+}
+
+/* ==================================================================
+ * Stage stepper — "you are here" for the workspace
+ * ================================================================== */
+.ws-stages {
+  list-style: none;
+  margin: 0 0 var(--kozha-space-6);
+  padding: var(--kozha-space-4) var(--kozha-space-5);
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+}
+.ws-stages::before {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 50%;
+  height: 2px;
+  background: var(--kozha-color-border);
+  z-index: 0;
+}
+.ws-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--kozha-color-white);
+  padding: 0 var(--kozha-space-2);
+}
+.ws-stage__dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--kozha-color-paper-2);
+  border: 2px solid var(--kozha-color-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--kozha-font-mono);
+  font-size: 13px;
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-ink-3);
+  transition: all 0.25s ease;
+}
+.ws-stage__label {
+  font-family: var(--kozha-font-sans);
+  font-size: 12px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+  transition: color 0.25s ease;
+}
+
+/* Pure-CSS current-stage detection. Uses :has() — falls back to stage 1
+   highlighted when :has() is unsupported. */
+/* Default: stage 1 (Describe) is current. */
+.ws-stage[data-stage="describe"] .ws-stage__dot {
+  background: var(--kozha-color-accent);
+  border-color: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  box-shadow: 0 0 0 4px rgba(201, 106, 46, 0.15);
+}
+.ws-stage[data-stage="describe"] .ws-stage__label {
+  color: var(--kozha-color-accent);
+}
+
+/* Stage 2 becomes current once #authoringSummary is shown (session exists) */
+#authoring-root:has(#authoringSummary:not([hidden])) ~ * .ws-stage,
+.contribute-main:has(#authoringSummary:not([hidden])) .ws-stage[data-stage="describe"] .ws-stage__dot {
+  /* stage 1 becomes done */
+}
+.contribute-main:has(#authoringSummary:not([hidden])) .ws-stage[data-stage="describe"] .ws-stage__dot {
+  background: var(--kozha-color-success);
+  border-color: var(--kozha-color-success);
+  color: var(--kozha-color-white);
+  box-shadow: none;
+}
+.contribute-main:has(#authoringSummary:not([hidden])) .ws-stage[data-stage="describe"] .ws-stage__label {
+  color: var(--kozha-color-ink-3);
+}
+.contribute-main:has(#authoringSummary:not([hidden])) .ws-stage[data-stage="clarify"] .ws-stage__dot {
+  background: var(--kozha-color-accent);
+  border-color: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  box-shadow: 0 0 0 4px rgba(201, 106, 46, 0.15);
+}
+.contribute-main:has(#authoringSummary:not([hidden])) .ws-stage[data-stage="clarify"] .ws-stage__label {
+  color: var(--kozha-color-accent);
+}
+
+/* Stage 3 becomes current once a notation display has glyphs */
+.contribute-main:has(#notationPanel:not([hidden])):has(.notation-glyph) .ws-stage[data-stage="clarify"] .ws-stage__dot {
+  background: var(--kozha-color-success);
+  border-color: var(--kozha-color-success);
+  box-shadow: none;
+}
+.contribute-main:has(#notationPanel:not([hidden])):has(.notation-glyph) .ws-stage[data-stage="clarify"] .ws-stage__label {
+  color: var(--kozha-color-ink-3);
+}
+.contribute-main:has(#notationPanel:not([hidden])):has(.notation-glyph) .ws-stage[data-stage="preview"] .ws-stage__dot {
+  background: var(--kozha-color-accent);
+  border-color: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  box-shadow: 0 0 0 4px rgba(201, 106, 46, 0.15);
+}
+.contribute-main:has(#notationPanel:not([hidden])):has(.notation-glyph) .ws-stage[data-stage="preview"] .ws-stage__label {
+  color: var(--kozha-color-accent);
+}
+
+/* Stage 4 becomes current when #submissionSubmitBtn is enabled */
+.contribute-main:has(#submissionSubmitBtn:not([disabled])) .ws-stage[data-stage="preview"] .ws-stage__dot {
+  background: var(--kozha-color-success);
+  border-color: var(--kozha-color-success);
+  box-shadow: none;
+}
+.contribute-main:has(#submissionSubmitBtn:not([disabled])) .ws-stage[data-stage="preview"] .ws-stage__label {
+  color: var(--kozha-color-ink-3);
+}
+.contribute-main:has(#submissionSubmitBtn:not([disabled])) .ws-stage[data-stage="submit"] .ws-stage__dot {
+  background: var(--kozha-color-accent);
+  border-color: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  box-shadow: 0 0 0 4px rgba(201, 106, 46, 0.15);
+}
+.contribute-main:has(#submissionSubmitBtn:not([disabled])) .ws-stage[data-stage="submit"] .ws-stage__label {
+  color: var(--kozha-color-accent);
+}
+
+/* ==================================================================
+ * Workspace 2-column grid (desktop)
+ * ================================================================== */
+@media (min-width: 1024px) {
+  .contribute-main.has-session #authoring-root {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "stages   stages"
+      "authoring authoring"
+      "chat     preview"
+      "chat     notation"
+      "submit   submit";
+    gap: var(--kozha-space-5);
+    align-items: stretch;
+  }
+  .contribute-main.has-session #authoring-root > .ws-stages { grid-area: stages; margin-bottom: 0; }
+  .contribute-main.has-session #authoring-root > .authoring-card { grid-area: authoring; }
+  .contribute-main.has-session #authoring-root > #chatPanel { grid-area: chat; min-height: 560px; }
+  .contribute-main.has-session #authoring-root > #avatarPreview { grid-area: preview; }
+  .contribute-main.has-session #authoring-root > #notationPanel { grid-area: notation; }
+  .contribute-main.has-session #authoring-root > #submissionPanel { grid-area: submit; }
+  /* Once summarized, the authoring card collapses to a compact ribbon */
+  .contribute-main.has-session .authoring-card {
+    padding: var(--kozha-space-4) var(--kozha-space-5);
+  }
+}
+
+/* ==================================================================
+ * Authoring card — make the pre-session form big and inviting
+ * ================================================================== */
+.authoring-card {
+  border-radius: 20px;
+  padding: var(--kozha-space-8) var(--kozha-space-10);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(201, 106, 46, 0.06), transparent 60%),
+    var(--kozha-color-white);
+}
+.authoring-card .field-input-gloss {
+  font-family: var(--kozha-font-mono);
+  font-size: 24px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.08em;
+  padding: 18px 20px;
+  border-width: 2px;
+}
+.authoring-card .field-input-description {
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 16px 18px;
+  border-width: 2px;
+  min-height: 140px;
+}
+.authoring-card .field-label {
+  font-size: 12px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-2);
+  margin-bottom: 10px;
+}
+.authoring-card .authoring-actions {
+  margin-top: var(--kozha-space-6);
+  gap: var(--kozha-space-4);
+}
+.authoring-card .authoring-submit {
+  font-size: 16px;
+  font-weight: var(--kozha-weight-semibold);
+  padding: 14px 28px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(201, 106, 46, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.authoring-card .authoring-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(201, 106, 46, 0.32);
+}
+
+/* ==================================================================
+ * Chat panel — polished bubbles
+ * ================================================================== */
+#chatPanel.card {
+  padding: var(--kozha-space-5) var(--kozha-space-6);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kozha-space-3);
+}
+#chatPanel .card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  margin-bottom: var(--kozha-space-3);
+}
+#chatPanel .card-title::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--kozha-color-accent);
+  box-shadow: 0 0 10px var(--kozha-color-accent);
+  animation: qs-pulse 2s ease-in-out infinite;
+}
+#chatPanel .chat-log {
+  flex: 1;
+  min-height: 280px;
+  padding: var(--kozha-space-4);
+  background:
+    linear-gradient(180deg, var(--kozha-color-paper) 0%, var(--kozha-color-paper-2) 100%);
+  border-radius: 14px;
+  border: 1px solid var(--kozha-color-border);
+}
+#chatPanel .chat-msg {
+  max-width: 84%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(26, 22, 18, 0.05);
+  margin-bottom: var(--kozha-space-3);
+}
+#chatPanel .chat-msg-system,
+#chatPanel .chat-msg-notice,
+#chatPanel .chat-message.bot,
+#chatPanel .chat-message.assistant,
+#chatPanel .chat-message.system {
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  color: var(--kozha-color-ink-2);
+  border-bottom-left-radius: 4px;
+  margin-right: auto;
+}
+#chatPanel .chat-msg-you,
+#chatPanel .chat-message.user {
+  background: var(--kozha-color-ink);
+  color: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-ink);
+  border-bottom-right-radius: 4px;
+  margin-left: auto;
+}
+#chatPanel .chat-msg-error {
+  background: var(--kozha-color-danger-light);
+  border: 1px solid rgba(192, 57, 43, 0.3);
+  color: var(--kozha-color-danger);
+}
+#chatPanel .chat-msg-label {
+  display: block;
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  margin-bottom: 4px;
+}
+#chatPanel .chat-msg-label::after { content: ''; }
+#chatPanel .chat-msg-you .chat-msg-label { color: var(--kozha-color-accent-bright); opacity: 0.95; }
+#chatPanel .chat-msg-text p { margin: 0; line-height: 1.55; font-size: 14px; }
+
+#chatPanel .chat-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--kozha-space-2);
+  align-items: end;
+}
+#chatPanel .chat-input {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 2px solid var(--kozha-color-border);
+  font-size: 15px;
+  min-height: 52px;
+  resize: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#chatPanel .chat-input:focus {
+  border-color: var(--kozha-color-accent);
+  box-shadow: 0 0 0 4px rgba(201, 106, 46, 0.12);
+}
+#chatPanel .chat-send {
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-weight: var(--kozha-weight-semibold);
+  font-size: 15px;
+  white-space: nowrap;
+}
+#chatPanel .chat-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: var(--kozha-space-3);
+}
+#chatPanel .chat-option-btn {
+  font-size: 13px;
+  font-weight: var(--kozha-weight-medium);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--kozha-color-accent-light);
+  color: var(--kozha-color-accent);
+  border: 1px solid var(--kozha-color-border-accent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+#chatPanel .chat-option-btn:hover {
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  transform: translateY(-1px);
+}
+
+/* ==================================================================
+ * Avatar preview — bigger, centered stage
+ * ================================================================== */
+#avatarPreview.card {
+  padding: var(--kozha-space-5) var(--kozha-space-6);
+  border-radius: 18px;
+}
+#avatarPreview .card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  margin-bottom: var(--kozha-space-4);
+}
+#avatarPreview .card-title::before {
+  content: '▶';
+  font-size: 12px;
+  color: var(--kozha-color-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  background: var(--kozha-color-accent-light);
+  border-radius: 50%;
+}
+#avatarPreview .avatar-stage {
+  position: relative;
+  min-height: 300px;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(201, 106, 46, 0.08), transparent 60%),
+    var(--kozha-color-surface-avatar, #e9e6df);
+  border: 1px solid var(--kozha-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: var(--kozha-space-3);
+}
+#avatarPreview .avatar-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--kozha-space-3);
+  padding: var(--kozha-space-3);
+  background: var(--kozha-color-paper-2);
+  border-radius: 12px;
+  flex-wrap: wrap;
+  margin-bottom: var(--kozha-space-3);
+}
+#avatarPreview .avatar-play {
+  font-size: 14px;
+  font-weight: var(--kozha-weight-semibold);
+  padding: 10px 22px;
+  border-radius: 10px;
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  border: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#avatarPreview .avatar-play:hover:not(:disabled) {
+  background: var(--kozha-color-accent-hover);
+  transform: translateY(-1px);
+}
+#avatarPreview .avatar-play:disabled { opacity: 0.5; cursor: not-allowed; }
+#avatarPreview .avatar-speed {
+  display: inline-flex;
+  background: var(--kozha-color-white);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+#avatarPreview .avatar-speed-btn {
+  background: transparent;
+  border: 0;
+  padding: 8px 12px;
+  font-family: var(--kozha-font-mono);
+  font-size: 12px;
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-ink-3);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+#avatarPreview .avatar-speed-btn:hover { background: var(--kozha-color-paper-2); }
+#avatarPreview .avatar-speed-btn.is-active {
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+}
+#avatarPreview .avatar-captions {
+  padding: var(--kozha-space-3) var(--kozha-space-4);
+  background: var(--kozha-color-paper);
+  border-radius: 10px;
+  border-left: 3px solid var(--kozha-color-accent);
+}
+#avatarPreview .avatar-caption-gloss {
+  font-family: var(--kozha-font-mono);
+  font-size: 14px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.08em;
+  color: var(--kozha-color-ink);
+  margin: 0 0 2px;
+}
+#avatarPreview .avatar-caption-desc {
+  font-size: 13px;
+  color: var(--kozha-color-ink-3);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ==================================================================
+ * Notation panel — bigger HamNoSys display, cleaner tabs
+ * ================================================================== */
+#notationPanel.card {
+  padding: var(--kozha-space-5) var(--kozha-space-6);
+  border-radius: 18px;
+}
+#notationPanel .card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  margin-bottom: var(--kozha-space-3);
+}
+#notationPanel .card-title::before {
+  content: '';
+  font-family: 'HamNoSysUnicode', monospace;
+  font-size: 16px;
+  color: var(--kozha-color-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  background: var(--kozha-color-accent-light);
+  border-radius: 6px;
+  font-weight: bold;
+}
+#notationPanel .notation-review-status {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  background: var(--kozha-color-accent-light);
+  border: 1px solid var(--kozha-color-border-accent);
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--kozha-color-ink-2);
+  margin-bottom: var(--kozha-space-4);
+}
+#notationPanel .notation-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--kozha-space-3);
+  padding: 4px;
+  background: var(--kozha-color-paper-2);
+  border-radius: 10px;
+  width: fit-content;
+}
+#notationPanel .notation-tab {
+  background: transparent;
+  border: 0;
+  padding: 8px 16px;
+  font-family: var(--kozha-font-mono);
+  font-size: 12px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.06em;
+  color: var(--kozha-color-ink-3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+#notationPanel .notation-tab:hover { color: var(--kozha-color-ink); }
+#notationPanel .notation-tab.is-active {
+  background: var(--kozha-color-white);
+  color: var(--kozha-color-accent);
+  box-shadow: 0 2px 6px rgba(26, 22, 18, 0.06);
+}
+#notationPanel .notation-hamnosys-display {
+  min-height: 120px;
+  padding: var(--kozha-space-5) var(--kozha-space-4);
+  background:
+    repeating-linear-gradient(0deg, transparent 0, transparent 23px, rgba(26, 22, 18, 0.04) 23px, rgba(26, 22, 18, 0.04) 24px),
+    var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 12px;
+  font-size: 56px;
+  line-height: 1.1;
+  gap: 10px;
+}
+#notationPanel .notation-hamnosys-display .hamnosys {
+  font-size: 56px;
+  line-height: 1.1;
+  color: var(--kozha-color-ink);
+}
+#notationPanel .notation-glyph-glyph {
+  font-size: 40px;
+}
+#notationPanel .notation-glyph-name {
+  font-size: 10px;
+  color: var(--kozha-color-ink-3);
+}
+#notationPanel .notation-legend {
+  padding: var(--kozha-space-4);
+  background: var(--kozha-color-paper-2);
+  border-radius: 12px;
+  border: 1px solid var(--kozha-color-border);
+  min-width: 180px;
+}
+#notationPanel .notation-legend-title {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  margin-bottom: 8px;
+}
+#notationPanel .notation-legend-code {
+  font-family: var(--kozha-font-mono);
+  font-size: 16px;
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-accent);
+  margin: 0 0 2px;
+}
+#notationPanel .notation-legend-class {
+  font-size: 11px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+  margin: 0 0 6px;
+}
+#notationPanel .notation-legend-name {
+  font-size: 13px;
+  color: var(--kozha-color-ink-2);
+  line-height: 1.5;
+}
+#notationPanel .notation-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: var(--kozha-space-4) 0;
+  padding: var(--kozha-space-4);
+  background: var(--kozha-color-paper);
+  border-radius: 10px;
+  border: 1px solid var(--kozha-color-border);
+}
+#notationPanel .notation-breakdown-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: var(--kozha-space-3);
+  font-size: 13px;
+  line-height: 1.4;
+}
+#notationPanel .notation-breakdown-row dt {
+  font-family: var(--kozha-font-mono);
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+  padding-top: 2px;
+}
+#notationPanel .notation-breakdown-row dd {
+  margin: 0;
+  color: var(--kozha-color-ink);
+}
+#notationPanel .notation-actions {
+  display: flex;
+  gap: var(--kozha-space-2);
+  flex-wrap: wrap;
+  margin-top: var(--kozha-space-3);
+}
+#notationPanel .notation-copy-btn,
+#notationPanel .notation-download-btn,
+#notationPanel .notation-edit-btn {
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+
+/* ==================================================================
+ * Submission panel — big CTA, clear checklist
+ * ================================================================== */
+#submissionPanel.card {
+  padding: var(--kozha-space-6) var(--kozha-space-8);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 95% 0%, rgba(201, 106, 46, 0.08), transparent 60%),
+    var(--kozha-color-white);
+}
+#submissionPanel .card-title {
+  font-size: 24px;
+  margin-bottom: var(--kozha-space-4);
+}
+#submissionPanel .submission-checklist {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: var(--kozha-space-5);
+  padding: var(--kozha-space-4);
+  background: var(--kozha-color-paper);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: 12px;
+}
+#submissionPanel .submission-item {
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+#submissionPanel .submission-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--kozha-color-border);
+  background: var(--kozha-color-white);
+  flex-shrink: 0;
+  display: inline-flex;
+}
+#submissionPanel .submission-item.is-complete .submission-mark {
+  background: var(--kozha-color-success);
+  border-color: var(--kozha-color-success);
+}
+#submissionPanel .submission-item.is-complete .submission-mark::after {
+  content: '';
+  position: absolute;
+  left: 6px; top: 3px;
+  width: 6px;
+  height: 11px;
+  border-right: 2px solid var(--kozha-color-white);
+  border-bottom: 2px solid var(--kozha-color-white);
+  transform: rotate(45deg);
+}
+#submissionPanel .submission-text {
+  color: var(--kozha-color-ink-2);
+  font-weight: var(--kozha-weight-medium);
+}
+#submissionPanel .submission-item.is-complete .submission-text {
+  color: var(--kozha-color-ink);
+}
+#submissionPanel .submission-gate-note,
+#submissionPanel .submission-optional-note {
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: auto;
+}
+#submissionPanel .submission-gate-note {
+  color: var(--kozha-color-accent);
+  background: var(--kozha-color-accent-light);
+}
+#submissionPanel .submission-optional-note {
+  color: var(--kozha-color-ink-3);
+  background: var(--kozha-color-paper-2);
+}
+#submissionPanel .submission-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--kozha-space-4);
+  flex-wrap: wrap;
+}
+#submissionPanel .submission-actions-primary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+#submissionPanel .submission-save {
+  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 12px;
+}
+#submissionPanel .submission-submit {
+  font-size: 16px;
+  font-weight: var(--kozha-weight-semibold);
+  padding: 14px 32px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(201, 106, 46, 0.25);
+  transition: all 0.2s ease;
+}
+#submissionPanel .submission-submit:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(201, 106, 46, 0.38);
+}
+#submissionPanel .submission-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==================================================================
+ * Language masthead refinement
+ * ================================================================== */
+#langMasthead.card {
+  padding: var(--kozha-space-5) var(--kozha-space-6);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, var(--kozha-color-accent-light) 0%, var(--kozha-color-white) 100%);
+  border: 1px solid var(--kozha-color-border-accent);
+  margin-bottom: var(--kozha-space-5);
+}
+#langMasthead .language-badge {
+  font-size: 22px;
+}
+#langMasthead .language-badge-code {
+  font-size: 24px;
+  font-weight: var(--kozha-weight-semibold);
+}
+#langMasthead .context-state {
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  font-weight: var(--kozha-weight-semibold);
+  padding: 4px 12px;
+}
+
+/* ==================================================================
+ * Animations
+ * ================================================================== */
+@keyframes qs-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(0.88); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qs__chip,
+  .ws-stage__dot,
+  #chatPanel .card-title::before,
+  #avatarPreview .avatar-play,
+  #submissionPanel .submission-submit {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ==================================================================
+ * Responsive tweaks
+ * ================================================================== */
+@media (max-width: 1023px) {
+  .qs__inner { padding: var(--kozha-space-8) var(--kozha-space-6); }
+  .qs__chips { grid-template-columns: 1fr; }
+  .qs__chips--more { grid-template-columns: repeat(2, 1fr); }
+  .ws-stages { grid-template-columns: repeat(4, auto); overflow-x: auto; }
+  #chatPanel .chat-log { min-height: 220px; }
+  #notationPanel .notation-breakdown { grid-template-columns: 1fr; }
+  #submissionPanel .submission-checklist { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 639px) {
+  .qs__inner { padding: var(--kozha-space-6) var(--kozha-space-4); border-radius: 20px; }
+  .qs__heading { font-size: clamp(28px, 8vw, 38px); }
+  .qs__lede { font-size: 15px; }
+  .qs__chip { padding: 18px; min-height: 72px; gap: 14px; }
+  .qs__chip-flag { font-size: 24px; }
+  .qs__chip-code { font-size: 18px; }
+  .qs__chips--more { grid-template-columns: 1fr; }
+  .ws-stages { padding: var(--kozha-space-3); }
+  .ws-stage__label { display: none; }
+  .authoring-card { padding: var(--kozha-space-5) var(--kozha-space-4); border-radius: 16px; }
+  .authoring-card .field-input-gloss { font-size: 18px; padding: 14px 16px; }
+  #notationPanel .notation-hamnosys-display { font-size: 36px; padding: var(--kozha-space-3); }
+  #notationPanel .notation-hamnosys-display .hamnosys { font-size: 36px; }
+  #submissionPanel.card { padding: var(--kozha-space-5) var(--kozha-space-4); }
+  #submissionPanel .submission-actions-primary { flex-direction: column; align-items: stretch; }
+  #submissionPanel .submission-submit { text-align: center; }
+}
+
+/* ----------------------------------------------------------------------
+ * "Suggest a sign language" affordance + inline form (Prompt 02).
+ * The chip lives in .qs__footer next to the existing "More languages"
+ * button; the form panel follows the existing card aesthetic.
+ * -------------------------------------------------------------------- */
+.qs__suggest {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px dashed rgba(245, 241, 235, 0.28);
+  color: rgba(245, 241, 235, 0.85);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: var(--kozha-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.qs__suggest:hover {
+  background: rgba(245, 241, 235, 0.06);
+  border-style: solid;
+  color: var(--kozha-color-paper);
+}
+.qs__suggest-plus {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--kozha-color-accent-bright);
+}
+
+.suggest-language { margin-top: var(--kozha-space-4); }
+.suggest-language-lede { margin-bottom: var(--kozha-space-3); }
+.suggest-language-row { margin-bottom: var(--kozha-space-3); }
+.suggest-language-deaf {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--kozha-space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-3);
+}
+.suggest-language-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+.field-label-optional {
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 400;
+  font-size: 12px;
+}
+.suggest-language-actions {
+  display: flex;
+  gap: var(--kozha-space-3);
+  align-items: center;
+  margin-top: var(--kozha-space-3);
+}
+.suggest-language-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.suggest-language-thanks p { margin: 0 0 8px; }
+
+/* Maintainer admin tab — only visible when `?admin=proposals` is set. */
+.proposals-admin {
+  margin-top: var(--kozha-space-5);
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+}
+.proposals-admin-auth {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-3);
+  align-items: end;
+}
+.proposals-admin-auth .field-input { flex: 1 1 240px; }
+.proposals-admin-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--kozha-space-3);
+  margin: var(--kozha-space-3) 0;
+}
+.proposals-admin-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.proposals-admin-row {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.proposals-admin-head { font-size: 14px; margin-bottom: 4px; }
+.proposals-admin-iso {
+  font-family: var(--kozha-font-mono, ui-monospace, monospace);
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.proposals-admin-status {
+  font-family: var(--kozha-font-mono, ui-monospace, monospace);
+  color: rgba(0, 0, 0, 0.55);
+}
+.proposals-admin-triage {
+  background: #fff3cd;
+  color: #6b4f00;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+.proposals-admin-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.proposals-admin-actions button {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #fff;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.proposals-admin-snippet {
+  background: rgba(0, 0, 0, 0.04);
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  white-space: pre-wrap;
+  font-size: 12px;
+  font-family: var(--kozha-font-mono, ui-monospace, monospace);
+}
+.proposals-admin-empty {
+  padding: 12px;
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.55);
+}
+

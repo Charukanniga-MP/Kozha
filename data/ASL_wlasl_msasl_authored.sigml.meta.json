@@ -1,0 +1,21 @@
+{
+  "language": "asl",
+  "dataset": "Kozha ASL Multi-Dataset Pipeline",
+  "source": "ASL Multi-Dataset Unified Corpus",
+  "source_kind": "corpus",
+  "sources": [
+    "ASL Citizen Dataset (Microsoft Research; 84,000 video recordings)",
+    "WLASL: Word-Level American Sign Language (Li et al., WACV / Kaggle)",
+    "ASL Alphabet (Kaggle by grassknoted; 87,000 static images)",
+    "ASL-HG: Static Hand Gesture Dataset (ScienceDirect; 36,000 images)",
+    "Sign Language MNIST Dataset (Kaggle; 34,627 rows)"
+  ],
+  "generated_date": "2026-09-04",
+  "asl_citizen_isolated_signs": 5,
+  "wlasl_unique_word_classes": 4,
+  "asl_alphabet_classes": 29,
+  "asl_hg_classes": 36,
+  "sign_language_mnist_classes": 24,
+  "total_unified_unique_glosses": 46,
+  "active_authored_signs": 60
+}

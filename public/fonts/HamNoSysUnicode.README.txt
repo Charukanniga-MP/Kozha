@@ -1,0 +1,68 @@
+HamNoSysUnicode font binaries
+=============================
+
+CURRENT STATE: both `HamNoSysUnicode.woff2` (modern browsers) and
+`HamNoSysUnicode.ttf` (legacy fallback) are present in this directory,
+alongside `bgHamNoSysUnicode.ttf` (same binary, used as a second
+fallback in the CSS font stack). The font is the IDGS HamNoSys 4.0
+Unicode TTF (Aug 2003) covering PUA codepoints U+E000 .. U+E0F1 — all
+the glyphs the contribute and translator pages reference.
+
+The Kozha contribute page still includes a graceful-degradation probe
+so new operators who forget to vendor the font don't see broken glyph
+rows:
+
+  - An inline probe in the page <head> measures whether HamNoSys PUA
+    codepoints render as shaped glyphs. If they don't, it adds the
+    class `no-hamnosys-font` to <html>.
+  - CSS rules under `.no-hamnosys-font` hide the decorative glyph
+    rows (e.g. `.c2-hero__card-glyphs`) so visitors never see broken
+    `.notdef` boxes.
+  - The notation panel inside the workspace uses a per-glyph chip
+    layout that always shows the canonical short_name underneath
+    each PUA codepoint (`.notation-glyph-name`), so reviewers can
+    read the notation even with no font installed.
+
+The `@font-face` declaration in `/contribute.css` expects:
+
+  /fonts/HamNoSysUnicode.woff2   (preferred: smaller, modern browsers)
+  /fonts/HamNoSysUnicode.ttf     (fallback for older browsers)
+
+Both are scoped to the HamNoSys 4.0 Private Use Area (U+E000–U+E0FF)
+via the `unicode-range` hint, so the rest of the page keeps using
+its regular type stack. If neither binary is present, browsers fall
+through the chain to `bgHamNoSysUnicode` (also TTF, see the sibling
+`bgHamNoSysUnicode.LICENSE.txt`) and finally to the system monospace
+font, and the in-page probe activates the fallback styling above.
+
+Where to get the binaries
+-------------------------
+The HamNoSys 4.0 Unicode font is published by the Institute of German
+Sign Language and Communication of the Deaf (IDGS) at the University
+of Hamburg. Distribution channels:
+
+  * Upstream:  https://www.sign-lang.uni-hamburg.de/dgs-korpus/tools/hamnosys
+  * CTAN pkg:  https://ctan.org/pkg/hamnosys  (TeX `hamnosys` package
+               by Schulder & Hanke, 2022, LPPL 1.3c, which bundles
+               the TTF)
+
+To produce a WOFF2 from the TTF, use `woff2_compress` (Google's
+reference encoder) or `fonttools`:
+
+    woff2_compress HamNoSysUnicode.ttf
+    # produces HamNoSysUnicode.woff2 in the same directory
+
+License
+-------
+The font is distributed by IDGS for academic, research, and
+notation-tool use. When redistributing the binary alongside Kozha,
+ship the IDGS license file alongside it (typically as
+`HamNoSysUnicode.LICENSE.orig.txt`). Credit IDGS (University of
+Hamburg) per the project's CREDITS page.
+
+Why we self-host
+----------------
+Loading from a CDN puts third-party requests on the contribute page
+and breaks if the CDN goes down. Self-hosting keeps the contribute
+flow working under restrictive corporate proxies and avoids leaking
+contributor IPs to a third party.

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>Kozha — Sign Authoring</title>
+  <meta name="description" content="Authoring tool for Deaf signers and SL linguists to draft new HamNoSys sign entries via guided conversation." />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/chat2hamnosys/styles.css" />
+  <link rel="stylesheet" href="/cwa/cwasa.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Snapshot the browser's native WebAssembly object BEFORE allcsa.js
+       loads. The CWASA bundle is an Emscripten WASM2JS build that
+       overwrites the global with a partial polyfill (no validate, no
+       compile, no instantiateStreaming). Restoring the snapshot keeps
+       any future WASM consumer on this page unbroken. See app.html for
+       the longer comment + the matching restore step. -->
+  <script>
+    if (typeof window !== 'undefined' && window.WebAssembly && !window.__nativeWebAssembly) {
+      window.__nativeWebAssembly = window.WebAssembly;
+    }
+  </script>
+
+  <!-- CWASA avatar bundle is ~4.6 MB. Inject only on first user intent
+       so cold loads don't block first paint. The chat2hamnosys boot
+       fires `bridgn:cwasa-warmup` once the session is created — see
+       app.js — so the user does not have to interact twice (chat to
+       create the session, then click the page to wake the avatar). -->
+  <script>
+    (function () {
+      var injected = false;
+      function inject() {
+        if (injected) return;
+        injected = true;
+        var s = document.createElement('script');
+        s.src = '/cwa/allcsa.js';
+        s.crossOrigin = 'anonymous';
+        s.referrerPolicy = 'no-referrer';
+        s.async = true;
+        document.head.appendChild(s);
+        off();
+      }
+      var TRIGGERS = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+      function on()  { TRIGGERS.forEach(function (t) { window.addEventListener(t, inject, { passive: true, once: false }); }); }
+      function off() { TRIGGERS.forEach(function (t) { window.removeEventListener(t, inject); }); }
+      on();
+      window.addEventListener('bridgn:cwasa-warmup', inject, { once: true });
+      window.addEventListener('load', function () { setTimeout(inject, 2500); });
+      window.__bridgnInjectCWASA = inject;
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#chat-input">Skip to chat input</a>
+
+  <header class="topbar" role="banner">
+    <a class="brand" href="/">Kozha<span class="brand-tag">authoring</span></a>
+
+    <nav class="topbar-controls" aria-label="Display options">
+      <button id="hcToggle" type="button" class="ctl" aria-pressed="false">
+        <span aria-hidden="true">◐</span>
+        <span class="ctl-label">High contrast</span>
+      </button>
+      <div class="ctl-group" role="group" aria-label="Font size">
+        <button id="fontDown" type="button" class="ctl" aria-label="Decrease font size">A−</button>
+        <button id="fontUp" type="button" class="ctl" aria-label="Increase font size">A+</button>
+      </div>
+      <a class="ctl ctl-link" href="/app.html">← Translator</a>
+    </nav>
+  </header>
+
+  <div id="statusBanner" class="status-banner" role="status" aria-live="polite" hidden>
+    <span class="spinner" aria-hidden="true"></span>
+    <span class="status-text">Working…</span>
+  </div>
+
+  <main class="layout" id="main" aria-label="Authoring workspace">
+    <!-- LEFT (desktop) / BOTTOM (mobile): chat panel -->
+    <section class="panel panel-chat" data-panel="chat" aria-labelledby="chatHead">
+      <header class="panel-head">
+        <h1 id="chatHead">Authoring conversation</h1>
+        <p class="panel-sub" id="sessionMeta">No session yet</p>
+        <!-- Sign-language picker. Populated from /contribute-languages.json
+             on boot so adding a new language only requires a JSON edit.
+             Locked once a session is created — change-language ⇒ new session. -->
+        <div class="lang-select-row">
+          <label for="signLanguageSelect" class="lang-select-label">Sign language</label>
+          <select id="signLanguageSelect" class="lang-select" aria-describedby="signLanguageHint">
+            <option value="bsl">BSL — British Sign Language</option>
+          </select>
+          <p id="signLanguageHint" class="lang-select-hint" aria-live="polite"></p>
+        </div>
+      </header>
+
+      <div id="chatLog" class="chat-log" role="log" aria-live="polite" aria-relevant="additions" aria-atomic="false">
+      </div>
+
+      <form id="chatForm" class="chat-form" aria-label="Send a message">
+        <div class="chat-form-gloss" id="glossWrap">
+          <label for="glossInput" class="chat-form-label">Sign name (gloss)</label>
+          <input
+            id="glossInput"
+            name="gloss"
+            type="text"
+            placeholder="e.g. SORRY"
+            autocomplete="off"
+            aria-describedby="glossHint"
+            required
+          />
+          <p id="glossHint" class="chat-hint">Short uppercase token. Used as the lookup key for the finalized sign entry.</p>
+        </div>
+
+        <label for="chatInput" id="chatInputLabel" class="chat-form-label">
+          Describe the sign
+        </label>
+        <textarea
+          id="chatInput"
+          name="message"
+          rows="3"
+          placeholder="It's signed near the temple, flat hand, moves down to the chest…"
+          aria-describedby="chatHint"
+          required
+        ></textarea>
+        <div class="chat-form-row">
+          <p id="chatHint" class="chat-hint">
+            Plain English. Mention handshape, location, palm orientation, and movement.
+          </p>
+          <div class="chat-form-actions">
+            <button type="button" id="rejectBtn" class="btn btn-ghost" hidden>Reject</button>
+            <button type="button" id="acceptBtn" class="btn btn-primary" hidden>Accept</button>
+            <button type="submit" id="sendBtn" class="btn btn-primary">Send</button>
+          </div>
+        </div>
+        <p id="correctionContext" class="correction-context" hidden></p>
+      </form>
+    </section>
+
+    <!-- CENTER (desktop) / MIDDLE (mobile): avatar preview -->
+    <section class="panel panel-preview" data-panel="preview" aria-labelledby="previewHead">
+      <header class="panel-head">
+        <h2 id="previewHead">Avatar preview</h2>
+        <p class="panel-sub">
+          Click on the avatar to flag a body region. Use the timeline to flag a moment.
+        </p>
+      </header>
+
+      <div class="preview-stage">
+        <!-- Status chip mirrors session/avatar state — Idle / Loading
+             avatar… / Playing <gloss> / Awaiting reviewer / Avatar
+             unavailable. Owned by app.js setPreviewStatus(). -->
+        <div id="previewStatus" class="preview-status" data-state="idle" role="status" aria-live="polite">
+          <span class="preview-status-dot" aria-hidden="true"></span>
+          <span class="preview-status-text">Idle</span>
+        </div>
+
+        <div id="previewMount" class="preview-mount" aria-busy="false">
+          <video
+            id="previewVideo"
+            class="preview-slot"
+            playsinline
+            preload="metadata"
+            aria-label="Sign language avatar preview"
+            hidden
+          ></video>
+
+          <!-- CWASA mounts here on init. The .CWASAAvatar.av0 must be a
+               direct descendant for allcsa.js to find it. The mount is
+               position:absolute (see styles.css) so its 100%/100% chain
+               anchors to a definite parent. -->
+          <div id="cwasaMount" class="cwasa-mount preview-slot" aria-label="Sign language avatar" hidden>
+            <div class="CWASAAvatar av0"></div>
+            <div class="CWASAGUI av0" style="display:none"></div>
+          </div>
+
+          <!-- Pattern B (prompt 03) snapshot fallback — shown when CWASA
+               doesn't reach ready within the 6 s deadline. Owned by
+               app.js renderSnapshotFallback(). -->
+          <div id="snapshotFallback" class="snapshot-fallback preview-slot" hidden>
+            <p class="snapshot-fallback__rubric" id="snapshotFallbackRubric">HamNoSys snapshot</p>
+            <span class="snapshot-fallback__glyphs hamnosys" id="snapshotFallbackGlyphs" lang="zxx" aria-hidden="true"></span>
+            <p class="snapshot-fallback__gloss" id="snapshotFallbackGloss"></p>
+            <details class="snapshot-fallback__details">
+              <summary>Show SiGML</summary>
+              <pre class="snapshot-fallback__sigml"><code id="snapshotFallbackSigml"></code></pre>
+            </details>
+            <p class="snapshot-fallback__note">Avatar engine could not load. Reviewers see the SiGML payload directly.</p>
+          </div>
+
+          <div id="previewPlaceholder" class="preview-placeholder preview-slot">
+            <p>Send a description to generate a preview.</p>
+          </div>
+
+          <!-- Body-region SVG overlay. Polygons are calibrated to a
+               front-facing standing pose; stretched via
+               preserveAspectRatio="none" to fit the preview frame. The
+               overlay is rendered from window.C2H_REGIONS by app.js at
+               boot so the region list stays single-sourced. -->
+          <svg
+            id="regionOverlay"
+            class="region-overlay"
+            viewBox="0 0 100 120"
+            preserveAspectRatio="none"
+            role="group"
+            aria-label="Body regions — click to target a correction"
+            hidden
+          ></svg>
+
+          <!-- Correction popover — anchored to the last click. Hidden
+               until a region is picked (by click or keyboard). -->
+          <div
+            id="regionPopover"
+            class="region-popover"
+            role="dialog"
+            aria-label="Correction for selected region"
+            hidden
+          >
+            <header class="region-popover-head">
+              <span id="regionPopoverLabel" class="region-popover-title"></span>
+              <button
+                type="button"
+                id="regionPopoverClose"
+                class="region-popover-close"
+                aria-label="Close popover"
+              >×</button>
+            </header>
+            <label for="regionPopoverInput" class="region-popover-label">
+              What should change here?
+            </label>
+            <input
+              id="regionPopoverInput"
+              type="text"
+              autocomplete="off"
+              placeholder="e.g. make it a flat-O"
+            />
+            <div class="region-popover-actions">
+              <button type="button" id="regionPopoverSubmit" class="btn btn-primary btn-tiny">
+                Submit correction
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-captions" aria-label="Avatar captions">
+          <p class="caption-gloss" id="captionGloss"></p>
+          <p class="caption-prose" id="captionProse"></p>
+          <button
+            type="button"
+            class="btn btn-ghost btn-tiny"
+            disabled
+            title="Sign-language video of this caption — coming soon"
+            aria-label="View caption in sign language (coming soon)"
+          >
+            View in sign language
+          </button>
+        </div>
+
+        <div class="preview-controls" role="group" aria-label="Playback controls">
+          <button id="playBtn" type="button" class="btn" aria-label="Play or pause" disabled>▶ Play</button>
+          <button id="loopBtn" type="button" class="btn" aria-pressed="false" aria-label="Toggle loop" disabled>↻ Loop</button>
+
+          <label class="timeline-wrap" for="timeline">
+            <span class="visually-hidden">Timeline</span>
+            <input
+              id="timeline"
+              type="range"
+              min="0"
+              max="0"
+              step="1"
+              value="0"
+              aria-valuetext="0 milliseconds"
+              disabled
+            />
+          </label>
+          <output id="timelineLabel" class="timeline-label" for="timeline" aria-live="off">0 ms</output>
+
+          <button id="flagMomentBtn" type="button" class="btn btn-ghost" disabled>
+            Flag this moment
+          </button>
+        </div>
+
+        <div class="region-select-row" role="group" aria-label="Keyboard region picker">
+          <label for="regionSelect" class="region-select-label">Select region</label>
+          <select id="regionSelect" class="region-select" disabled>
+            <option value="">—</option>
+          </select>
+          <button
+            type="button"
+            id="regionSelectSpecify"
+            class="btn btn-ghost btn-tiny"
+            disabled
+          >
+            Specify correction
+          </button>
+        </div>
+
+        <p id="selectionHint" class="selection-hint" hidden></p>
+      </div>
+    </section>
+
+    <!-- RIGHT (desktop) / TOP (mobile): parameters / status column.
+         On screens ≥ 1024 px this is the third column. On tablet and
+         mobile it folds into a collapsible disclosure so the chat and
+         avatar get the available real estate. -->
+    <section class="panel panel-inspect" data-panel="inspect" aria-labelledby="inspectHead">
+      <header class="panel-head">
+        <h2 id="inspectHead">Sign parameters</h2>
+        <button
+          id="inspectToggle"
+          type="button"
+          class="btn btn-ghost btn-tiny"
+          aria-expanded="true"
+          aria-controls="inspectorBody"
+        >Collapse</button>
+      </header>
+
+      <div id="inspectorBody" class="inspector-body">
+        <p class="inspector-empty" id="inspectorEmpty">No parameters yet.</p>
+        <ul class="inspector-list" id="inspectorList" hidden></ul>
+
+        <div class="inspector-legend" aria-hidden="true">
+          <span class="badge confirmed">confirmed</span>
+          <span class="badge inferred">inferred</span>
+          <span class="badge gap">gap</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="srAnnounce" class="visually-hidden" role="status" aria-live="polite"></div>
+
+  <template id="tplMessage">
+    <article class="msg" data-role="">
+      <header class="msg-head">
+        <span class="msg-author"></span>
+        <time class="msg-time"></time>
+      </header>
+      <div class="msg-body"></div>
+      <div class="msg-actions" hidden></div>
+    </article>
+  </template>
+
+  <template id="tplOption">
+    <button type="button" class="msg-opt"></button>
+  </template>
+
+  <template id="tplInspectorRow">
+    <li class="ip-row">
+      <button class="ip-row-btn" type="button">
+        <span class="ip-name"></span>
+        <span class="ip-value"></span>
+        <span class="ip-badge badge"></span>
+      </button>
+      <p class="ip-reason" hidden></p>
+    </li>
+  </template>
+
+  <script src="/chat2hamnosys/avatar/region_map.js" defer></script>
+  <script src="/chat2hamnosys/app.js" defer></script>
+</body>
+</html>

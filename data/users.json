@@ -1,0 +1,20 @@
+{
+  "signer@kozhasign.org": {
+    "email": "signer@kozhasign.org",
+    "name": "Sarah Signer",
+    "password_hash": "f0b70dbb800a1e649aa5f8f10284482db7b3e2e38961ae142416e55bc43d08cc",
+    "salt": "f829a2aed1d994254bb9ae5bdc85206c",
+    "auth_provider": "local",
+    "created_at": 1788260757.8275087,
+    "role": "signer"
+  },
+  "charukanniga@gmail.com": {
+    "email": "charukanniga@gmail.com",
+    "name": "Charu  Kanniga MP",
+    "password_hash": "2cea0a0e0c768a6cb77796b7ddc059e573e8f0ce5b6cc378d0ccd39601427982",
+    "salt": "82726bed584f84d0bd6569e2ce473f48",
+    "auth_provider": "local",
+    "created_at": 1788261030.8965566,
+    "role": "signer"
+  }
+}

@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sigml_collection language="American_SL_MultiDataset" count="60">
+
+  <hns_sign gloss="A">
+    <hamnosys_manual>
+      <hamfist/><hamthumboutmod/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="B">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="BOOK">
+    <hamnosys_manual>
+      <hamsymmpar/><hamflathand/><hamextfingero/><hampalmu/><hamchest/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="C">
+    <hamnosys_manual>
+      <hamceeall/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="COMPUTER">
+    <hamnosys_manual>
+      <hamceeall/><hamextfingeru/><hampalml/><hamforehead/><hamcircleo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="D">
+    <hamnosys_manual>
+      <hamfinger2/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_0">
+    <hamnosys_manual>
+      <hampinchall/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_1">
+    <hamnosys_manual>
+      <hamfinger2/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_2">
+    <hamnosys_manual>
+      <hamfinger23/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_3">
+    <hamnosys_manual>
+      <hamfinger234/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_4">
+    <hamnosys_manual>
+      <hamfinger2345/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_5">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_6">
+    <hamnosys_manual>
+      <hamfist/><hamthumboutmod/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_7">
+    <hamnosys_manual>
+      <hamfinger2/><hamthumboutmod/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_8">
+    <hamnosys_manual>
+      <hamfinger23/><hamthumboutmod/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DIGIT_9">
+    <hamnosys_manual>
+      <hamfinger234/><hamthumboutmod/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="E">
+    <hamnosys_manual>
+      <hamfist/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="F">
+    <hamnosys_manual>
+      <hampinch12/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="FAMILY">
+    <hamnosys_manual>
+      <hamsymmpar/><hampinch12/><hamextfingero/><hampalml/><hamneutralspace/><hamcircleo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="FATHER">
+    <hamnosys_manual>
+      <hamfist/><hamthumboutmod/><hamextfingeru/><hampalml/><hamforehead/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="FOOD">
+    <hamnosys_manual>
+      <hampinchall/><hamextfingeru/><hampalml/><hammouth/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="G">
+    <hamnosys_manual>
+      <hamfinger2/><hamextfingero/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="GOODBYE">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalmd/><hamchest/><hamwave/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="H">
+    <hamnosys_manual>
+      <hamfinger23/><hamextfingero/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="HAPPY">
+    <hamnosys_manual>
+      <hamsymmpar/><hamflathand/><hamextfingeru/><hampalml/><hamchest/><hammoveu/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="HELLO">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalml/><hamforehead/><hammoveo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="HELP">
+    <hamnosys_manual>
+      <hamfist/><hamthumboutmod/><hamextfingeru/><hampalml/><hampalm/><hammoveu/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="HOME">
+    <hamnosys_manual>
+      <hamsymmpar/><hamflathand/><hamextfingerul/><hampalmdl/><hamchest/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="I">
+    <hamnosys_manual>
+      <hamfinger5/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="J">
+    <hamnosys_manual>
+      <hamfinger5/><hamextfingeru/><hampalml/><hamchest/><hamcircleo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="K">
+    <hamnosys_manual>
+      <hamfinger23/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="L">
+    <hamnosys_manual>
+      <hamfinger2/><hamthumboutmod/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="LEARN">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingero/><hampalmu/><hamforehead/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="M">
+    <hamnosys_manual>
+      <hamfist/><hamextfingerd/><hampalmd/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="MOTHER">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalml/><hamchin/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="N">
+    <hamnosys_manual>
+      <hamfist/><hamextfingerd/><hampalmd/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="NO">
+    <hamnosys_manual>
+      <hamfinger23/><hamextfingeru/><hampalml/><hamneutralspace/><hammoveo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="O">
+    <hamnosys_manual>
+      <hampinchall/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="P">
+    <hamnosys_manual>
+      <hamfinger23/><hamextfingerd/><hampalmd/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="PLEASE">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingerl/><hampalml/><hamchest/><hamcircleo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="Q">
+    <hamnosys_manual>
+      <hamfinger2/><hamthumboutmod/><hamextfingerd/><hampalmd/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="R">
+    <hamnosys_manual>
+      <hamfinger23spread/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="S">
+    <hamnosys_manual>
+      <hamfist/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="SAD">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalml/><hamface/><hammoved/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="SCHOOL">
+    <hamnosys_manual>
+      <hamsymmpar/><hamflathand/><hamextfingero/><hampalmd/><hamchest/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="STUDENT">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingero/><hampalmu/><hamchest/><hammoveu/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="T">
+    <hamnosys_manual>
+      <hamfist/><hamthumboutmod/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="TEACHER">
+    <hamnosys_manual>
+      <hamsymmpar/><hamflathand/><hamextfingeru/><hampalml/><hamhead/><hammoveo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="THANK_YOU">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalml/><hamchin/><hammoveo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="TIME">
+    <hamnosys_manual>
+      <hamfinger2/><hamextfingerd/><hampalmd/><hamwrist/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="U">
+    <hamnosys_manual>
+      <hamfinger23/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="V">
+    <hamnosys_manual>
+      <hamfinger23spread/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="W">
+    <hamnosys_manual>
+      <hamfinger234/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="WATER">
+    <hamnosys_manual>
+      <hamfinger23/><hamextfingeru/><hampalml/><hamchin/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="WELCOME">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalml/><hamchest/><hammovei/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="WORK">
+    <hamnosys_manual>
+      <hamsymmpar/><hamfist/><hamextfingero/><hampalmd/><hamwrist/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="X">
+    <hamnosys_manual>
+      <hamfinger2/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="Y">
+    <hamnosys_manual>
+      <hamfinger5/><hamthumboutmod/><hamextfingeru/><hampalml/><hamchest/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="YES">
+    <hamnosys_manual>
+      <hamfist/><hamextfingeru/><hampalml/><hamneutralspace/><hammoved/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="Z">
+    <hamnosys_manual>
+      <hamfinger2/><hamextfingero/><hampalml/><hamchest/><hamzigzag/>
+    </hamnosys_manual>
+  </hns_sign>
+
+</sigml_collection>

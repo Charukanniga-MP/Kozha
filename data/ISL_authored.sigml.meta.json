@@ -1,0 +1,23 @@
+{
+  "language": "isl",
+  "dataset": "Kozha ISL Multi-Dataset Pipeline",
+  "source": "ISL Multi-Dataset Unified Corpus",
+  "source_kind": "corpus",
+  "sources": [
+    "INCLUDE Dataset (Zenodo: zenodo_4010759; AI4Bharat)",
+    "iSign / ISLTranslate (Joshi et al., ACL 2024; Hugging Face Exploration-Lab/iSign)",
+    "MediaPipe Pose-Estimated ISL Dataset (Kaggle: prekshapalva/indian-sign-language)",
+    "ISL-dataset - Alphabet & Digits (Kaggle: ananyaarya22/isl-data & atharvadumbre)",
+    "ISL-CSLTR Corpus (Mendeley Data: kcmpdxky7p/1; Kaggle: drblack00/isl-csltr)",
+    "ISL-50 on IEEE DataPort (indian-sign-language-dataset-isl-50)"
+  ],
+  "generated_date": "2026-09-04",
+  "isign_unique_glosses": 9,
+  "include_landmarks_word_classes": 7,
+  "mediapipe_pose_alphabet_classes": 26,
+  "isl_alphabet_digits_classes": 36,
+  "csltr_unique_glosses": 5,
+  "isl50_word_classes": 8,
+  "total_unified_unique_glosses": 63,
+  "active_authored_signs": 99
+}

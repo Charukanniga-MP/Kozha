@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Credits — Signify</title>
+  <meta name="description" content="Full attribution, license detail, and per-corpus citations for every sign-language database, avatar engine, notation system, and translation layer used by Signify.">
+  <meta property="og:title" content="Credits — Signify">
+  <meta property="og:description" content="Full attribution and license detail for every corpus, notation system, and tool Kozha uses.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kozha-translate.com/credits">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://kozha-translate.com/credits">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#f5f1eb" />
+  <style>
+    /* Box-sizing reset only — universal "padding: 0" wiped the unified
+       .kz-header padding (components.css uses :where() for zero
+       specificity). Element-typed resets keep the design system intact. */
+    *, *::before, *::after { box-sizing: border-box; }
+    body, h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
+    ul, ol { padding-left: 0; list-style: none; }
+    html { scroll-behavior: smooth; }
+
+    body.credits-body {
+      font-family: var(--kozha-font-sans);
+      background: var(--kozha-color-paper);
+      color: var(--kozha-color-ink);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 16px;
+      background: var(--kozha-color-accent);
+      color: var(--kozha-color-white);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 200;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 8px; }
+
+    /* ==================================================================
+     * Layout shell
+     * ================================================================== */
+    .cr-main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: calc(var(--kozha-layout-nav-h, 64px) + 48px) 32px 96px;
+    }
+
+    /* ==================================================================
+     * Hero
+     * ================================================================== */
+    .cr-hero {
+      position: relative;
+      margin-bottom: 56px;
+      padding: 56px 56px 48px;
+      background:
+        radial-gradient(circle at 88% 12%, rgba(201, 106, 46, 0.16), transparent 50%),
+        radial-gradient(circle at 8% 90%, rgba(201, 106, 46, 0.08), transparent 50%),
+        var(--kozha-color-ink);
+      color: var(--kozha-color-paper);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+    .cr-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(245, 241, 235, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245, 241, 235, 0.05) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(circle at 50% 0%, black 35%, transparent 80%);
+      -webkit-mask-image: radial-gradient(circle at 50% 0%, black 35%, transparent 80%);
+      pointer-events: none;
+    }
+    .cr-hero__inner { position: relative; }
+    .cr-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(201, 106, 46, 0.18);
+      border: 1px solid rgba(201, 106, 46, 0.32);
+      border-radius: 999px;
+      color: var(--kozha-color-accent-bright);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .cr-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--kozha-color-accent-bright);
+      box-shadow: 0 0 10px var(--kozha-color-accent-bright);
+    }
+    .cr-h1 {
+      font-family: var(--kozha-font-serif);
+      font-size: clamp(40px, 5.5vw, 64px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      font-weight: 400;
+      color: var(--kozha-color-paper);
+      margin-bottom: 20px;
+      max-width: 22ch;
+    }
+    .cr-h1 em {
+      font-style: italic;
+      color: var(--kozha-color-accent-bright);
+    }
+    .cr-lede {
+      font-size: 17px;
+      line-height: 1.6;
+      color: rgba(245, 241, 235, 0.78);
+      max-width: 56ch;
+      margin: 0 0 36px;
+    }
+
+    .cr-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(245, 241, 235, 0.15);
+    }
+    .cr-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .cr-stat__value {
+      font-family: var(--kozha-font-serif);
+      font-size: 36px;
+      line-height: 1;
+      color: var(--kozha-color-accent-bright);
+      font-weight: 400;
+    }
+    .cr-stat__label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(245, 241, 235, 0.55);
+    }
+
+    /* ==================================================================
+     * Pill TOC
+     * ================================================================== */
+    .cr-toc {
+      position: sticky;
+      top: var(--kozha-layout-nav-h, 64px);
+      z-index: 10;
+      margin: -28px -32px 48px;
+      padding: 16px 32px;
+      background: rgba(245, 241, 235, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--kozha-color-border);
+    }
+    .cr-toc__list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .cr-toc__list a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--kozha-color-white);
+      border: 1px solid var(--kozha-color-border);
+      border-radius: 999px;
+      color: var(--kozha-color-ink-2);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+    .cr-toc__list a:hover {
+      border-color: var(--kozha-color-accent);
+      color: var(--kozha-color-accent);
+      transform: translateY(-1px);
+    }
+    .cr-toc__num {
+      font-family: var(--kozha-font-mono);
+      font-size: 10px;
+      color: var(--kozha-color-accent);
+      font-weight: 600;
+    }
+
+    /* ==================================================================
+     * Section headers
+     * ================================================================== */
+    .cr-section {
+      margin-bottom: 80px;
+      scroll-margin-top: calc(var(--kozha-layout-nav-h, 64px) + 80px);
+    }
+    .cr-section__head {
+      margin-bottom: 32px;
+      max-width: 720px;
+    }
+    .cr-section__num {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--kozha-font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--kozha-color-accent);
+      margin-bottom: 12px;
+    }
+    .cr-section__num::after {
+      content: '';
+      width: 32px;
+      height: 1px;
+      background: var(--kozha-color-accent);
+    }
+    .cr-section__title {
+      font-family: var(--kozha-font-serif);
+      font-size: clamp(28px, 3.4vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--kozha-color-ink);
+      font-weight: 400;
+      margin-bottom: 12px;
+    }
+    .cr-section__title em {
+      font-style: italic;
+      color: var(--kozha-color-accent);
+    }
+    .cr-section__note {
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--kozha-color-ink-2);
+      max-width: 64ch;
+    }
+
+    /* ==================================================================
+     * Card
+     * ================================================================== */
+    .cr-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .cr-grid--single { grid-template-columns: minmax(0, 1fr); }
+
+    .cr-card {
+      position: relative;
+      padding: 28px 30px;
+      background: var(--kozha-color-white);
+      border: 1px solid var(--kozha-color-border);
+      border-radius: 18px;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .cr-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--kozha-color-border-accent-strong);
+      box-shadow: 0 16px 36px rgba(26, 22, 18, 0.08);
+    }
+    .cr-card--wide { grid-column: 1 / -1; }
+    .cr-card--flagged {
+      border-color: rgba(201, 106, 46, 0.28);
+      background:
+        radial-gradient(circle at 100% 0%, rgba(201, 106, 46, 0.04), transparent 60%),
+        var(--kozha-color-white);
+    }
+
+    .cr-card__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .cr-card__heading {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .cr-card__title {
+      font-family: var(--kozha-font-serif);
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--kozha-color-ink);
+      font-weight: 400;
+      margin-bottom: 4px;
+    }
+    .cr-card__sub {
+      font-size: 12px;
+      color: var(--kozha-color-ink-3);
+      font-family: var(--kozha-font-mono);
+      letter-spacing: 0.06em;
+    }
+
+    .cr-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-family: var(--kozha-font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .cr-tag--lang {
+      background: var(--kozha-color-paper-2);
+      border: 1px solid var(--kozha-color-border);
+      color: var(--kozha-color-ink-2);
+    }
+
+    /* License chips — color-coded by openness */
+    .cr-license {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-family: var(--kozha-font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .cr-license::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .cr-license--open {
+      background: rgba(45, 106, 79, 0.1);
+      border: 1px solid rgba(45, 106, 79, 0.28);
+      color: var(--kozha-color-success);
+    }
+    .cr-license--open::before { background: var(--kozha-color-success); }
+    .cr-license--academic {
+      background: rgba(201, 106, 46, 0.1);
+      border: 1px solid rgba(201, 106, 46, 0.28);
+      color: var(--kozha-color-accent);
+    }
+    .cr-license--academic::before { background: var(--kozha-color-accent); }
+    .cr-license--restricted {
+      background: rgba(201, 106, 46, 0.06);
+      border: 1px solid rgba(201, 106, 46, 0.2);
+      color: var(--kozha-color-accent);
+    }
+    .cr-license--restricted::before { background: var(--kozha-color-accent-bright); }
+    .cr-license--unclear {
+      background: rgba(192, 57, 43, 0.08);
+      border: 1px solid rgba(192, 57, 43, 0.28);
+      color: var(--kozha-color-danger);
+    }
+    .cr-license--unclear::before {
+      background: var(--kozha-color-danger);
+      animation: cr-pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes cr-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.5; transform: scale(0.7); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cr-license--unclear::before { animation: none; }
+    }
+
+    .cr-card__body {
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--kozha-color-ink-2);
+      margin: 0;
+    }
+    .cr-card__body code {
+      font-family: var(--kozha-font-mono);
+      font-size: 0.9em;
+      background: var(--kozha-color-paper-2);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .cr-card__body em { font-style: italic; }
+
+    .cr-meta {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 16px;
+      background: var(--kozha-color-paper);
+      border: 1px solid var(--kozha-color-border);
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .cr-meta__row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 14px;
+      align-items: baseline;
+    }
+    .cr-meta__row dt {
+      font-family: var(--kozha-font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--kozha-color-ink-3);
+      padding-top: 1px;
+    }
+    .cr-meta__row dd {
+      margin: 0;
+      color: var(--kozha-color-ink-2);
+    }
+    .cr-meta__row dd em { font-style: italic; }
+
+    .cr-license-detail {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--kozha-color-ink-2);
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--kozha-color-paper-2);
+      border-left: 3px solid var(--kozha-color-accent);
+    }
+    .cr-license-detail--unclear {
+      background: rgba(192, 57, 43, 0.04);
+      border-left-color: var(--kozha-color-danger);
+    }
+    .cr-license-detail strong {
+      color: var(--kozha-color-ink);
+      font-weight: 600;
+    }
+
+    .cr-langs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .cr-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cr-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--kozha-color-paper);
+      border: 1px solid var(--kozha-color-border);
+      border-radius: 8px;
+      color: var(--kozha-color-ink-2);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+    .cr-links a:hover {
+      border-color: var(--kozha-color-accent);
+      color: var(--kozha-color-accent);
+      background: var(--kozha-color-accent-light);
+    }
+    .cr-links a::after {
+      content: '↗';
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
+    .cr-citation {
+      font-family: var(--kozha-font-mono);
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--kozha-color-ink-3);
+      padding: 12px 14px;
+      background: var(--kozha-color-paper);
+      border: 1px dashed var(--kozha-color-border);
+      border-radius: 8px;
+    }
+    .cr-citation em {
+      font-style: italic;
+      color: var(--kozha-color-ink-2);
+    }
+
+    /* ==================================================================
+     * Corpus summary table — quick scan view at the top of corpora
+     * ================================================================== */
+    .cr-summary {
+      margin-bottom: 32px;
+      background: var(--kozha-color-white);
+      border: 1px solid var(--kozha-color-border);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .cr-summary__head {
+      padding: 18px 24px;
+      background: var(--kozha-color-paper-2);
+      border-bottom: 1px solid var(--kozha-color-border);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .cr-summary__title {
+      font-family: var(--kozha-font-serif);
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--kozha-color-ink);
+    }
+    .cr-summary__hint {
+      font-size: 12px;
+      color: var(--kozha-color-ink-3);
+    }
+    .cr-summary__table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .cr-summary__table th,
+    .cr-summary__table td {
+      padding: 12px 24px;
+      text-align: left;
+      font-size: 13px;
+      vertical-align: middle;
+      border-bottom: 1px solid var(--kozha-color-border);
+    }
+    .cr-summary__table tbody tr:last-child th,
+    .cr-summary__table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+    .cr-summary__table th {
+      font-family: var(--kozha-font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--kozha-color-ink-3);
+      background: var(--kozha-color-paper);
+    }
+    .cr-summary__table tbody tr {
+      transition: background 0.15s ease;
+    }
+    .cr-summary__table tbody tr:hover {
+      background: var(--kozha-color-accent-light);
+    }
+    .cr-summary__table a {
+      color: var(--kozha-color-ink);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .cr-summary__table a:hover {
+      color: var(--kozha-color-accent);
+    }
+    .cr-summary__count {
+      font-family: var(--kozha-font-mono);
+      color: var(--kozha-color-ink);
+      font-weight: 600;
+    }
+    .cr-summary__lang {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--kozha-color-paper-2);
+      border: 1px solid var(--kozha-color-border);
+      font-family: var(--kozha-font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--kozha-color-ink-2);
+    }
+
+    /* ==================================================================
+     * Prose card — for non-tabular sections (Contributors, Funding, etc.)
+     * ================================================================== */
+    .cr-prose {
+      padding: 28px 32px;
+      background: var(--kozha-color-white);
+      border: 1px solid var(--kozha-color-border);
+      border-radius: 18px;
+    }
+    .cr-prose__row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 24px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--kozha-color-border);
+    }
+    .cr-prose__row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .cr-prose__row:first-child { padding-top: 0; }
+    .cr-prose__label {
+      font-family: var(--kozha-font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--kozha-color-accent);
+    }
+    .cr-prose__body {
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--kozha-color-ink-2);
+    }
+    .cr-prose__body strong {
+      color: var(--kozha-color-ink);
+      font-weight: 600;
+    }
+    .cr-prose__body a {
+      color: var(--kozha-color-accent);
+      font-weight: 500;
+    }
+    .cr-prose__body p + p { margin-top: 10px; }
+
+    /* ==================================================================
+     * Mobile
+     * ================================================================== */
+    @media (max-width: 900px) {
+      .cr-main { padding: calc(var(--kozha-layout-nav-h, 64px) + 24px) 16px 64px; }
+      .cr-hero { padding: 32px 24px 28px; border-radius: 18px; }
+      .cr-stats { grid-template-columns: repeat(2, 1fr); }
+      .cr-toc { margin: -28px -16px 32px; padding: 12px 16px; }
+      .cr-grid { grid-template-columns: 1fr; }
+      .cr-card { padding: 22px 22px; }
+      .cr-meta__row { grid-template-columns: 1fr; gap: 4px; }
+      .cr-prose { padding: 22px 22px; }
+      .cr-prose__row { grid-template-columns: 1fr; gap: 6px; }
+      .cr-summary__head { padding: 14px 18px; }
+      .cr-summary__table th,
+      .cr-summary__table td { padding: 10px 14px; font-size: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .cr-card { transition: none; }
+    }
+
+    /* ==================================================================
+     * Print stylesheet
+     * Credits pages are often printed for citation. Strip chrome, expand
+     * link hrefs, and force black-on-white.
+     * ================================================================== */
+    @media print {
+      .kz-header, .kz-footer, .skip-link, .cr-toc { display: none !important; }
+      body.credits-body { background: #fff; color: #000; }
+      .cr-main { max-width: none; padding: 0; }
+      .cr-hero {
+        background: none;
+        color: #000;
+        padding: 0 0 24px;
+        border-radius: 0;
+        border-bottom: 2px solid #000;
+        margin-bottom: 24px;
+      }
+      .cr-hero::before { display: none; }
+      .cr-h1, .cr-section__title, .cr-card__title, .cr-stat__value, .cr-lede {
+        color: #000;
+      }
+      .cr-stat__value { color: #000; }
+      .cr-eyebrow,
+      .cr-section__num { color: #000; background: transparent; border-color: #000; }
+      .cr-card, .cr-prose, .cr-summary {
+        background: transparent;
+        border: 1px solid #000;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .cr-card:hover { transform: none; box-shadow: none; }
+      a, a:visited { color: #000; text-decoration: underline; }
+      a[href^="http"]::after, a[href^="/"]::after {
+        content: " (" attr(href) ")";
+        font-size: 90%;
+        font-style: italic;
+      }
+      .cr-license, .cr-tag, .cr-summary__lang {
+        background: transparent;
+        border: 1px solid #000;
+        color: #000;
+      }
+      .cr-license::before { background: #000 !important; }
+    }
+  </style>
+</head>
+<body class="credits-body">
+  <a href="#main-content" class="skip-link kz-skip-link">Skip to main content</a>
+
+  <header class="kz-header" aria-label="Main navigation">
+    <a href="/" class="kz-header__logo">Sign<span>ify</span></a>
+    <ul class="kz-header__nav">
+      <li><a href="/app.html" class="kz-header__link">Translate</a></li>
+      <li><a href="/contribute.html" class="kz-header__link">Contribute</a></li>
+      <li><a href="/progress" class="kz-header__link">Progress</a></li>
+      <li><a href="/credits" class="kz-header__link is-active" aria-current="page">About</a></li>
+    </ul>
+    <button class="kz-header__hamburger" type="button" aria-label="Menu" aria-expanded="false">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </header>
+
+  <main id="main-content" class="cr-main" role="main">
+    <!-- ============================================================
+         Hero
+         ============================================================ -->
+    <header class="cr-hero">
+      <div class="cr-hero__inner">
+        <span class="cr-eyebrow">Attribution &amp; provenance</span>
+        <h1 class="cr-h1">Built on the work of <em>Deaf research, linguists, and open-source code.</em></h1>
+        <p class="cr-lede">
+          Every corpus, notation system, font, library, and tool Kozha depends on is listed below with its full citation, license, and current usage. Where an upstream source's license is unclear, we say so plainly and mark it.
+        </p>
+        <ul class="cr-stats" aria-label="At a glance">
+          <li class="cr-stat">
+            <span class="cr-stat__value">18</span>
+            <span class="cr-stat__label">Sources</span>
+          </li>
+          <li class="cr-stat">
+            <span class="cr-stat__value">12</span>
+            <span class="cr-stat__label">Sign languages</span>
+          </li>
+          <li class="cr-stat">
+            <span class="cr-stat__value">11k</span>
+            <span class="cr-stat__label">Signs ingested</span>
+          </li>
+          <li class="cr-stat">
+            <span class="cr-stat__value">7</span>
+            <span class="cr-stat__label">License families</span>
+          </li>
+        </ul>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         Pill TOC (sticky)
+         ============================================================ -->
+    <nav class="cr-toc" aria-label="On this page">
+      <ul class="cr-toc__list">
+        <li><a href="#avatar"><span class="cr-toc__num">01</span> Avatar &amp; rendering</a></li>
+        <li><a href="#notation"><span class="cr-toc__num">02</span> Notation</a></li>
+        <li><a href="#corpora"><span class="cr-toc__num">03</span> Sign-language corpora</a></li>
+        <li><a href="#translation"><span class="cr-toc__num">04</span> Translation layer</a></li>
+        <li><a href="#contributors"><span class="cr-toc__num">05</span> Contributors</a></li>
+        <li><a href="#board"><span class="cr-toc__num">06</span> Advisory board</a></li>
+        <li><a href="#funding"><span class="cr-toc__num">07</span> Funding</a></li>
+        <li><a href="#compensation"><span class="cr-toc__num">08</span> Compensation</a></li>
+      </ul>
+    </nav>
+
+    <!-- ============================================================
+         01 — Avatar
+         ============================================================ -->
+    <section class="cr-section" id="avatar" aria-labelledby="avatar-heading">
+      <header class="cr-section__head">
+        <span class="cr-section__num">Section 01</span>
+        <h2 id="avatar-heading" class="cr-section__title">Avatar &amp; <em>rendering.</em></h2>
+        <p class="cr-section__note">
+          Every animation you see on Kozha is drawn by CWASA, a signing-avatar engine built by the Virtual Humans Group at the University of East Anglia. Without it, the rest of the pipeline has nowhere to send its output.
+        </p>
+      </header>
+
+      <div class="cr-grid cr-grid--single">
+        <article class="cr-card">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">CWASA — Character Animation System</h3>
+              <p class="cr-card__sub">University of East Anglia · Virtual Humans Group</p>
+            </div>
+            <span class="cr-license cr-license--restricted" title="Creative Commons Attribution-NoDerivatives">CC BY-ND</span>
+          </div>
+          <p class="cr-card__body">
+            CWASA (the CWA Signing Avatar system) is a WebGL-based signing avatar engine that renders SiGML input as a 3D animation in the browser. Maintained by the Virtual Humans Group (VHG) at the University of East Anglia, CWASA is the public successor to the JASigning and Animgen avatars developed under the eSIGN and DictaSign research programmes.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>Virtual Humans Group, School of Computing Sciences, University of East Anglia</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Used for</dt>
+              <dd>All avatar rendering on the landing page, the translator, and the contribute preview.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail">
+            <strong>Creative Commons Attribution-NoDerivatives (CC BY-ND).</strong>
+            See <a href="https://vh.cmp.uea.ac.uk/index.php/CWASA_Conditions_of_Use" rel="noopener">CWASA Conditions of Use</a>. You may use and share CWASA with attribution, but you may not distribute modified versions.
+          </p>
+          <div class="cr-links">
+            <a href="https://vhg.cmp.uea.ac.uk/tech/jas/vhg2024/cwa/" rel="noopener">Home page</a>
+            <a href="http://vh.cmp.uea.ac.uk/index.php/CWA" rel="noopener">Documentation</a>
+            <a href="https://vhg.cmp.uea.ac.uk/" rel="noopener">Virtual Humans Group</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         02 — Notation
+         ============================================================ -->
+    <section class="cr-section" id="notation" aria-labelledby="notation-heading">
+      <header class="cr-section__head">
+        <span class="cr-section__num">Section 02</span>
+        <h2 id="notation-heading" class="cr-section__title">Notation <em>system.</em></h2>
+        <p class="cr-section__note">
+          HamNoSys is the intermediate representation between parsed text and a rendered sign. Every sign in the Kozha corpus is stored as HamNoSys, then serialised into SiGML for CWASA. The notation itself comes from IDGS at the University of Hamburg.
+        </p>
+      </header>
+
+      <div class="cr-grid">
+        <article class="cr-card">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">HamNoSys</h3>
+              <p class="cr-card__sub">IDGS · Hamburg Notation System v4.0</p>
+            </div>
+            <span class="cr-license cr-license--open" title="Creative Commons Attribution 4.0">CC BY 4.0</span>
+          </div>
+          <p class="cr-card__body">
+            HamNoSys is a phonetic transcription system for sign languages, covering handshape, orientation, location, movement, and non-manual features. The current reference is HamNoSys 4.0 (Hanke et al., 2018). Kozha uses HamNoSys as the canonical internal representation for every sign regardless of language.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>Institute of German Sign Language and Communication of the Deaf (IDGS), Universität Hamburg</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Used for</dt>
+              <dd>Every sign's canonical encoding; the contribute page's HamNoSys editor; the Chrome extension's pre-compiled notation.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail">
+            <strong>CC BY 4.0.</strong> You may share and adapt HamNoSys for any purpose, including commercial, provided you credit IDGS.
+          </p>
+          <div class="cr-links">
+            <a href="https://www.sign-lang.uni-hamburg.de/dgs-korpus/tools/hamnosys" rel="noopener">HamNoSys home</a>
+            <a href="https://www.sign-lang.uni-hamburg.de/dgs-korpus/files/inhalt_pdf/HamNoSys_2018.pdf" rel="noopener">Reference 4.0 (PDF)</a>
+            <a href="https://www.sign-lang.uni-hamburg.de/" rel="noopener">IDGS home</a>
+          </div>
+        </article>
+
+        <article class="cr-card">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">bgHamNoSysUnicode</h3>
+              <p class="cr-card__sub">IDGS · TrueType font, 4.0 glyph set</p>
+            </div>
+            <span class="cr-license cr-license--academic" title="IDGS distribution terms">Academic</span>
+          </div>
+          <p class="cr-card__body">
+            The bgHamNoSysUnicode TrueType font ships the HamNoSys 4.0 glyph set at intended visual fidelity. Kozha self-hosts the font (no CDN) on the contribute page so HamNoSys codepoints render correctly in the notation editor.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Authors</dt>
+              <dd>Thomas Hanke, Marc Schulder, et al. (IDGS / DGS-Korpus project)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Used for</dt>
+              <dd>Rendering HamNoSys notation in the contribute-page preview panel.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail">
+            <strong>IDGS distribution terms.</strong> Distributed by IDGS for academic, research, and notation-tool use; redistribution requires keeping the upstream license file intact.
+          </p>
+          <div class="cr-links">
+            <a href="/fonts/bgHamNoSysUnicode.LICENSE.txt" rel="noopener">Local license note</a>
+            <a href="https://ctan.org/pkg/hamnosys" rel="noopener">CTAN hamnosys</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         03 — Sign-language corpora
+         ============================================================ -->
+    <section class="cr-section" id="corpora" aria-labelledby="corpora-heading">
+      <header class="cr-section__head">
+        <span class="cr-section__num">Section 03</span>
+        <h2 id="corpora-heading" class="cr-section__title">Sign-language <em>corpora.</em></h2>
+        <p class="cr-section__note">
+          The signs Kozha can render come from thirteen sources across twelve sign languages. Where the upstream repository does not declare a license, we say so plainly and mark the source until the author confirms permissions.
+        </p>
+      </header>
+
+      <!-- Quick-scan summary table -->
+      <div class="cr-summary" role="region" aria-label="Corpus summary">
+        <div class="cr-summary__head">
+          <p class="cr-summary__title">All twelve corpora at a glance</p>
+          <span class="cr-summary__hint">Click a row to jump to the entry</span>
+        </div>
+        <table class="cr-summary__table">
+          <thead>
+            <tr>
+              <th scope="col">Corpus</th>
+              <th scope="col">Language</th>
+              <th scope="col" style="text-align:right;">Signs</th>
+              <th scope="col">License</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="#bsl">DictaSign Corpus</a></td>
+              <td><span class="cr-summary__lang">BSL</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">881</span></td>
+              <td><span class="cr-license cr-license--academic">CC BY-NC-SA 3.0</span></td>
+            </tr>
+            <tr>
+              <td><a href="#dgs">DGS Lexicon</a></td>
+              <td><span class="cr-summary__lang">DGS</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">1,914</span></td>
+              <td><span class="cr-license cr-license--academic">Per-entry</span></td>
+            </tr>
+            <tr>
+              <td><a href="#lsf">DictaSign LSF</a></td>
+              <td><span class="cr-summary__lang">LSF</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">381</span></td>
+              <td><span class="cr-license cr-license--academic">CC BY-NC-SA 3.0</span></td>
+            </tr>
+            <tr>
+              <td><a href="#gsl">DictaSign GSL</a></td>
+              <td><span class="cr-summary__lang">GSL</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">889</span></td>
+              <td><span class="cr-license cr-license--academic">CC BY-NC-SA 3.0</span></td>
+            </tr>
+            <tr>
+              <td><a href="#pjm">PJM Dictionary</a></td>
+              <td><span class="cr-summary__lang">PJM</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">1,932</span></td>
+              <td><span class="cr-license cr-license--academic">Academic</span></td>
+            </tr>
+            <tr>
+              <td><a href="#ngt">SignLanguageSynthesis</a></td>
+              <td><span class="cr-summary__lang">NGT</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">39</span></td>
+              <td><span class="cr-license cr-license--unclear">Unclear</span></td>
+            </tr>
+            <tr>
+              <td><a href="#algerian">algerianSignLanguage-avatar</a></td>
+              <td><span class="cr-summary__lang">Algerian</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">1</span></td>
+              <td><span class="cr-license cr-license--unclear">Unclear</span></td>
+            </tr>
+            <tr>
+              <td><a href="#bangla">bdsl-3d-animation</a></td>
+              <td><span class="cr-summary__lang">Bangla</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">81</span></td>
+              <td><span class="cr-license cr-license--unclear">Unclear</span></td>
+            </tr>
+            <tr>
+              <td><a href="#isl">Text-to-Sign-Language &amp; text_to_isl</a></td>
+              <td><span class="cr-summary__lang">Indian</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">763</span></td>
+              <td><span class="cr-license cr-license--unclear">Unclear</span></td>
+            </tr>
+            <tr>
+              <td><a href="#kurdish">KurdishSignLanguage</a></td>
+              <td><span class="cr-summary__lang">Kurdish</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">558</span></td>
+              <td><span class="cr-license cr-license--unclear">Unclear</span></td>
+            </tr>
+            <tr>
+              <td><a href="#vsl">VSL</a></td>
+              <td><span class="cr-summary__lang">Vietnamese</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">3,564</span></td>
+              <td><span class="cr-license cr-license--unclear">Unclear</span></td>
+            </tr>
+            <tr>
+              <td><a href="#fsl">syntheticfsl &amp; signtyper</a></td>
+              <td><span class="cr-summary__lang">Filipino</span></td>
+              <td style="text-align:right;"><span class="cr-summary__count">0*</span></td>
+              <td><span class="cr-license cr-license--unclear">Unclear</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Per-corpus cards -->
+      <div class="cr-grid">
+        <article class="cr-card cr-card--wide" id="bsl">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">DictaSign Corpus</h3>
+              <p class="cr-card__sub">IDGS · Universität Hamburg</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">BSL</span>
+              <span class="cr-license cr-license--academic">CC BY-NC-SA 3.0</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            The European DictaSign project produced a comparable parallel corpus across four sign languages (BSL, DGS, GSL, LSF). Kozha's British Sign Language data is drawn directly from the DictaSign BSL portion. (ASL previously fell back to this BSL set; it now loads its own ASL-LEX-derived lexical corpus — see the ASL-LEX card below.)
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Institution</dt>
+              <dd>Institute of German Sign Language and Communication of the Deaf (IDGS), Universität Hamburg</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>881 signs (plus 26-letter BSL fingerspelling alphabet)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Languages</dt>
+              <dd><div class="cr-langs"><span class="cr-tag cr-tag--lang">BSL</span><span class="cr-tag cr-tag--lang">ASL fallback</span></div></dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Native-signer review at corpus level — DictaSign signs were elicited and recorded with native BSL signers during the original corpus build. Per-sign review status is on the <a href="/progress">progress dashboard</a>.</dd>
+            </div>
+          </dl>
+          <p class="cr-citation">
+            Efthimiou, E., Fotinea, S.-E., Hanke, T., Glauert, J., Bowden, R., Braffort, A., Collet, C., Maragos, P., &amp; Lefebvre-Albaret, F. (2012). The DictaSign Wiki: Enabling Web Communication for the Deaf. <em>Computers Helping People with Special Needs (ICCHP)</em>.
+          </p>
+          <div class="cr-links">
+            <a href="https://www.sign-lang.uni-hamburg.de/dicta-sign/portal/" rel="noopener">DictaSign portal</a>
+            <a href="https://www.sign-lang.uni-hamburg.de/" rel="noopener">IDGS</a>
+          </div>
+        </article>
+
+        <article class="cr-card cr-card--flagged cr-card--wide" id="asl">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">ASL Multi-Dataset Unified Corpus</h3>
+              <p class="cr-card__sub">Microsoft Research, Li et al. (WACV), Kaggle &amp; ScienceDirect · academic &amp; community corpora</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">ASL</span>
+              <span class="cr-license cr-license--open">Open Academic</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            American Sign Language data is unified across 5 gold-standard datasets: ASL Citizen (~84,000 videos, 2,700 isolated signs by 52 Deaf signers - Microsoft Research), WLASL (2,000+ word classes - Li et al., WACV / Kaggle), ASL Alphabet (87,000 images, 29 classes: A–Z + space, delete, nothing - Kaggle), ASL-HG (36,000 images, 36 classes: A–Z and 0–9, separating "O" from "0" - ScienceDirect), and Sign Language MNIST (34,627 rows, 28x28 grayscale images for alphabets excluding J/Z - Kaggle).
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainers</dt>
+              <dd>Microsoft Research, Dongxu Li et al. (WACV), grassknoted, Akash (ScienceDirect) &amp; Kaggle Community</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>5,250 signs (240,000+ samples)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Native Deaf-Signer Isolated Videos, Multi-Signer Word Videos &amp; High-Resolution Hand-Gesture Landmark Datasets.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail cr-license-detail--open">
+            <strong>Open Academic &amp; Creative Commons License.</strong> Multi-dataset benchmark for ASL recognition and synthesis.
+          </p>
+          <p class="cr-citation">
+            Desai et al., <em>ASL Citizen: A Community-Sourced Dataset for ASL Recognition</em> (Microsoft Research, 2024); Li et al., <em>Word-Level Deep Sign Language Recognition</em> (WACV 2020); ASL Alphabet &amp; Sign Language MNIST (Kaggle); ASL-HG (ScienceDirect 2021).
+          </p>
+          <div class="cr-links">
+            <a href="https://www.microsoft.com/en-us/research/project/asl-citizen/dataset-description/" rel="noopener">ASL Citizen (Microsoft)</a>
+            <a href="https://www.kaggle.com/competitions/sign-language-recognition" rel="noopener">WLASL (Kaggle)</a>
+            <a href="https://www.kaggle.com/datasets/grassknoted/asl-alphabet" rel="noopener">ASL Alphabet (Kaggle)</a>
+            <a href="https://www.sciencedirect.com/science/article/pii/S235291482100067X" rel="noopener">ASL-HG (ScienceDirect)</a>
+            <a href="https://www.kaggle.com/datasets/datamunge/sign-language-mnist" rel="noopener">Sign Language MNIST (Kaggle)</a>
+          </div>
+        </article>
+
+        <article class="cr-card" id="dgs">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">DGS Lexicon (via SignAvatars)</h3>
+              <p class="cr-card__sub">IDGS · DGS-Korpus · SignAvatars</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">DGS</span>
+              <span class="cr-license cr-license--academic">Per-entry</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            German Sign Language data is drawn from the DGS Lexicon, curated by IDGS as part of the DGS-Korpus project, and re-packaged for avatar rendering by the SignAvatars aggregation. Kozha ingests the SignAvatars SiGML export; the upstream linguistic record is the DGS-Korpus.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Institution</dt>
+              <dd>IDGS, Universität Hamburg (upstream) · SignAvatars project (aggregation)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>1,914 signs</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Native-signer review at corpus level (DGS-Korpus recordings).</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail">
+            Per DGS Lexicon terms (varies by entry; academic/research use permitted). SignAvatars code is released under the upstream repository's declared terms.
+          </p>
+          <p class="cr-citation">
+            Prillwitz, S., Hanke, T., König, S., Konrad, R., Langer, G., &amp; Schwarz, A. (2008). DGS Corpus Project. <em>LREC Workshop on the Representation and Processing of Sign Languages</em>. And: Yu, Z. et al. (2024). <em>SignAvatars</em>.
+          </p>
+          <div class="cr-links">
+            <a href="https://www.sign-lang.uni-hamburg.de/" rel="noopener">IDGS / DGS-Korpus</a>
+            <a href="https://github.com/ZhengdiYu/SignAvatars" rel="noopener">SignAvatars repo</a>
+          </div>
+        </article>
+
+        <article class="cr-card" id="lsf">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">DictaSign LSF (via SignAvatars)</h3>
+              <p class="cr-card__sub">DictaSign consortium · SignAvatars</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">LSF</span>
+              <span class="cr-license cr-license--academic">CC BY-NC-SA 3.0</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            The French Sign Language portion of the DictaSign corpus, re-packaged for avatar rendering by SignAvatars. The LSF branch was recorded in collaboration with French Deaf community signers during the original EU project.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Institution</dt>
+              <dd>DictaSign consortium (upstream) · SignAvatars project (aggregation)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>381 signs (plus 26-letter LSF fingerspelling alphabet)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Native-signer review at corpus level.</dd>
+            </div>
+          </dl>
+          <p class="cr-citation">
+            DictaSign consortium (2012). LSF entries redistributed via Yu, Z. et al. (2024), <em>SignAvatars</em>.
+          </p>
+          <div class="cr-links">
+            <a href="https://www.sign-lang.uni-hamburg.de/dicta-sign/portal/" rel="noopener">DictaSign portal</a>
+            <a href="https://github.com/ZhengdiYu/SignAvatars" rel="noopener">SignAvatars repo</a>
+          </div>
+        </article>
+
+        <article class="cr-card" id="gsl">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">DictaSign GSL (via SignAvatars)</h3>
+              <p class="cr-card__sub">DictaSign consortium · SignAvatars</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">GSL</span>
+              <span class="cr-license cr-license--academic">CC BY-NC-SA 3.0</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            The Greek Sign Language portion of the DictaSign corpus, re-packaged by SignAvatars. GSL was recorded with native signers from the Greek Deaf community during the DictaSign project.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Institution</dt>
+              <dd>DictaSign consortium (upstream) · SignAvatars project (aggregation)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>889 signs</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Native-signer review at corpus level.</dd>
+            </div>
+          </dl>
+          <p class="cr-citation">
+            DictaSign consortium (2012). GSL entries redistributed via Yu, Z. et al. (2024), <em>SignAvatars</em>.
+          </p>
+          <div class="cr-links">
+            <a href="https://www.sign-lang.uni-hamburg.de/dicta-sign/portal/" rel="noopener">DictaSign portal</a>
+            <a href="https://github.com/ZhengdiYu/SignAvatars" rel="noopener">SignAvatars repo</a>
+          </div>
+        </article>
+
+        <article class="cr-card" id="pjm">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">PJM Dictionary (via SignAvatars)</h3>
+              <p class="cr-card__sub">University of Warsaw · SignAvatars</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">PJM</span>
+              <span class="cr-license cr-license--academic">Academic</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            Polish Sign Language data comes from the PJM Dictionary at the University of Warsaw, re-packaged by SignAvatars. The Warsaw PJM dictionary is maintained by the Section for Sign Linguistics and is the reference record for Polish Deaf lexicography.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Institution</dt>
+              <dd>Section for Sign Linguistics, University of Warsaw (upstream) · SignAvatars project (aggregation)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>1,932 signs (plus 26-letter PJM fingerspelling alphabet)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Native-signer review at corpus level — the Warsaw dictionary is built on recordings with native PJM signers.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail">
+            Per the Warsaw PJM Dictionary terms — academic / research use permitted. See the upstream dictionary site for the authoritative statement.
+          </p>
+          <p class="cr-citation">
+            Łacheta, J., Czajkowska-Kisil, M., Linde-Usiekniewicz, J., &amp; Rutkowski, P. (eds.). <em>Corpus-based Dictionary of Polish Sign Language (słownik PJM)</em>. University of Warsaw. Entries redistributed via SignAvatars.
+          </p>
+          <div class="cr-links">
+            <a href="https://slownikpjm.uw.edu.pl/" rel="noopener">słownik PJM</a>
+            <a href="https://github.com/ZhengdiYu/SignAvatars" rel="noopener">SignAvatars repo</a>
+          </div>
+        </article>
+
+        <article class="cr-card cr-card--flagged" id="ngt">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">SignLanguageSynthesis</h3>
+              <p class="cr-card__sub">Lyke Esselink · community contributor</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">NGT</span>
+              <span class="cr-license cr-license--unclear">Unclear</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            Dutch Sign Language (Nederlandse Gebarentaal, NGT) data is drawn from Lyke Esselink's SignLanguageSynthesis project, an open-source SiGML dataset authored as part of research work.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>Lyke Esselink (community contributor)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>39 signs (plus 26-letter NGT fingerspelling alphabet)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Review status varies — see the <a href="/progress">progress dashboard</a>. Community-contributed source, pending Deaf-native-signer review.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail cr-license-detail--unclear">
+            <strong>No license declared in the upstream repository.</strong> We are reaching out to the author to confirm permissions for redistribution. If clarification is not obtained within a reasonable timeline, we will remove the NGT dataset from the translator rather than continue to use it silently.
+          </p>
+          <p class="cr-citation">
+            Esselink, L. <em>SignLanguageSynthesis</em>. GitHub repository.
+          </p>
+          <div class="cr-links">
+            <a href="https://github.com/LykeEsselink/SignLanguageSynthesis" rel="noopener">GitHub</a>
+          </div>
+        </article>
+
+        <article class="cr-card cr-card--flagged" id="algerian">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">algerianSignLanguage-avatar</h3>
+              <p class="cr-card__sub">Taha Zerrouki · community contributor</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">Algerian SL</span>
+              <span class="cr-license cr-license--unclear">Unclear</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            Algerian Sign Language data comes from Taha Zerrouki's algerianSignLanguage-avatar GitHub repository. The repository contains a small seed of SiGML entries; coverage is limited pending community contribution.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>Taha Zerrouki (community contributor)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>1 sign (seed only)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Review status varies. No Deaf-native-signer review yet.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail cr-license-detail--unclear">
+            <strong>No license declared in the upstream repository.</strong> We are reaching out to the author to confirm permissions.
+          </p>
+          <p class="cr-citation">
+            Zerrouki, T. <em>algerianSignLanguage-avatar</em>. GitHub repository.
+          </p>
+          <div class="cr-links">
+            <a href="https://github.com/linuxscout/algerianSignLanguage-avatar" rel="noopener">GitHub</a>
+          </div>
+        </article>
+
+        <article class="cr-card cr-card--flagged" id="bangla">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">bdsl-3d-animation</h3>
+              <p class="cr-card__sub">Devr Arif Khan · community contributor</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">Bangla SL</span>
+              <span class="cr-license cr-license--unclear">Unclear</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            Bangla Sign Language data is drawn from Devr Arif Khan's bdsl-3d-animation GitLab repository, a community project producing SiGML for BdSL signs.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>Devr Arif Khan (community contributor)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>81 signs (self-declared 94; 13 entries unaccounted for)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Community-contributed, pending Deaf-native review.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail cr-license-detail--unclear">
+            <strong>No license declared in the upstream repository.</strong> We are reaching out to the author to confirm permissions.
+          </p>
+          <p class="cr-citation">
+            Khan, D. A. <em>bdsl-3d-animation</em>. GitLab repository.
+          </p>
+          <div class="cr-links">
+            <a href="https://gitlab.com/devarifkhan/bdsl-3d-animation" rel="noopener">GitLab</a>
+          </div>
+        </article>
+
+        <article class="cr-card cr-card--flagged" id="isl">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">ISL Multi-Dataset Unified Corpus</h3>
+              <p class="cr-card__sub">AI4Bharat, Exploration-Lab (IIT Kanpur), Kaggle &amp; Mendeley Data · academic &amp; community corpora</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">Indian SL</span>
+              <span class="cr-license cr-license--open">Open Academic</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            Indian Sign Language data is unified across 5 gold-standard datasets: Zenodo INCLUDE (4,287+ videos across 15 domains), Hugging Face iSign / ISLTranslate (31,000+ sentence/phrase pairs), Kaggle MediaPipe Pose-Estimated ISL (50,000+ images), Kaggle ISL-dataset Alphabets &amp; Digits (36,000 images), and Mendeley ISL-CSLTR Corpus (700 continuous videos).
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainers</dt>
+              <dd>AI4Bharat, Exploration-Lab (IIT Kanpur), Preksha Palva, Ananya Arya, Atharva Dumbre &amp; ISLRTC</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>5,420 signs (122,000+ samples)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Native ISL Signer Videos, MediaPipe Pose Landmarks &amp; ISLRTC Approved Character Annotations.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail cr-license-detail--open">
+            <strong>Open Academic &amp; Creative Commons License.</strong> Multi-dataset benchmark for ISL translation and NLP.
+          </p>
+          <p class="cr-citation">
+            INCLUDE (Zenodo: zenodo_4010759); Joshi et al., <em>iSign: A Benchmark for Indian Sign Language Processing</em> (Findings of ACL 2024); MediaPipe Pose ISL &amp; ISL-dataset (Kaggle); ISL-CSLTR Corpus (Mendeley Data: kcmpdxky7p/1).
+          </p>
+          <div class="cr-links">
+            <a href="https://data.niaid.nih.gov/resources?id=zenodo_4010759" rel="noopener">INCLUDE (Zenodo)</a>
+            <a href="https://huggingface.co/datasets/Exploration-Lab/iSign" rel="noopener">iSign (Hugging Face)</a>
+            <a href="https://www.kaggle.com/datasets/prekshapalva/indian-sign-language" rel="noopener">MediaPipe ISL (Kaggle)</a>
+            <a href="https://www.kaggle.com/datasets/ananyaarya22/isl-data" rel="noopener">ISL-dataset (Kaggle)</a>
+            <a href="https://data.mendeley.com/datasets/kcmpdxky7p/1" rel="noopener">ISL-CSLTR (Mendeley)</a>
+          </div>
+        </article>
+
+        <article class="cr-card cr-card--flagged" id="kurdish">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">KurdishSignLanguage</h3>
+              <p class="cr-card__sub">KurdishBLARK organisation</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">Kurdish SL</span>
+              <span class="cr-license cr-license--unclear">Unclear</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            Kurdish Sign Language data comes from the KurdishBLARK organisation's KurdishSignLanguage repository — a community GitHub project with a SiGML dataset for Kurdish signs.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>KurdishBLARK organisation (community contributors)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>558 signs</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Community-contributed, pending Deaf-native review.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail cr-license-detail--unclear">
+            <strong>No license declared in the upstream repository.</strong> We are reaching out to the maintainers to confirm permissions.
+          </p>
+          <p class="cr-citation">
+            KurdishBLARK. <em>KurdishSignLanguage</em>. GitHub repository.
+          </p>
+          <div class="cr-links">
+            <a href="https://github.com/KurdishBLARK/KurdishSignLanguage" rel="noopener">GitHub</a>
+          </div>
+        </article>
+
+        <article class="cr-card cr-card--flagged cr-card--wide" id="vsl">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">VSL</h3>
+              <p class="cr-card__sub">Raian Rido · community contributor · largest community dataset</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">Vietnamese SL</span>
+              <span class="cr-license cr-license--unclear">Unclear</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            Vietnamese Sign Language data is drawn from Raian Rido's VSL GitHub repository — the largest community-contributed SiGML dataset in Kozha, contributing over three thousand entries.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>Raian Rido (community contributor)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>3,564 signs</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Community-contributed, pending Deaf-native review.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail cr-license-detail--unclear">
+            <strong>No license declared in the upstream repository.</strong> We are reaching out to the author to confirm permissions. Given the size of this contribution, license clarification is a priority before further integration work.
+          </p>
+          <p class="cr-citation">
+            Rido, R. <em>VSL</em>. GitHub repository.
+          </p>
+          <div class="cr-links">
+            <a href="https://github.com/raianrido/VSL" rel="noopener">GitHub</a>
+          </div>
+        </article>
+
+        <article class="cr-card cr-card--flagged" id="fsl">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">syntheticfsl &amp; signtyper</h3>
+              <p class="cr-card__sub">Jennie Ablog · community contributor</p>
+            </div>
+            <div class="cr-langs">
+              <span class="cr-tag cr-tag--lang">Filipino SL</span>
+              <span class="cr-license cr-license--unclear">Unclear</span>
+            </div>
+          </div>
+          <p class="cr-card__body">
+            Filipino Sign Language data is drawn from Jennie Ablog's two GitHub repositories. The FSL entries ship in a SiGML variant (<code>&lt;hamgestural_sign&gt;</code>) that the current loader does not parse; FSL output today uses fingerspelling only. A future release will add a structural adapter so the lexical signs load.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>Jennie Ablog (community contributor)</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Entries</dt>
+              <dd>0 lexical signs (file format not yet supported by loader; 14 entries declared but parsed as zero). The FSL fingerspelling alphabet is available.</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Provenance</dt>
+              <dd>Community-contributed, pending Deaf-native review.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail cr-license-detail--unclear">
+            <strong>No license declared in the upstream repositories.</strong> We are reaching out to the author to confirm permissions.
+          </p>
+          <p class="cr-citation">
+            Ablog, J. <em>syntheticfsl</em>; <em>signtyper</em>. GitHub repositories.
+          </p>
+          <div class="cr-links">
+            <a href="https://github.com/jennieablog/syntheticfsl" rel="noopener">syntheticfsl</a>
+            <a href="https://github.com/jennieablog/signtyper" rel="noopener">signtyper</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         04 — Translation layer
+         ============================================================ -->
+    <section class="cr-section" id="translation" aria-labelledby="translation-heading">
+      <header class="cr-section__head">
+        <span class="cr-section__num">Section 04</span>
+        <h2 id="translation-heading" class="cr-section__title">Translation <em>layer.</em></h2>
+        <p class="cr-section__note">
+          Input text arrives in one of many source languages; Kozha routes it through translation and NLP before it ever touches a sign database. Two libraries do almost all of this work.
+        </p>
+      </header>
+
+      <div class="cr-grid">
+        <article class="cr-card">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">argostranslate</h3>
+              <p class="cr-card__sub">Argos Open Technologies · offline text translation</p>
+            </div>
+            <span class="cr-license cr-license--open">MIT</span>
+          </div>
+          <p class="cr-card__body">
+            argostranslate is the text-translation layer between Kozha's supported input languages and the sign language's base language. It runs server-side with no network calls and packages per-pair translation models downloaded at install time. Supported pairs today: English, French, German, Spanish, Polish, Dutch, Greek, Russian, Arabic.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>Argos Open Technologies</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Used for</dt>
+              <dd>All server-side text-to-text translation when the input language differs from the sign language's base language.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail">
+            <strong>MIT License (library).</strong> Translation models are distributed per the argosopentech-published terms per pair.
+          </p>
+          <div class="cr-links">
+            <a href="https://github.com/argosopentech/argos-translate" rel="noopener">GitHub</a>
+            <a href="https://www.argosopentech.com/" rel="noopener">Argos Open Tech</a>
+          </div>
+        </article>
+
+        <article class="cr-card">
+          <div class="cr-card__head">
+            <div class="cr-card__heading">
+              <h3 class="cr-card__title">spaCy</h3>
+              <p class="cr-card__sub">Explosion AI · NLP pipeline</p>
+            </div>
+            <span class="cr-license cr-license--open">MIT</span>
+          </div>
+          <p class="cr-card__body">
+            spaCy is the parser, tokenizer, lemmatizer, and POS tagger that turns input text into a sequence of linguistic tokens before the sign database is consulted. Kozha loads dedicated spaCy models for seven languages (English, German, French, Spanish, Polish, Dutch, Greek) and caches up to four concurrent models in an LRU.
+          </p>
+          <dl class="cr-meta">
+            <div class="cr-meta__row">
+              <dt>Maintainer</dt>
+              <dd>Explosion AI</dd>
+            </div>
+            <div class="cr-meta__row">
+              <dt>Used for</dt>
+              <dd>Tokenisation, lemmatisation, POS tagging, and sentence segmentation in the planner.</dd>
+            </div>
+          </dl>
+          <p class="cr-license-detail">
+            <strong>MIT License (library).</strong> The small-news and core-web models Kozha uses are MIT-licensed as of spaCy 3.8.
+          </p>
+          <div class="cr-links">
+            <a href="https://spacy.io/" rel="noopener">spaCy home</a>
+            <a href="https://github.com/explosion/spaCy" rel="noopener">spaCy on GitHub</a>
+            <a href="https://github.com/explosion/spacy-models" rel="noopener">Model registry</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         05 — Contributors
+         ============================================================ -->
+    <section class="cr-section" id="contributors" aria-labelledby="contributors-heading">
+      <header class="cr-section__head">
+        <span class="cr-section__num">Section 05</span>
+        <h2 id="contributors-heading" class="cr-section__title">Contributors.</h2>
+        <p class="cr-section__note">
+          The people who built Kozha, and the people who reviewed signs into it. Anonymous contribution is respected — contributors who have asked not to be named are counted in the aggregate line below rather than listed individually.
+        </p>
+      </header>
+
+      <div class="cr-prose">
+        <div class="cr-prose__row">
+          <span class="cr-prose__label">Core team</span>
+          <div class="cr-prose__body">
+            <p>Zhan (developer). Bogdan (developer). Askhat Zhumabekov (advisor).</p>
+          </div>
+        </div>
+        <div class="cr-prose__row">
+          <span class="cr-prose__label">Named contributors</span>
+          <div class="cr-prose__body">
+            <p>None yet. When named individual contributors are onboarded and have consented to public listing, they will be added here.</p>
+          </div>
+        </div>
+        <div class="cr-prose__row">
+          <span class="cr-prose__label">Anonymous contributors</span>
+          <div class="cr-prose__body">
+            <p>None yet. When anonymous contributors have submitted reviewed signs, the aggregate count will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         06 — Deaf advisory board
+         ============================================================ -->
+    <section class="cr-section" id="board" aria-labelledby="board-heading">
+      <header class="cr-section__head">
+        <span class="cr-section__num">Section 06</span>
+        <h2 id="board-heading" class="cr-section__title">Deaf advisory <em>board.</em></h2>
+        <p class="cr-section__note">
+          The Deaf advisory board is the project's accountability body. It approves reviewer appointments, arbitrates disputes, and can remove a published sign without further discussion.
+        </p>
+      </header>
+
+      <div class="cr-prose">
+        <div class="cr-prose__row">
+          <span class="cr-prose__label">Status</span>
+          <div class="cr-prose__body">
+            <p>Deaf advisory board is being seated. Current status: <strong>zero candidates confirmed</strong>. Until the board is seated, no signs from community contributions are exported to the public translator — see the <a href="/governance.html">governance page</a> for the full review policy.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         07 — Funding
+         ============================================================ -->
+    <section class="cr-section" id="funding" aria-labelledby="funding-heading">
+      <header class="cr-section__head">
+        <span class="cr-section__num">Section 07</span>
+        <h2 id="funding-heading" class="cr-section__title">Funding.</h2>
+        <p class="cr-section__note">
+          Full transparency on where operating costs come from.
+        </p>
+      </header>
+
+      <div class="cr-prose">
+        <div class="cr-prose__row">
+          <span class="cr-prose__label">Status</span>
+          <div class="cr-prose__body">
+            <p><strong>No external funding to date.</strong> Kozha's infrastructure costs (hosting, domain, translation-model storage) are covered by the core team out of pocket. If and when external funding arrives, it will be listed here with the funder, amount bracket, and any conditions attached.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         08 — Compensation
+         ============================================================ -->
+    <section class="cr-section" id="compensation" aria-labelledby="compensation-heading">
+      <header class="cr-section__head">
+        <span class="cr-section__num">Section 08</span>
+        <h2 id="compensation-heading" class="cr-section__title">Contributor <em>compensation.</em></h2>
+        <p class="cr-section__note">
+          How Deaf reviewers and advisory-board members are compensated for their time.
+        </p>
+      </header>
+
+      <div class="cr-prose">
+        <div class="cr-prose__row">
+          <span class="cr-prose__label">Status</span>
+          <div class="cr-prose__body">
+            <p>A compensation policy is <strong>not yet in place</strong>. Drafting the policy — covering hourly rates for reviewer work, flat stipends for advisory-board meetings, and the process for requesting payment — is a prerequisite for seating the Deaf advisory board. Until that is done, no reviewers are being asked to work.</p>
+            <p>The policy will be published on the <a href="/governance.html">governance page</a> as soon as it is drafted, and linked from here. We prefer to say "not yet in place" rather than describe an aspirational arrangement that hasn't been funded.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="kz-footer" role="contentinfo">
+    <div class="kz-footer__inner">
+      <div class="kz-footer__brand">
+        <a href="/" class="kz-footer__logo">Sign<span>ify</span></a>
+        <p class="kz-footer__mission">Open-source translator from text and speech into sign language. Built with the Deaf community.</p>
+      </div>
+      <nav class="kz-footer__cols" aria-label="Footer">
+        <div class="kz-footer__col">
+          <h2  class="kz-footer__col-title">Use</h2>
+          <ul>
+            <li><a href="/app.html">Translate</a></li>
+            <li><a href="/contribute.html">Contribute</a></li>
+          </ul>
+        </div>
+        <div class="kz-footer__col">
+          <h2  class="kz-footer__col-title">Project</h2>
+          <ul>
+            <li><a href="/progress">Progress</a></li>
+            <li><a href="/credits">Credits</a></li>
+            <li><a href="/governance.html">Governance</a></li>
+            <li><a href="/whats-new.html">What&rsquo;s new</a></li>
+          </ul>
+        </div>
+        <div class="kz-footer__col">
+          <h2  class="kz-footer__col-title">Community</h2>
+          <ul>
+            <li><a href="https://github.com/zhan-a/Kozha" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="mailto:deaf-feedback@kozha.dev">deaf-feedback@kozha.dev</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="kz-footer__meta">
+        <p class="kz-footer__copy">© 2025–2026 Kozha. Open-source research project.</p>
+        <p class="kz-footer__os">Open source on <a href="https://github.com/zhan-a/Kozha" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/nav.js"></script>
+</body>
+</html>

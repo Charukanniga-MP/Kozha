@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sigml_collection language="Indian_SL_iSign" count="8">
+
+  <hns_sign gloss="GOOD">
+    <hamnosys_manual>
+      <hamfist/><hamthumboutmod/><hamextfingeru/><hampalml/><hamchest/><hammoveu/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="NAMASTE">
+    <hamnosys_manual>
+      <hamsymmpar/><hamflathand/><hamextfingeru/><hampalml/><hamchest/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="WELCOME">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalml/><hamchest/><hammovei/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="INDIA">
+    <hamnosys_manual>
+      <hamfinger23/><hamextfingeru/><hampalml/><hamforehead/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="SIGN">
+    <hamnosys_manual>
+      <hamsymmpar/><hamfinger23spread/><hamextfingeru/><hampalmr/><hamneutralspace/><hamcircleo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="THANK_YOU">
+    <hamnosys_manual>
+      <hamflathand/><hamextfingeru/><hampalml/><hamchin/><hammoveo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="FAMILY">
+    <hamnosys_manual>
+      <hamsymmpar/><hamfinger2345/><hamextfingeru/><hampalml/><hamneutralspace/><hamcircleo/>
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="HOME">
+    <hamnosys_manual>
+      <hamsymmpar/><hamflathand/><hamextfingerul/><hampalmdl/><hamchest/><hamtouch/>
+    </hamnosys_manual>
+  </hns_sign>
+
+</sigml_collection>

@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contribute a sign — Signify</title>
+  <meta name="description" content="Contribute a single sign to the Signify dictionary. Pick a sign language, describe the sign, review the notation, submit for Deaf review.">
+  <meta property="og:title" content="Contribute a sign — Signify">
+  <meta property="og:description" content="Help grow Kozha's sign vocabulary. Describe a sign; a Deaf reviewer validates it before it ships.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kozha-translate.com/contribute.html">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://kozha-translate.com/contribute.html">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <!-- CWASA's stylesheet sets html, body { background-color: #eee }
+       which conflicts with our warm paper background. Load it *before*
+       contribute.css so the page-specific rules (body bg, avatar
+       stage, etc.) win. -->
+  <link rel="stylesheet" href="/cwa/cwasa.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Preload the HamNoSys binaries so they're in cache before the
+       @font-face declaration in /contribute.css triggers any DOM-driven
+       request. crossorigin is required on font preload even for same-
+       origin so the cached resource matches the @font-face fetch
+       (which is always anonymous-CORS for fonts). -->
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/HamNoSysUnicode.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/ttf" href="/fonts/HamNoSysUnicode.ttf" crossorigin>
+
+  <link rel="stylesheet" href="/contribute.css">
+  <script>
+    // Detect whether the HamNoSys font actually shapes PUA codepoints.
+    // The .no-hamnosys-font fallback class is set on <html> first so
+    // there's no flash of broken .notdef boxes before detection. We
+    // then call document.fonts.load() to *force* the browser to fetch
+    // the font, independent of any DOM rendering — without this the
+    // very fallback CSS (display: none on .c2-snapshot-card__glyphs)
+    // would prevent the only PUA-bearing element from triggering the
+    // font request, locking the page into the fallback state forever.
+    // Once the load resolves we measure a glyph against monospace and
+    // remove the fallback class if shaping took effect.
+    (function () {
+      var html = document.documentElement;
+      html.classList.add('no-hamnosys-font');
+
+      function probe() {
+        try {
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext && canvas.getContext('2d');
+          if (!ctx) return;
+          var ch = String.fromCharCode(0xE001);
+          ctx.font = "32px 'HamNoSysUnicode', monospace";
+          var w1 = ctx.measureText(ch).width;
+          ctx.font = "32px monospace";
+          var w2 = ctx.measureText(ch).width;
+          if (Math.abs(w1 - w2) > 1) {
+            html.classList.remove('no-hamnosys-font');
+          }
+        } catch (_e) { /* keep .no-hamnosys-font on */ }
+      }
+
+      if (document.fonts && typeof document.fonts.load === 'function') {
+        document.fonts.load("32px 'HamNoSysUnicode'", "")
+          .then(probe)
+          .catch(probe);
+      } else if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(probe).catch(function () { probe(); });
+      } else {
+        window.addEventListener('load', probe);
+      }
+    })();
+  </script>
+  <script defer src="/i18n.js"></script>
+  <script>
+    // CWASA avatar bundle is ~4.6 MB — inject it on first user interaction
+    // or after a brief idle window so mobile LCP isn't dragged down by the
+    // download. contribute-preview.js polls for window.CWASA with a 6s
+    // timeout and degrades gracefully if the script never arrives.
+    (function () {
+      var injected = false;
+      function inject() {
+        if (injected) return;
+        injected = true;
+        var s = document.createElement('script');
+        s.src = '/cwa/allcsa.js';
+        s.crossOrigin = 'anonymous';
+        s.referrerPolicy = 'no-referrer';
+        s.async = true;
+        document.head.appendChild(s);
+        off();
+      }
+      var TRIGGERS = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+      function on()  { TRIGGERS.forEach(function (t) { window.addEventListener(t, inject, { passive: true, once: false }); }); }
+      function off() { TRIGGERS.forEach(function (t) { window.removeEventListener(t, inject); }); }
+      on();
+      window.addEventListener('load', function () { setTimeout(inject, 2500); });
+    })();
+  </script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link kz-skip-link" data-i18n="common.skip_to_main">Skip to main content</a>
+
+  <header class="kz-header" aria-label="Main navigation">
+    <a href="/" class="kz-header__logo">Sign<span>ify</span></a>
+    <ul class="kz-header__nav">
+      <li><a href="/app.html" class="kz-header__link" data-i18n="common.nav_translate">Translate</a></li>
+      <li><a href="/contribute.html" class="kz-header__link is-active" aria-current="page" data-i18n="common.nav_contribute">Contribute</a></li>
+      <li><a href="/progress" class="kz-header__link" data-i18n="common.nav_progress">Progress</a></li>
+      <li><a href="/credits" class="kz-header__link" data-i18n="common.nav_about">About</a></li>
+    </ul>
+    <button class="kz-header__hamburger" type="button" aria-label="Menu" aria-expanded="false">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </header>
+
+  <main id="main-content" class="contribute-main" role="main">
+    <!-- Redesigned contribute intro (2026-04): compact hero + interactive
+         stepper + prominent quickstart card replacing the stacked text
+         walkthrough. JS hooks for the picker, byo-key, and the
+         .has-session hide mechanism are preserved verbatim below. -->
+
+    <header class="c2-hero" aria-labelledby="c2-hero-title">
+      <div class="c2-hero__text">
+        <p class="c2-hero__eyebrow">
+          <span class="c2-hero__eyebrow-dot" aria-hidden="true"></span>
+          Open dictionary · Deaf-led
+        </p>
+        <h1 class="c2-hero__title contribute-h1" id="c2-hero-title">
+          Add a sign.<br>
+          <em>Close a gap in the dictionary.</em>
+        </h1>
+        <p class="c2-hero__lede contribute-lede">
+          Most sign-language vocabularies online cover only a few hundred everyday words.
+          Every sign you contribute unblocks a real translation, and becomes open data
+          that researchers, teachers, and learners can build on <strong>free, forever</strong>.
+        </p>
+        <div class="c2-hero__actions">
+          <a href="#c2-quickstart" class="btn btn-primary c2-hero__cta" id="contributeOpenBtn">
+            <span class="c2-hero__cta-icon" aria-hidden="true">→</span>
+            Pick a language to start
+          </a>
+          <span class="c2-hero__actions-note">1–3 min per sign · save and return any time</span>
+        </div>
+        <ul class="c2-hero__stats" aria-label="At a glance">
+          <li><strong>12</strong><span>sign languages</span></li>
+          <li><strong>Plain language</strong><span>no notation expertise</span></li>
+          <li><strong>Deaf-reviewed</strong><span>before it goes live</span></li>
+        </ul>
+      </div>
+      <!-- Conversation snapshot card (Pattern B). The card narrates a
+           real chat2hamnosys session — bubbles, HamNoSys, and SiGML are
+           sourced verbatim from backend/chat2hamnosys/examples/house.json
+           (no invented dialogue, no fake silhouette). HOUSE has zero
+           qualifying deaf-reviewer approvals — the badge reads "Demo ·
+           fixture" rather than a reviewer count. The avatar plays in a
+           fullscreen replay modal (#heroReplayModal) on explicit click;
+           no auto-play. See contribute-walkthrough.js. -->
+      <aside class="c2-hero__card c2-snapshot-card c2-conversation-card"
+             role="region"
+             aria-label="Demo of the ASL sign for HOUSE, recorded from a chat2hamnosys session"
+             aria-describedby="c2-hero-card-trail">
+        <div class="c2-hero__card-head">
+          <span class="c2-hero__card-chip">ASL</span>
+          <span class="c2-hero__card-gloss" id="c2-hero-card-gloss">HOUSE</span>
+          <span class="c2-conversation-card__badge">Demo · fixture</span>
+        </div>
+
+        <ol class="c2-conversation-card__trail" id="c2-hero-card-trail"
+            aria-label="Recorded chat2hamnosys session for HOUSE">
+          <li class="c2-conversation-card__bubble c2-conversation-card__bubble--author">
+            <span class="c2-conversation-card__author">You</span>
+            <p class="c2-conversation-card__text">HOUSE is like sketching a little house in the air with both flat hands. They meet up at the peak — like a roof — then sweep down and out for the slanted sides, and finally drop straight down to draw the walls.</p>
+          </li>
+          <li class="c2-conversation-card__bubble c2-conversation-card__bubble--system">
+            <span class="c2-conversation-card__author">Kozha</span>
+            <p class="c2-conversation-card__text">As the hands come down, do the fingertips tilt outward to follow the slope?</p>
+          </li>
+          <li class="c2-conversation-card__bubble c2-conversation-card__bubble--author">
+            <span class="c2-conversation-card__author">You</span>
+            <p class="c2-conversation-card__text">Yeah — they pivot outward as the hands separate and head down.</p>
+          </li>
+          <li class="c2-conversation-card__bubble c2-conversation-card__bubble--system">
+            <span class="c2-conversation-card__author">Kozha</span>
+            <p class="c2-conversation-card__text">Generated · confidence 0.91</p>
+          </li>
+        </ol>
+
+        <!-- Linguistic artefact: HamNoSys glyphs + collapsible SiGML
+             excerpt + the inline payload the replay modal hands to
+             CWASA. The smoke test at tests/contrib_demo_signs.spec.ts
+             asserts the data-demo-payload tag list matches the
+             expected_sign_entry.hamnosys mapping in the fixture. -->
+        <div class="c2-conversation-card__notation"
+             data-demo-card="hero"
+             data-gloss="HOUSE"
+             data-corpus="backend/chat2hamnosys/examples/house.json">
+          <p class="c2-snapshot-card__rubric c2-conversation-card__rubric">HamNoSys · ASL · HOUSE</p>
+          <span class="hamnosys c2-snapshot-card__glyphs c2-conversation-card__glyphs" lang="zxx" aria-hidden="true">&#xE0E9;&#xE001;&#xE031;&#xE03D;&#xE0ED;&#xE0D1;&#xE051;&#xE0E2;&#xE083;&#xE0AA;&#xE029;&#xE0E3;&#xE084;</span>
+          <details class="c2-conversation-card__sigml-details">
+            <summary class="c2-conversation-card__sigml-summary">show SiGML</summary>
+            <pre class="c2-snapshot-card__sigml c2-conversation-card__sigml" aria-hidden="true"><code>&lt;hns_sign gloss="HOUSE"&gt;
+  &lt;hamnosys_manual&gt;
+    &lt;hamsymmlr/&gt;&lt;hamflathand/&gt;
+    &lt;hamextfingeruo/&gt;&lt;hampalmdl/&gt;
+    &lt;hamorirelative/&gt;&lt;hamtouch/&gt;
+    &lt;hamshoulders/&gt;&lt;hamparbegin/&gt;
+    &lt;hammovedr/&gt;&lt;hamreplace/&gt;
+    &lt;hamextfingero/&gt;&lt;hamparend/&gt;
+    &lt;hammoved/&gt;
+  &lt;/hamnosys_manual&gt;
+&lt;/hns_sign&gt;</code></pre>
+          </details>
+          <script type="application/xml" data-demo-payload="hero"><sigml><hns_sign gloss="HOUSE"><hamnosys_nonmanual /><hamnosys_manual><hamsymmlr /><hamflathand /><hamextfingeruo /><hampalmdl /><hamorirelative /><hamtouch /><hamshoulders /><hamparbegin /><hammovedr /><hamreplace /><hamextfingero /><hamparend /><hammoved /></hamnosys_manual></hns_sign></sigml></script>
+        </div>
+
+        <div class="c2-conversation-card__footer">
+          <span class="c2-snapshot-card__attribution c2-conversation-card__attribution">
+            Fixture · session <code>00000000…h06</code>
+          </span>
+          <button type="button"
+                  class="c2-snapshot-card__play c2-conversation-card__replay"
+                  id="heroPlayBtn"
+                  aria-haspopup="dialog"
+                  aria-controls="heroReplayModal"
+                  data-demo-play="hero">
+            <span class="c2-snapshot-card__play-icon" aria-hidden="true">▶</span>
+            <span class="c2-snapshot-card__play-label">Replay in avatar</span>
+          </button>
+        </div>
+      </aside>
+    </header>
+
+    <!-- Why it matters — 3 scannable callouts. -->
+    <section class="c2-why" aria-label="Why this matters">
+      <ul class="c2-why__row">
+        <li class="c2-why__item">
+          <span class="c2-why__num" aria-hidden="true">01</span>
+          <h2 class="c2-why__title">Unblock a translation</h2>
+          <p class="c2-why__body">Kozha can only animate signs that exist in the dictionary. The word you add might be the one that stops coming back blank.</p>
+        </li>
+        <li class="c2-why__item">
+          <span class="c2-why__num" aria-hidden="true">02</span>
+          <h2 class="c2-why__title">No expertise required</h2>
+          <p class="c2-why__body">Describe a sign in plain language. Kozha drafts the HamNoSys for you, and a Deaf native signer reviews it before it goes live.</p>
+        </li>
+        <li class="c2-why__item">
+          <span class="c2-why__num" aria-hidden="true">03</span>
+          <h2 class="c2-why__title">Open data, forever</h2>
+          <p class="c2-why__body">Every approved sign becomes CC-licensed open data that researchers, teachers, and learners can build on. It stays free, always.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Interactive 5-step walkthrough. Tabs on the left, visual + copy
+         on the right. Click a tab, use arrow keys, or press Prev/Next.
+         One step rendered at a time so the page isn't a wall of text. -->
+    <section class="c2-walk" aria-labelledby="c2-walk-heading">
+      <header class="c2-walk__head">
+        <p class="c2-walk__kicker">The flow</p>
+        <h2 class="c2-walk__heading" id="c2-walk-heading">How a contribution <em>actually works.</em></h2>
+        <p class="c2-walk__sub">Step through the full flow before you start. Use the numbers below, arrow keys, or the next/prev controls.</p>
+      </header>
+
+      <div class="c2-walk__frame">
+        <nav class="c2-walk__tabs" role="tablist" aria-label="Contribution workflow steps">
+          <button type="button" class="c2-walk__tab is-active" role="tab" data-step="1" id="c2-tab-1" aria-selected="true" aria-controls="c2-panel-1" tabindex="0">
+            <span class="c2-walk__tab-num">01</span>
+            <span class="c2-walk__tab-name">Pick a language &amp; word</span>
+            <span class="c2-walk__tab-dur">30 s</span>
+          </button>
+          <button type="button" class="c2-walk__tab" role="tab" data-step="2" id="c2-tab-2" aria-selected="false" aria-controls="c2-panel-2" tabindex="-1">
+            <span class="c2-walk__tab-num">02</span>
+            <span class="c2-walk__tab-name">Describe the sign</span>
+            <span class="c2-walk__tab-dur">~1 min</span>
+          </button>
+          <button type="button" class="c2-walk__tab" role="tab" data-step="3" id="c2-tab-3" aria-selected="false" aria-controls="c2-panel-3" tabindex="-1">
+            <span class="c2-walk__tab-num">03</span>
+            <span class="c2-walk__tab-name">Refine through chat</span>
+            <span class="c2-walk__tab-dur">~1 min</span>
+          </button>
+          <button type="button" class="c2-walk__tab" role="tab" data-step="4" id="c2-tab-4" aria-selected="false" aria-controls="c2-panel-4" tabindex="-1">
+            <span class="c2-walk__tab-num">04</span>
+            <span class="c2-walk__tab-name">Preview the avatar</span>
+            <span class="c2-walk__tab-dur">instant</span>
+          </button>
+          <button type="button" class="c2-walk__tab" role="tab" data-step="5" id="c2-tab-5" aria-selected="false" aria-controls="c2-panel-5" tabindex="-1">
+            <span class="c2-walk__tab-num">05</span>
+            <span class="c2-walk__tab-name">Submit for review</span>
+            <span class="c2-walk__tab-dur">1 click</span>
+          </button>
+          <span class="c2-walk__progress" aria-hidden="true"><span class="c2-walk__progress-bar" style="--c2-progress: 20%"></span></span>
+        </nav>
+
+        <div class="c2-walk__panels">
+          <!-- Step 1 -->
+          <article class="c2-walk__panel is-active" role="tabpanel" id="c2-panel-1" data-step="1" aria-labelledby="c2-tab-1">
+            <div class="c2-walk__copy">
+              <span class="c2-walk__step-label">Step 1 of 5</span>
+              <h3 class="c2-walk__copy-title">Pick a language. Pick a word.</h3>
+              <p class="c2-walk__copy-body">Choose the sign language you sign in (BSL, ASL, DGS, LSF — and more coming), then type the English gloss you want to add. One word, one sign.</p>
+              <ul class="c2-walk__bullets">
+                <li>Uppercase gloss works best: <code>ELECTRON</code>, <code>RAIN</code>, <code>HELLO</code>.</li>
+                <li>If your language isn't listed yet, email us and we'll stand up a reviewer pool.</li>
+              </ul>
+            </div>
+            <figure class="c2-walk__viz c2-viz-1" aria-hidden="true">
+              <div class="c2-viz-1__picker">
+                <span class="c2-viz-1__label">SIGN LANGUAGE</span>
+                <span class="c2-viz-1__value">
+                  <span class="c2-viz-1__flag">🇬🇧</span>
+                  BSL — British Sign Language
+                </span>
+              </div>
+              <div class="c2-viz-1__gloss">
+                <span class="c2-viz-1__label">GLOSS</span>
+                <div class="c2-viz-1__typer">
+                  <span class="c2-viz-1__typed">ELECTRON</span>
+                  <span class="c2-viz-1__caret" aria-hidden="true"></span>
+                </div>
+              </div>
+            </figure>
+          </article>
+
+          <!-- Step 2 -->
+          <article class="c2-walk__panel" role="tabpanel" id="c2-panel-2" data-step="2" aria-labelledby="c2-tab-2" hidden>
+            <div class="c2-walk__copy">
+              <span class="c2-walk__step-label">Step 2 of 5</span>
+              <h3 class="c2-walk__copy-title">Describe it in plain language.</h3>
+              <p class="c2-walk__copy-body">Say how you'd describe the sign to a friend on the phone. Where does the hand sit? What shape is it in? How does it move? The more detail you give, the better the first draft.</p>
+              <ul class="c2-walk__bullets">
+                <li>No jargon required. Write like you speak.</li>
+                <li>Kozha drafts the HamNoSys for you. You can read along if you want; you don't have to write it.</li>
+              </ul>
+            </div>
+            <figure class="c2-walk__viz c2-viz-2" aria-hidden="true">
+              <blockquote class="c2-viz-2__quote">
+                <span class="c2-viz-2__mark">&ldquo;</span>
+                Index finger circles at the temple,
+                palm facing the head. Small, tight loops — <em>like a thought spinning</em>.
+                <span class="c2-viz-2__mark c2-viz-2__mark--end">&rdquo;</span>
+              </blockquote>
+              <div class="c2-viz-2__tags">
+                <span class="c2-viz-2__tag">handshape: index</span>
+                <span class="c2-viz-2__tag">location: temple</span>
+                <span class="c2-viz-2__tag">movement: circle</span>
+              </div>
+            </figure>
+          </article>
+
+          <!-- Step 3 -->
+          <article class="c2-walk__panel" role="tabpanel" id="c2-panel-3" data-step="3" aria-labelledby="c2-tab-3" hidden>
+            <div class="c2-walk__copy">
+              <span class="c2-walk__step-label">Step 3 of 5</span>
+              <h3 class="c2-walk__copy-title">Fill the gaps through chat.</h3>
+              <p class="c2-walk__copy-body">If something's ambiguous — palm direction, finger orientation, which hand — Kozha asks one question at a time. Answer in a sentence or tap a suggestion chip.</p>
+              <ul class="c2-walk__bullets">
+                <li>Three to five questions, max. Usually fewer.</li>
+                <li>You can always say &ldquo;submit as-is&rdquo; and let a reviewer finish it.</li>
+              </ul>
+            </div>
+            <figure class="c2-walk__viz c2-viz-3" aria-hidden="true">
+              <div class="c2-viz-3__log">
+                <p class="c2-viz-3__msg c2-viz-3__msg--bot">
+                  <span class="c2-viz-3__who">Kozha</span>
+                  Which way does the palm face when the hand is at the temple?
+                </p>
+                <div class="c2-viz-3__chips">
+                  <span class="c2-viz-3__chip">Toward the head</span>
+                  <span class="c2-viz-3__chip">Away from the head</span>
+                  <span class="c2-viz-3__chip">Downward</span>
+                </div>
+                <p class="c2-viz-3__msg c2-viz-3__msg--you">
+                  <span class="c2-viz-3__who">You</span>
+                  Toward the head.
+                </p>
+                <p class="c2-viz-3__msg c2-viz-3__msg--bot c2-viz-3__msg--thinking">
+                  <span class="c2-viz-3__who">Kozha</span>
+                  <span class="c2-viz-3__dots"><span></span><span></span><span></span></span>
+                </p>
+              </div>
+            </figure>
+          </article>
+
+          <!-- Step 4 -->
+          <article class="c2-walk__panel" role="tabpanel" id="c2-panel-4" data-step="4" aria-labelledby="c2-tab-4" hidden>
+            <div class="c2-walk__copy">
+              <span class="c2-walk__step-label">Step 4 of 5</span>
+              <h3 class="c2-walk__copy-title">Watch the avatar perform it.</h3>
+              <p class="c2-walk__copy-body">Tap Play to watch the sign. Click any chip to see what it controls, or tell the chat what to change.</p>
+            </div>
+            <figure class="c2-walk__viz c2-viz-4">
+              <!-- Compact Step 4 snapshot card. The full SiGML excerpt
+                   and the corpus-attribution caption that used to live
+                   here are duplicates of the hero card and were just
+                   stretching the panel; this surface now keeps only the
+                   rubric + glyph row + Play button (the playable canvas
+                   itself is the modal). The smoke test
+                   (tests/contrib_demo_signs.spec.ts) reads
+                   data-gloss / data-corpus / data-demo-payload from this
+                   element — keep the attribute order intact. -->
+              <div class="c2-viz-4__snapshot c2-snapshot-card"
+                   data-demo-card="walk"
+                   data-gloss="HAMBURG1^"
+                   data-corpus="German_SL_DGS.sigml"
+                   role="region"
+                   aria-label="HamNoSys notation for the DGS sign for HAMBURG1^">
+                <div class="c2-viz-4__snapshot-row">
+                  <p class="c2-snapshot-card__rubric c2-viz-4__snapshot-rubric">HamNoSys · DGS · HAMBURG1^</p>
+                  <button type="button"
+                          class="c2-snapshot-card__play c2-viz-4__snapshot-play"
+                          id="walkPlayBtn"
+                          aria-haspopup="dialog"
+                          aria-controls="walkReplayModal"
+                          data-demo-play="walk">
+                    <span class="c2-snapshot-card__play-icon" aria-hidden="true">&#9654;</span>
+                    <span class="c2-snapshot-card__play-label">Play</span>
+                  </button>
+                </div>
+                <span class="hamnosys c2-snapshot-card__glyphs c2-viz-4__snapshot-glyphs" lang="zxx" aria-hidden="true">&#xE009;&#xE010;&#xE00E;&#xE027;&#xE03D;&#xE042;&#xE059;&#xE0D0;&#xE0E2;&#xE082;&#xE0AA;&#xE006;&#xE010;&#xE0E3;</span>
+                <span class="c2-viz-4__snapshot-gloss-fallback" aria-hidden="true">HAMBURG1^ · DGS</span>
+                <!-- SiGML payload played when the modal opens. The smoke
+                     test asserts the <ham*-/> tag list here matches the
+                     <hns_sign gloss="HAMBURG1^"> entry in
+                     data/German_SL_DGS.sigml, in the same order. -->
+                <script type="application/xml" data-demo-payload="walk"><sigml><hns_sign gloss="HAMBURG1^"><hamnosys_manual><hamcee12/><hamfingerstraightmod/><hamthumbopenmod/><hamextfingerul/><hampalmdl/><hamforehead/><hamlrat/><hamclose/><hamparbegin/><hammover/><hamreplace/><hampinch12/><hamfingerstraightmod/><hamparend/></hamnosys_manual></hns_sign></sigml></script>
+              </div>
+              <div class="c2-viz-4__chips"
+                   role="group"
+                   id="walkChipStrip"
+                   aria-label="HAMBURG SiGML tags. Tab to cycle, Enter to inspect."></div>
+              <aside class="c2-viz-4__inspector"
+                     id="walkInspector"
+                     role="region"
+                     aria-live="polite"
+                     aria-label="SiGML tag inspector"
+                     hidden>
+                <button type="button"
+                        class="c2-viz-4__inspector-close"
+                        data-walk-inspector-close
+                        aria-label="Close inspector">×</button>
+                <p class="c2-viz-4__inspector-tag"  data-walk-inspector-tag></p>
+                <p class="c2-viz-4__inspector-cat"  data-walk-inspector-cat></p>
+                <p class="c2-viz-4__inspector-role" data-walk-inspector-role></p>
+              </aside>
+            </figure>
+          </article>
+
+          <!-- Step 5 -->
+          <article class="c2-walk__panel" role="tabpanel" id="c2-panel-5" data-step="5" aria-labelledby="c2-tab-5" hidden>
+            <div class="c2-walk__copy">
+              <span class="c2-walk__step-label">Step 5 of 5</span>
+              <h3 class="c2-walk__copy-title">Submit for Deaf review.</h3>
+              <p class="c2-walk__copy-body">A Deaf native signer of the language reviews and validates. Once two reviewers approve, the sign goes live in the translator — and stays there, free, forever.</p>
+              <ul class="c2-walk__bullets">
+                <li>Your submission gets a permanent link you can share.</li>
+                <li>Approved signs land in <a href="/progress" class="kz-link">/progress</a> so everyone can see the growing coverage.</li>
+              </ul>
+            </div>
+            <figure class="c2-walk__viz c2-viz-5" aria-hidden="true">
+              <div class="c2-viz-5__card">
+                <div class="c2-viz-5__head">
+                  <span class="c2-viz-5__title">ELECTRON <span>· BSL</span></span>
+                  <span class="c2-viz-5__state c2-viz-5__state--ok">submitted</span>
+                </div>
+                <!-- Status names mirror backend/chat2hamnosys/models.py
+                     SignStatus + the post-validation "exported" event in
+                     review/router.py. Do not relabel without the backend
+                     changing first. -->
+                <ol class="c2-viz-5__timeline" aria-label="Review status timeline">
+                  <li class="is-done" data-status="draft"><span>draft</span></li>
+                  <li class="is-current" data-status="pending_review" aria-current="step"><span>pending_review</span></li>
+                  <li data-status="validated"><span>validated</span></li>
+                  <li data-status="exported"><span>exported</span></li>
+                </ol>
+                <p class="c2-viz-5__perma">
+                  <span class="c2-viz-5__perma-label">permanent link</span>
+                  <span class="c2-viz-5__perma-url">kozha.dev/contribute/s/x7Q&hellip;</span>
+                </p>
+              </div>
+            </figure>
+          </article>
+        </div>
+
+        <footer class="c2-walk__controls">
+          <button type="button" class="c2-walk__nav c2-walk__nav--prev" id="c2-walk-prev" aria-label="Previous step">← Previous</button>
+          <span class="c2-walk__counter" aria-live="polite"><span id="c2-walk-current">1</span> / 5</span>
+          <button type="button" class="c2-walk__nav c2-walk__nav--next" id="c2-walk-next" aria-label="Next step">Next →</button>
+        </footer>
+      </div>
+    </section>
+
+    <!-- Anchor target for the demo CTA so the scroll lands on the
+         language picker / form, not the top of the page. -->
+    <span id="contribute-start" class="kz-anchor-offset" aria-hidden="true"></span>
+
+    <!-- Paused-state banner. Shown iff /governance-data.json carries
+         contributions_paused: true. When paused, every other interactive
+         section is hidden. -->
+    <section class="contribute-paused card kz-card" id="contributePaused" aria-labelledby="pausedHeading" hidden>
+      <h2 class="card-title" id="pausedHeading" data-i18n="contribute.paused.heading">Contributions are paused</h2>
+      <p class="contribute-paused-body" id="contributePausedBody" data-i18n="contribute.paused.body">Contributions are paused while we seat reviewers. Email the governance address below to be notified when the queue opens.</p>
+      <p class="contribute-paused-email"><a id="contributePausedEmail" href="mailto:deaf-feedback@kozha.dev">deaf-feedback@kozha.dev</a></p>
+      <p class="contribute-paused-links">
+        <a href="/governance.html" data-i18n="contribute.paused.governance_link">How review works</a>
+        <span aria-hidden="true"> · </span>
+        <a href="/contribute/me" data-i18n="contribute.paused.me_link">Your prior submissions</a>
+      </p>
+    </section>
+
+    <!-- Offline-backend notice. Shown when /api/chat2hamnosys/healthz
+         returns non-OK on load. Drafts are kept in localStorage and submit
+         is disabled until the backend returns. -->
+    <section class="contribute-offline card kz-card" id="contributeOffline" role="status" aria-live="polite" hidden>
+      <p class="contribute-offline-body">Contribution backend is currently offline. You can save a draft locally, and we'll upload it when the backend is available.</p>
+    </section>
+
+    <!-- Workspace wrapper. Hidden by default; the hero CTA reveals it,
+         and an active session (sessionStorage / URL fragment) auto-
+         reveals on load. Keeps the marketing layer above the fold and
+         the form / chat / preview / submission stack one click away. -->
+    <div id="contributeWorkspace" class="contribute-workspace">
+
+    <!-- Prominent quickstart card. Wraps the existing #languagePicker and
+         #byoKeyForm markup so contribute.js and contribute-byokey.js keep
+         their DOM references; the new wrapper just gives the widget a
+         stronger visual footprint and adds language quick-select chips. -->
+    <!-- Quickstart v2 (2026-04): single-action language picker. Big chips
+         are the primary surface; picking one dispatches change on the
+         hidden <select> (which contribute.js still listens to) and scrolls
+         the workspace into view immediately. "More languages" expands a
+         secondary row of chips rendered from /contribute-languages.json.
+         The <select> and BYO-key stay in the DOM as hidden fallbacks so
+         contribute.js / contribute-byokey.js keep working unchanged. -->
+    <section class="qs" id="c2-quickstart" aria-labelledby="qs-heading">
+      <div class="qs__inner">
+        <p class="qs__kicker">Pick a language to begin</p>
+        <h2 class="qs__heading" id="qs-heading">Which sign language<br>are you contributing to?</h2>
+        <p class="qs__lede">Tap a language — we'll take you straight into drafting.</p>
+
+        <div class="qs__chips" role="group" aria-label="Choose a sign language">
+          <button type="button" class="qs__chip" data-lang="bsl">
+            <span class="qs__chip-flag" aria-hidden="true">🇬🇧</span>
+            <span class="qs__chip-body">
+              <span class="qs__chip-code">BSL</span>
+              <span class="qs__chip-name">British Sign Language</span>
+            </span>
+            <span class="qs__chip-arrow" aria-hidden="true">→</span>
+          </button>
+          <button type="button" class="qs__chip" data-lang="asl">
+            <span class="qs__chip-flag" aria-hidden="true">🇺🇸</span>
+            <span class="qs__chip-body">
+              <span class="qs__chip-code">ASL</span>
+              <span class="qs__chip-name">American Sign Language</span>
+            </span>
+            <span class="qs__chip-arrow" aria-hidden="true">→</span>
+          </button>
+          <button type="button" class="qs__chip" data-lang="dgs">
+            <span class="qs__chip-flag" aria-hidden="true">🇩🇪</span>
+            <span class="qs__chip-body">
+              <span class="qs__chip-code">DGS</span>
+              <span class="qs__chip-name">Deutsche Gebärdensprache</span>
+            </span>
+            <span class="qs__chip-arrow" aria-hidden="true">→</span>
+          </button>
+          <button type="button" class="qs__chip" data-lang="lsf">
+            <span class="qs__chip-flag" aria-hidden="true">🇫🇷</span>
+            <span class="qs__chip-body">
+              <span class="qs__chip-code">LSF</span>
+              <span class="qs__chip-name">Langue des Signes Française</span>
+            </span>
+            <span class="qs__chip-arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
+
+        <!-- Secondary chip row populated from /contribute-languages.json
+             by the quickstart JS. Hidden until the user clicks "more". -->
+        <div class="qs__chips qs__chips--more" id="qsChipsMore" role="group" aria-label="More sign languages" hidden></div>
+
+        <div class="qs__footer">
+          <button type="button" class="qs__more" id="qsMoreBtn" aria-expanded="false" aria-controls="qsChipsMore">
+            <span class="qs__more-plus" aria-hidden="true">+</span>
+            <span class="qs__more-label">More languages</span>
+            <span class="qs__more-count" id="qsMoreCount"></span>
+          </button>
+          <button type="button" class="qs__suggest" id="qsSuggestBtn" aria-expanded="false" aria-controls="suggestLanguageForm">
+            <span class="qs__suggest-plus" aria-hidden="true">＋</span>
+            <span class="qs__suggest-label">Don't see your sign language? Suggest one →</span>
+          </button>
+          <a href="/progress" class="qs__coverage-link" data-i18n="contribute.language_picker.see_all_languages">See coverage →</a>
+        </div>
+
+        <!-- Inline proposal form (Prompt 02). Hidden until the user
+             clicks the "Suggest one" affordance above. Mirrors the
+             existing field-label / field-input / field-error pattern
+             so it picks up the page's existing styling without a new
+             CSS bundle. -->
+        <section
+          class="suggest-language card kz-card"
+          id="suggestLanguageCard"
+          aria-labelledby="suggestLanguageHeading"
+          hidden>
+          <h3 class="card-title" id="suggestLanguageHeading">Suggest a sign language</h3>
+          <p class="suggest-language-lede field-hint">
+            Tell us which sign language is missing — a maintainer will review your suggestion. We don't auto-add languages because every corpus needs a license and a Deaf reviewer.
+          </p>
+          <form id="suggestLanguageForm" class="suggest-language-form" novalidate>
+            <div class="suggest-language-row">
+              <label class="field-label" for="suggestNameInput">Sign language name</label>
+              <input id="suggestNameInput" name="name" class="field-input" type="text" required autocomplete="off" maxlength="200" aria-describedby="suggestNameHint">
+              <p id="suggestNameHint" class="field-hint">English name, e.g. "Vietnamese Sign Language".</p>
+            </div>
+            <div class="suggest-language-row">
+              <label class="field-label" for="suggestEndonymInput">Native / endonym <span class="field-label-optional">(optional)</span></label>
+              <input id="suggestEndonymInput" name="endonym" class="field-input" type="text" autocomplete="off" maxlength="200">
+            </div>
+            <div class="suggest-language-row">
+              <label class="field-label" for="suggestIsoInput">ISO 639-3 code of the base spoken language</label>
+              <input id="suggestIsoInput" name="iso_639_3" class="field-input" type="text" required autocomplete="off" maxlength="3" pattern="[a-zA-Z]{3}" aria-describedby="suggestIsoHint">
+              <p id="suggestIsoHint" class="field-hint">3 lowercase letters, e.g. <code>vie</code> for Vietnamese, <code>kaz</code> for Kazakh.</p>
+            </div>
+            <div class="suggest-language-row">
+              <label class="field-label" for="suggestRegionInput">Region / country <span class="field-label-optional">(optional)</span></label>
+              <input id="suggestRegionInput" name="region" class="field-input" type="text" autocomplete="off" maxlength="200">
+            </div>
+            <div class="suggest-language-row">
+              <label class="field-label" for="suggestCorpusInput">Existing corpus / dataset URL <span class="field-label-optional">(optional)</span></label>
+              <input id="suggestCorpusInput" name="corpus_url" class="field-input" type="url" autocomplete="off" maxlength="600" placeholder="https://...">
+            </div>
+            <fieldset class="suggest-language-row suggest-language-deaf">
+              <legend class="field-label">Do you identify as Deaf or hard-of-hearing? <span class="field-label-optional">(optional)</span></legend>
+              <label class="suggest-language-radio"><input type="radio" name="submitter_is_deaf" value="yes"> Yes</label>
+              <label class="suggest-language-radio"><input type="radio" name="submitter_is_deaf" value="no"> No</label>
+              <label class="suggest-language-radio"><input type="radio" name="submitter_is_deaf" value="" checked> Prefer not to say</label>
+            </fieldset>
+            <div class="suggest-language-row">
+              <label class="field-label" for="suggestMotivationInput">Why this language?</label>
+              <textarea id="suggestMotivationInput" name="motivation" class="field-input" required maxlength="1000" rows="3" aria-describedby="suggestMotivationHint"></textarea>
+              <p id="suggestMotivationHint" class="field-hint">One line is fine — what gap does this fill?</p>
+            </div>
+            <!-- Honeypot — hidden from real users, populated only by bots.
+                 Backend matches the captcha-failed envelope so a scraper
+                 can't tell the honeypot from a real failure. -->
+            <div class="suggest-language-honeypot" aria-hidden="true">
+              <label>If you're human, leave this empty:
+                <input type="text" name="website" id="suggestWebsiteInput" tabindex="-1" autocomplete="off">
+              </label>
+            </div>
+            <p class="field-error" id="suggestLanguageError" role="alert" hidden></p>
+            <div class="suggest-language-actions">
+              <button type="submit" class="btn btn-primary" id="suggestLanguageSubmit">Send suggestion</button>
+              <button type="button" class="kz-link" id="suggestLanguageCancel">Cancel</button>
+            </div>
+          </form>
+          <div class="suggest-language-thanks" id="suggestLanguageThanks" role="status" aria-live="polite" hidden>
+            <p><strong>Thanks — a maintainer will review your suggestion.</strong></p>
+            <p>We don't auto-add languages because every corpus needs a license and a Deaf reviewer. We'll reach out if we need more detail.</p>
+          </div>
+        </section>
+
+        <!-- Hidden fallback: original #languagePicker markup — contribute.js
+             populates and reacts to #pickerSelect. Kept invisible because
+             the chip UI above is the primary affordance; a keyboard user
+             using the screen-reader label can still reach the select
+             through the qs__chip-fallback link below. -->
+        <section class="language-picker qs__picker-fallback" id="languagePicker" aria-label="Sign language selection" hidden>
+          <div class="lang-strip" role="group" aria-label="Signing language">
+            <div class="lang-slot">
+              <label class="lang-slot-label" for="pickerSelect" data-i18n="contribute.language_picker.prompt">Which sign language are you contributing to?</label>
+              <select id="pickerSelect" class="field-input" aria-describedby="pickerNote"></select>
+              <div id="pickerNote" class="lang-slot-note" aria-live="polite"></div>
+            </div>
+          </div>
+          <div id="pickerEmpty" hidden>
+            <ul id="pickerOptions" hidden></ul>
+          </div>
+        </section>
+
+        <details class="byo-key qs__byo">
+          <summary class="byo-key-summary">
+            <span class="byo-key-summary-text">Advanced: use your own OpenAI API key (optional)</span>
+          </summary>
+          <div class="byo-key-body">
+            <p class="byo-key-lede">
+              If the shared project key is unavailable or rate-limited, paste your own OpenAI key here. It stays in this browser and is sent directly to the Kozha backend on your requests only.
+            </p>
+            <form class="byo-key-form" id="byoKeyForm" novalidate>
+              <label class="field-label" for="byoKeyInput">OpenAI API key</label>
+              <input
+                id="byoKeyInput"
+                type="password"
+                class="field-input byo-key-input"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                placeholder="sk-…"
+                aria-describedby="byoKeyStatus byoKeyError">
+              <div class="byo-key-actions">
+                <button type="submit" class="btn btn-primary" id="byoKeySaveBtn">Save key</button>
+                <button type="button" class="btn btn-secondary" id="byoKeyClearBtn" hidden>Remove saved key</button>
+              </div>
+              <p class="byo-key-status field-hint" id="byoKeyStatus" role="status" aria-live="polite">Using the project key on the server.</p>
+              <p class="byo-key-error field-error" id="byoKeyError" role="alert" hidden></p>
+            </form>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- Persistent language header + context strip. Sticks to the top of
+         <main> as the user scrolls so they never lose track of which
+         language they're signing in or where they are in the flow. -->
+    <section class="lang-masthead card kz-card" id="langMasthead" aria-label="Active language and session" hidden>
+      <div class="language-header">
+        <span class="language-badge" id="languageBadge">
+          <span class="language-badge-code" id="languageBadgeCode"></span><span class="language-badge-sep" aria-hidden="true"> · </span><span class="language-badge-name" id="languageBadgeName"></span>
+        </span>
+        <button type="button" class="kz-link change-btn" id="changeLanguageBtn" data-i18n="contribute.masthead.change_button" aria-label="Change sign language">Change</button>
+      </div>
+      <div class="context-strip" id="contextStrip" aria-live="polite" aria-label="Session status">
+        <span class="context-gloss" id="contextGloss" data-i18n="contribute.masthead.context_gloss_empty">No sign selected</span>
+        <span class="context-state" id="contextState" data-i18n="contribute.context_state.draft">Draft</span>
+        <span class="context-session">
+          <span class="context-session-id" id="contextSessionId" title="Session ID">—</span>
+          <button type="button" class="kz-link context-copy-btn" id="contextCopyBtn" data-i18n="contribute.masthead.context_copy_button" hidden>copy</button>
+        </span>
+      </div>
+    </section>
+
+    <!-- Resume-previous-draft banner. Shown when the user lands on
+         /contribute.html WITHOUT a #s/<id> fragment but their browser
+         storage has a previously-active session. We don't auto-resume
+         (used to lock the chat into a perma-spinner because the chat
+         panel saw sessionId+awaiting_description and assumed a
+         describe was in flight). The banner gives the contributor a
+         clear opt-in. -->
+    <section class="resume-banner card kz-card" id="resumeBanner" role="status" hidden>
+      <p class="resume-banner-body" id="resumeBannerBody"></p>
+      <div class="resume-banner-actions">
+        <button type="button" class="btn btn-primary" id="resumeBannerResumeBtn">Resume previous draft</button>
+        <button type="button" class="kz-link" id="resumeBannerStartFreshBtn">Start fresh</button>
+      </div>
+    </section>
+
+    <!-- Shown when the URL carries a session id we don't have the token
+         for — minimum viable access control for resumable drafts. -->
+    <section class="token-prompt card kz-card" id="tokenPrompt" aria-labelledby="tokenPromptHeading" hidden>
+      <h2 class="card-title" id="tokenPromptHeading" data-i18n="contribute.token_prompt.heading">Resume this draft</h2>
+      <p data-i18n="contribute.token_prompt.body">To resume this draft, paste the resume token shown when you first created it.</p>
+      <form id="tokenPromptForm">
+        <label class="field-label" for="tokenPromptInput" data-i18n="contribute.token_prompt.label">Resume token</label>
+        <input id="tokenPromptInput" class="field-input" type="text" autocomplete="off" spellcheck="false">
+        <button type="submit" class="btn btn-primary" data-i18n="contribute.token_prompt.submit">Resume</button>
+      </form>
+      <p class="token-prompt-error field-error" id="tokenPromptError" role="alert" hidden></p>
+      <p class="token-prompt-escape">
+        <button type="button" class="kz-link token-prompt-discard" id="tokenPromptDiscardBtn" data-i18n="contribute.token_prompt.discard">Start a new sign instead</button>
+      </p>
+    </section>
+
+    <div class="reviewer-notice card kz-card" id="reviewerNotice" role="status" hidden></div>
+
+    <!-- authoring-root: mounts the gloss + description form pre-session and
+         the read-only summary card post-session. The chat panel, preview,
+         notation panel, and submission panel live below and are hidden
+         until the corresponding session state arrives. -->
+    <section id="authoring-root" aria-label="Sign authoring workspace" hidden>
+
+      <!-- Stage stepper (2026-04 redesign). Visually communicates where
+           the contributor is in the draft flow. Pure-CSS state detection
+           via :has() — no JS hook required; falls back to "Describe"
+           highlighted when :has() is unsupported. -->
+      <ol class="ws-stages" aria-label="Contribution progress">
+        <li class="ws-stage" data-stage="describe">
+          <span class="ws-stage__dot" aria-hidden="true">1</span>
+          <span class="ws-stage__label">Describe</span>
+        </li>
+        <li class="ws-stage" data-stage="clarify">
+          <span class="ws-stage__dot" aria-hidden="true">2</span>
+          <span class="ws-stage__label">Clarify</span>
+        </li>
+        <li class="ws-stage" data-stage="preview">
+          <span class="ws-stage__dot" aria-hidden="true">3</span>
+          <span class="ws-stage__label">Preview</span>
+        </li>
+        <li class="ws-stage" data-stage="submit">
+          <span class="ws-stage__dot" aria-hidden="true">4</span>
+          <span class="ws-stage__label">Submit</span>
+        </li>
+      </ol>
+
+      <!-- Pre-session form card. Holds gloss + description + Deaf-native
+           checkbox + "Start authoring" submit. -->
+      <div class="authoring-card card kz-card">
+        <p class="restored-notice field-hint" id="restoredNotice" role="status" data-i18n="contribute.authoring.restored_notice" hidden>restored from your last visit</p>
+
+        <!-- Read-only summary — visible once a session exists. -->
+        <div class="authoring-summary" id="authoringSummary" hidden>
+          <p class="authoring-summary-line">
+            <span class="authoring-summary-lead" data-i18n="contribute.authoring.summary_lead">Authoring:</span>
+            <span class="authoring-summary-gloss" id="summaryGloss"></span>
+            <span class="authoring-summary-in" data-i18n="contribute.authoring.summary_in"> in </span>
+            <span class="authoring-summary-lang" id="summaryLang"></span>
+            <span class="authoring-summary-sep" id="summarySep" data-i18n="contribute.authoring.summary_separator" hidden> — </span>
+            <span class="authoring-summary-desc" id="summaryDesc"></span>
+          </p>
+          <button type="button" class="kz-link authoring-summary-edit" id="summaryEditBtn" data-i18n="contribute.authoring.summary_edit">edit</button>
+        </div>
+
+        <form class="authoring-form" id="authoringForm" novalidate>
+          <div class="field">
+            <label class="field-label" for="glossInput" data-i18n="contribute.authoring.gloss_label">Gloss: the English word or short phrase for this sign.</label>
+            <input
+              id="glossInput"
+              name="gloss"
+              type="text"
+              class="field-input field-input-gloss"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              maxlength="40"
+              placeholder="e.g. ELECTRON"
+              data-i18n-attr-placeholder="contribute.authoring.gloss_placeholder"
+              aria-describedby="glossError"
+              required>
+            <p class="field-error" id="glossError" role="alert" hidden></p>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="descriptionInput" data-i18n="contribute.authoring.description_label">Describe the sign in plain language.</label>
+            <textarea
+              id="descriptionInput"
+              name="description"
+              class="field-input field-input-description"
+              rows="5"
+              placeholder=""
+              aria-describedby="descriptionHint descriptionError descriptionCount"></textarea>
+            <div class="field-meta">
+              <p class="field-hint" id="descriptionHint" data-i18n="contribute.authoring.description_hint_more_detail" hidden>a bit more detail helps</p>
+              <p class="field-count" id="descriptionCount" aria-live="off">0</p>
+            </div>
+            <p class="field-error" id="descriptionError" role="alert" hidden></p>
+          </div>
+
+          <label class="field-check">
+            <input type="checkbox" id="deafNativeInput" name="author_is_deaf_native">
+            <span data-i18n="contribute.authoring.deaf_native_checkbox">I am a Deaf native signer of this language.</span>
+          </label>
+
+          <div class="authoring-actions">
+            <button type="submit" class="btn btn-primary authoring-submit" id="startAuthoringBtn" data-i18n="contribute.authoring.submit_button" disabled>Start authoring</button>
+            <button type="button" class="kz-link authoring-save-draft" id="authoringSaveDraftBtn">Save draft</button>
+          </div>
+          <p class="field-error form-submit-error" id="submitError" role="alert" hidden></p>
+        </form>
+      </div>
+
+      <!-- Chat panel. Mounts once a session exists. Hidden until then
+           (progressive disclosure — prompt 5 step 10). -->
+      <section class="chat-panel card kz-card" id="chatPanel" aria-label="Clarification chat" hidden>
+        <h2 class="card-title" data-i18n="contribute.chat.section_label">Clarification</h2>
+        <div
+          class="chat-log"
+          id="chatLog"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+          aria-label="Clarification history"></div>
+        <div class="chat-options" id="chatOptions" role="group" aria-label="Suggested answers" hidden></div>
+        <p class="chat-input-hint field-hint" id="chatInputHint" hidden></p>
+        <div class="chat-progress" id="chatProgress" hidden aria-hidden="true">
+          <span class="chat-progress-bar"></span>
+        </div>
+        <div class="chat-target-pill" id="chatTargetPill" hidden>
+          <span class="chat-target-pill-text" id="chatTargetPillText"></span>
+          <button
+            type="button"
+            class="chat-target-pill-clear"
+            id="chatTargetPillClear"
+            aria-label="Clear correction target">&times;</button>
+        </div>
+        <div class="chat-input-row">
+          <label class="visually-hidden" for="chatInput" id="chatInputLabel" data-i18n="contribute.chat.input_label_answer">Your answer</label>
+          <textarea
+            id="chatInput"
+            class="chat-input field-input"
+            rows="1"
+            placeholder="Type your answer…"
+            data-i18n-attr-placeholder="contribute.chat.input_placeholder_answer"
+            autocomplete="off"
+            spellcheck="true"
+            aria-describedby="chatInputHint"></textarea>
+          <button type="button" class="btn btn-primary chat-send" id="chatSendBtn" data-i18n="contribute.chat.send" disabled>Send</button>
+        </div>
+        <div class="chat-error-actions" id="chatErrorActions" hidden>
+          <button type="button" class="btn btn-primary chat-retry" id="chatRetryBtn" data-i18n="contribute.chat.retry">Try again</button>
+          <button type="button" class="btn btn-secondary chat-submit-as-is" id="chatSubmitAsIsBtn" data-i18n="contribute.chat.submit_as_is">Submit as-is</button>
+        </div>
+        <p class="chat-footer-actions">
+          <button type="button" class="kz-link chat-discard-btn" id="chatDiscardBtn" data-i18n="contribute.chat.discard">Discard this draft and start over</button>
+        </p>
+      </section>
+
+      <!-- Avatar preview. Mounts via CWASA; plain-text fallback if WebGL
+           or the bundle is unavailable. -->
+      <section class="avatar-preview card kz-card" id="avatarPreview" aria-label="Sign preview" hidden>
+        <h2 class="card-title" data-i18n="contribute.preview.section_label">Preview</h2>
+        <div class="avatar-stage" id="avatarStage">
+          <div class="avatar-backdrop" id="avatarBackdrop"></div>
+          <div class="CWASAAvatar av0" id="avatarCanvas"></div>
+          <div class="CWASAGUI av0" style="display:none" aria-hidden="true"></div>
+          <svg
+            class="avatar-regions"
+            id="avatarRegions"
+            viewBox="0 0 160 90"
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden="true"
+            focusable="false">
+            <polygon class="avatar-region" data-region="head"                 points="70,6 90,6 94,18 66,18" />
+            <polygon class="avatar-region" data-region="face"                 points="66,18 94,18 94,28 66,28" />
+            <polygon class="avatar-region" data-region="neck"                 points="72,28 88,28 88,34 72,34" />
+            <polygon class="avatar-region" data-region="shoulder_nondominant" points="48,34 72,34 72,46 46,46" />
+            <polygon class="avatar-region" data-region="shoulder_dominant"    points="88,34 112,34 114,46 88,46" />
+            <polygon class="avatar-region" data-region="chest"                points="58,34 102,34 102,58 58,58" />
+            <polygon class="avatar-region" data-region="arm_nondominant"      points="36,46 58,46 58,68 38,68" />
+            <polygon class="avatar-region" data-region="arm_dominant"         points="102,46 124,46 122,68 102,68" />
+            <polygon class="avatar-region" data-region="hand_nondominant"     points="26,62 48,62 48,84 28,84" />
+            <polygon class="avatar-region" data-region="hand_dominant"        points="112,62 134,62 132,84 112,84" />
+            <polygon class="avatar-region" data-region="torso"                points="58,58 102,58 102,82 58,82" />
+          </svg>
+          <div class="avatar-pulse" id="avatarPulse" aria-hidden="true" hidden></div>
+          <div class="avatar-fallback" id="avatarFallback" role="status" aria-live="polite" hidden>
+            <p class="avatar-fallback-msg" id="avatarFallbackMsg" data-i18n="contribute.preview.fallback">
+              Preview unavailable in this environment. The sign can still be submitted; the HamNoSys below is what the reviewer will evaluate.
+            </p>
+            <p class="avatar-fallback-detail" id="avatarFallbackDetail" hidden></p>
+            <div class="avatar-fallback-actions">
+              <button type="button" class="btn btn-primary avatar-fallback-regen" id="avatarFallbackRegen" hidden data-i18n="contribute.preview.regen">Regenerate sign</button>
+              <button type="button" class="btn btn-secondary avatar-fallback-retry" id="avatarFallbackRetry" hidden data-i18n="contribute.preview.retry">Retry preview</button>
+              <button type="button" class="btn btn-secondary avatar-fallback-diag" id="avatarFallbackDiag" data-i18n="contribute.preview.diagnostics">Download diagnostics</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="avatar-status field-hint" id="avatarStatus" aria-live="polite" aria-atomic="true">&nbsp;</p>
+
+        <div class="avatar-controls-bar" role="toolbar" aria-label="Preview playback">
+          <button
+            type="button"
+            class="btn btn-secondary avatar-play"
+            id="avatarPlayBtn"
+            aria-pressed="false"
+            data-i18n="contribute.preview.play"
+            aria-label="Play preview"
+            disabled>Play</button>
+
+          <label class="avatar-loop field-check">
+            <input type="checkbox" id="avatarLoopInput">
+            <span data-i18n="contribute.preview.loop">Loop</span>
+          </label>
+
+          <div class="avatar-speed" role="group" aria-label="Playback speed">
+            <button type="button" class="btn avatar-speed-btn" data-speed="0.5" aria-pressed="false">0.5&times;</button>
+            <button type="button" class="btn avatar-speed-btn is-active" data-speed="1" aria-pressed="true">1&times;</button>
+            <button type="button" class="btn avatar-speed-btn" data-speed="2" aria-pressed="false">2&times;</button>
+          </div>
+        </div>
+
+        <div class="avatar-captions" id="avatarCaptions">
+          <p class="avatar-caption-gloss" id="avatarCaptionGloss"></p>
+          <p class="avatar-caption-desc" id="avatarCaptionDesc"></p>
+        </div>
+      </section>
+
+      <!-- Notation panel — HamNoSys (default) + SiGML tabs. The outputs
+           use --kozha-font-mono at a larger size than in the previous
+           iteration (min-height 120px) per prompt 5 step 9. The panel
+           is always visible so contributors can see the results-in-
+           progress; before generation it shows placeholder dashes,
+           after generation it shows the live HamNoSys + SiGML. -->
+      <section class="notation-panel card kz-card" id="notationPanel" aria-label="Generated notation">
+        <h2 class="card-title" data-i18n="contribute.notation.section_label">Notation</h2>
+        <!-- Prompt-polish 6: review-status notice. Plain language, no
+             legalese. Shows while the draft is pre-review and names the
+             target sign language so the contributor knows which native
+             signer community will review it. -->
+        <p class="notation-review-status"
+           id="notationReviewStatus"
+           role="note"
+           data-i18n="contribute.notation.review_status_draft">
+          <span class="kz-badge-unreviewed" aria-hidden="true">Not yet reviewed</span>
+          This draft will be marked as unreviewed until a Deaf native signer of
+          <span id="notationReviewStatusLang" class="notation-review-lang">this language</span>
+          approves it.
+        </p>
+        <nav class="notation-tabs" role="tablist" aria-label="Notation format">
+          <button
+            type="button"
+            role="tab"
+            id="notationTabSigml"
+            class="notation-tab is-active"
+            aria-selected="true"
+            aria-controls="notationPanelSigml"
+            data-tab="sigml"
+            data-i18n="contribute.notation.tab_sigml">SiGML</button>
+          <button
+            type="button"
+            role="tab"
+            id="notationTabHamnosys"
+            class="notation-tab"
+            aria-selected="false"
+            aria-controls="notationPanelHamnosys"
+            data-tab="hamnosys"
+            tabindex="-1"
+            data-i18n="contribute.notation.tab_hamnosys">HamNoSys (raw)</button>
+        </nav>
+
+        <div
+          class="notation-tabpanel"
+          id="notationPanelHamnosys"
+          role="tabpanel"
+          aria-labelledby="notationTabHamnosys"
+          hidden>
+          <div class="notation-hamnosys-layout">
+            <div class="notation-hamnosys-main">
+              <div
+                class="notation-hamnosys-display"
+                id="hamnosysDisplay"
+                role="img"
+                aria-label="HamNoSys notation (not yet generated)"
+                aria-live="polite"
+                tabindex="0"></div>
+              <p class="notation-errors field-error" id="notationErrors" role="alert" hidden></p>
+              <p class="notation-fallback field-hint" id="notationFallback" data-i18n="contribute.notation.validation_fallback" hidden>
+                The generated notation could not be validated. A reviewer will finish it.
+              </p>
+            </div>
+            <div class="notation-legend" id="notationLegend" role="group" aria-label="Symbol legend">
+              <p class="notation-legend-title field-label" data-i18n="contribute.notation.legend_title">Symbol</p>
+              <p class="notation-legend-code" id="legendCode">—</p>
+              <p class="notation-legend-class" id="legendClass" data-i18n="contribute.notation.legend_default_class">Hover or tap a glyph</p>
+              <p class="notation-legend-name" id="legendName"></p>
+            </div>
+          </div>
+
+          <dl class="notation-breakdown" id="notationBreakdown">
+            <div class="notation-breakdown-row">
+              <dt data-i18n="contribute.notation.breakdown_handshape">Handshape</dt>
+              <dd id="breakdownHandshape">—</dd>
+            </div>
+            <div class="notation-breakdown-row">
+              <dt data-i18n="contribute.notation.breakdown_orientation">Orientation</dt>
+              <dd id="breakdownOrientation">—</dd>
+            </div>
+            <div class="notation-breakdown-row">
+              <dt data-i18n="contribute.notation.breakdown_location">Location</dt>
+              <dd id="breakdownLocation">—</dd>
+            </div>
+            <div class="notation-breakdown-row">
+              <dt data-i18n="contribute.notation.breakdown_movement">Movement</dt>
+              <dd id="breakdownMovement">—</dd>
+            </div>
+          </dl>
+
+          <div class="notation-actions">
+            <button type="button" class="btn btn-secondary notation-copy-btn" id="copyHamnosysBtn" data-i18n="contribute.notation.copy_hamnosys" disabled>Copy HamNoSys</button>
+            <span class="notation-copy-confirm field-hint" id="copyHamnosysConfirm" role="status" aria-live="polite" data-i18n="common.copied" hidden>copied</span>
+          </div>
+        </div>
+
+        <div
+          class="notation-tabpanel"
+          id="notationPanelSigml"
+          role="tabpanel"
+          aria-labelledby="notationTabSigml">
+          <p class="notation-sigml-help field-hint">
+            Each tag below is one phonological slot of the sign. Click any
+            tag to see its meaning and pick a different option from the
+            same category, and the preview will re-render with your choice.
+          </p>
+          <!-- Annotated SiGML: structured view of the current SiGML where
+               every <ham*/> tag is a click-to-swap chip. Populated by
+               contribute-sigml-edit.js from the SiGML reference catalog
+               at /api/chat2hamnosys/reference/sigml. -->
+          <div
+            class="sigml-annotated"
+            id="sigmlAnnotated"
+            role="group"
+            aria-label="Annotated SiGML editor"
+            aria-live="polite"></div>
+          <!-- The picker popover floats over the annotated view when a
+               tag is selected. ``contribute-sigml-edit.js`` positions
+               and populates it from the catalog. -->
+          <div
+            class="sigml-picker"
+            id="sigmlPicker"
+            role="dialog"
+            aria-label="Choose alternative SiGML tag"
+            hidden>
+            <header class="sigml-picker-header">
+              <h3 class="sigml-picker-title" id="sigmlPickerTitle">Pick a tag</h3>
+              <button type="button" class="kz-link sigml-picker-close" id="sigmlPickerCloseBtn" aria-label="Close picker">close</button>
+            </header>
+            <p class="sigml-picker-current" id="sigmlPickerCurrent"></p>
+            <input
+              type="search"
+              class="sigml-picker-search field-input"
+              id="sigmlPickerSearch"
+              placeholder="Filter…"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Filter tag options">
+            <ul class="sigml-picker-list" id="sigmlPickerList" role="listbox"></ul>
+          </div>
+          <!-- Raw SiGML pre block (read-only). Open by default so the
+               generated source is visible without an extra click; the
+               annotated view above remains the primary editing
+               surface. The existing copy/download flow still hangs
+               off the action bar at the bottom of this tabpanel. -->
+          <details class="sigml-source-details" open>
+            <summary class="kz-link">Raw SiGML source</summary>
+            <pre
+              class="notation-sigml"
+              id="sigmlDisplay"
+              role="region"
+              aria-label="SiGML source code"
+              tabindex="0"><code id="sigmlCode"></code></pre>
+          </details>
+          <!-- Advanced: hand-edit the SiGML XML. Hidden behind the
+               "Edit manually" toggle so the default view stays
+               read-only. ``Apply`` validates the edit client-side
+               before swapping it into the live session; ``Cancel``
+               reverts. -->
+          <textarea
+            class="notation-sigml-editor"
+            id="sigmlEditor"
+            aria-label="Edit SiGML source"
+            spellcheck="false"
+            autocomplete="off"
+            autocapitalize="off"
+            hidden></textarea>
+          <p class="notation-sigml-edit-error field-error" id="sigmlEditError" role="alert" hidden></p>
+          <div class="notation-actions">
+            <button type="button" class="btn btn-secondary notation-copy-btn" id="copySigmlBtn" data-i18n="contribute.notation.copy_sigml" disabled>Copy SiGML</button>
+            <span class="notation-copy-confirm field-hint" id="copySigmlConfirm" role="status" aria-live="polite" data-i18n="common.copied" hidden>copied</span>
+            <button type="button" class="btn btn-secondary notation-download-btn" id="downloadSigmlBtn" data-i18n="contribute.notation.download_sigml" disabled>Download .sigml</button>
+            <button type="button" class="btn btn-secondary notation-edit-btn" id="sigmlEditBtn" data-i18n="contribute.notation.edit_sigml" disabled>Edit raw XML</button>
+            <button type="button" class="btn btn-primary notation-apply-btn" id="sigmlApplyBtn" hidden>Apply</button>
+            <button type="button" class="btn btn-secondary notation-cancel-btn" id="sigmlCancelBtn" hidden>Cancel</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Submission panel. Diagnostic checklist + action bar. -->
+      <section class="submission-panel card kz-card" id="submissionPanel" aria-label="Submit for review" hidden>
+        <h2 class="card-title" data-i18n="contribute.submission.heading">Submit for review</h2>
+        <ul class="submission-checklist" id="submissionChecklist" aria-label="Submission checklist">
+          <li class="submission-item" data-key="gloss">
+            <span class="submission-mark" aria-hidden="true"></span>
+            <span class="submission-text" data-i18n="contribute.submission.checklist_gloss">Gloss set</span>
+            <span class="submission-hint" id="checkGlossHint"></span>
+          </li>
+          <li class="submission-item" data-key="language">
+            <span class="submission-mark" aria-hidden="true"></span>
+            <span class="submission-text" data-i18n="contribute.submission.checklist_language">Language set</span>
+            <span class="submission-hint" id="checkLanguageHint"></span>
+          </li>
+          <li class="submission-item" data-key="description">
+            <span class="submission-mark" aria-hidden="true"></span>
+            <span class="submission-text" data-i18n="contribute.submission.checklist_description">Description complete</span>
+          </li>
+          <li class="submission-item" data-key="sign">
+            <span class="submission-mark" aria-hidden="true"></span>
+            <span class="submission-text" data-i18n="contribute.submission.checklist_sign">Sign generated and valid</span>
+            <span class="submission-gate-note" aria-hidden="true" data-i18n="contribute.submission.checklist_sign_required_tag">required</span>
+          </li>
+          <li class="submission-item submission-item-optional" data-key="deafNative">
+            <span class="submission-mark" aria-hidden="true"></span>
+            <span class="submission-text" data-i18n="contribute.submission.checklist_deaf_native">Deaf native signer self-identification</span>
+            <span class="submission-optional-note" aria-hidden="true" data-i18n="contribute.submission.checklist_optional_tag">optional</span>
+          </li>
+          <li class="submission-item submission-item-optional" data-key="correction">
+            <span class="submission-mark" aria-hidden="true"></span>
+            <span class="submission-text" data-i18n="contribute.submission.checklist_correction">At least one correction applied</span>
+            <span class="submission-optional-note" aria-hidden="true" data-i18n="contribute.submission.checklist_optional_tag">optional</span>
+          </li>
+        </ul>
+
+        <div class="submission-actions" role="toolbar" aria-label="Submission actions">
+          <button
+            type="button"
+            class="kz-link submission-discard"
+            id="submissionDiscardBtn"
+            data-i18n="contribute.submission.discard">Discard this draft</button>
+          <div class="submission-actions-primary">
+            <button
+              type="button"
+              class="btn btn-secondary submission-save"
+              id="submissionSaveBtn"
+              data-i18n="contribute.submission.save">Save draft and leave</button>
+            <button
+              type="button"
+              class="btn btn-primary submission-submit"
+              id="submissionSubmitBtn"
+              data-i18n="contribute.submission.submit"
+              disabled>Submit for review</button>
+          </div>
+        </div>
+        <p class="submission-error field-error" id="submissionError" role="alert" hidden></p>
+      </section>
+    </section>
+
+    <!-- Submission confirmation view. Replaces #authoring-root once
+         /accept returns. Language header and context strip remain. -->
+    <section class="submission-confirmation card kz-card" id="submissionConfirmation" aria-labelledby="confirmationHeading" hidden>
+      <h2 class="card-title" id="confirmationHeading">Submitted</h2>
+      <p class="confirmation-body" id="confirmationBody"></p>
+      <div class="confirmation-link">
+        <label class="field-label" for="confirmationUrl" data-i18n="contribute.confirmation.link_label">Permanent link</label>
+        <div class="confirmation-link-row">
+          <input
+            type="text"
+            id="confirmationUrl"
+            class="field-input confirmation-link-input"
+            readonly>
+          <button type="button" class="btn btn-secondary confirmation-copy-btn" id="confirmationCopyBtn" data-i18n="contribute.confirmation.copy_link">Copy link</button>
+        </div>
+        <p class="confirmation-copy-confirm field-hint" id="confirmationCopyConfirm" role="status" aria-live="polite" data-i18n="contribute.confirmation.copy_confirm" hidden>copied</p>
+      </div>
+      <nav class="confirmation-nav" aria-label="What next">
+        <button type="button" class="btn btn-secondary confirmation-link-action" id="confirmationAnotherBtn" data-i18n="contribute.confirmation.another_sign">Contribute another sign</button>
+        <button type="button" class="kz-link confirmation-link-action" id="confirmationChangeLangBtn" data-i18n="contribute.confirmation.change_language">Change language</button>
+        <a class="kz-link confirmation-link-action" href="/" data-i18n="contribute.confirmation.back_to_bridgn">Back to Kozha</a>
+      </nav>
+    </section>
+
+    </div><!-- /#contributeWorkspace -->
+
+    <!-- Maintainer review queue for inbound rare-SL proposals (Prompt
+         02). Hidden unless the page is loaded with ``?admin=proposals``
+         AND a board-reviewer token is supplied. The token is sent via
+         X-Reviewer-Token, matching the auth on /admin/dashboard. -->
+    <section class="proposals-admin card kz-card" id="proposalsAdmin" aria-labelledby="proposalsAdminHeading" hidden>
+      <h2 class="card-title" id="proposalsAdminHeading">Inbound language proposals</h2>
+      <p class="field-hint">Maintainers only. Accepting prints a seed-file snippet — it does not modify any file under <code>data/</code>.</p>
+      <form id="proposalsAdminAuthForm" class="proposals-admin-auth">
+        <label class="field-label" for="proposalsAdminToken">Board reviewer token</label>
+        <input id="proposalsAdminToken" class="field-input" type="password" autocomplete="off" spellcheck="false">
+        <button type="submit" class="btn btn-primary">Load queue</button>
+      </form>
+      <p class="field-error" id="proposalsAdminError" role="alert" hidden></p>
+      <div class="proposals-admin-list" id="proposalsAdminList" hidden>
+        <div class="proposals-admin-filter">
+          <label class="field-label" for="proposalsAdminStatus">Status</label>
+          <select id="proposalsAdminStatus" class="field-input">
+            <option value="pending" selected>pending</option>
+            <option value="accepted">accepted</option>
+            <option value="rejected">rejected</option>
+            <option value="dup">duplicate</option>
+            <option value="">all</option>
+          </select>
+          <button type="button" class="btn btn-secondary" id="proposalsAdminRefreshBtn">Refresh</button>
+        </div>
+        <ul class="proposals-admin-rows" id="proposalsAdminRows"></ul>
+      </div>
+    </section>
+
+    <!-- Transient feedback surface, copy confirmations, brief errors. -->
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  </main>
+
+  <!-- The one modal in this redesign: confirmation when changing language
+       would discard a live session. -->
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal card kz-card" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalBody">
+      <h2 class="card-title" id="modalTitle" data-i18n="contribute.submission.discard_modal_title">Discard this draft?</h2>
+      <p id="modalBody"></p>
+      <div class="modal-actions">
+        <button type="button" id="modalCancelBtn" class="btn btn-secondary" data-i18n="common.modal_cancel">Cancel</button>
+        <button type="button" id="modalDiscardBtn" class="btn btn-primary" data-i18n="common.modal_discard">Discard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Avatar replay modal. Hosts the live CWASA canvas; opened by the
+       hero card's "Replay in avatar" button so the avatar gets a
+       viewport-sized stage instead of the 150 px hero card slot. The
+       canvas reparents in/out via contribute-walkthrough.js so a single
+       CWASA.init keeps serving the walkthrough demo too. ESC, backdrop
+       click, or the close button dismisses; focus returns to the play
+       button. No auto-anything: prefers-reduced-motion is satisfied
+       because playback is gated entirely on the explicit click. -->
+  <div class="c2-replay-modal" id="heroReplayModal" hidden role="dialog" aria-modal="true" aria-labelledby="heroReplayTitle">
+    <div class="c2-replay-modal__panel" role="document">
+      <header class="c2-replay-modal__head">
+        <h2 class="c2-replay-modal__title" id="heroReplayTitle">
+          <span class="c2-hero__card-chip">ASL</span>
+          <span class="c2-replay-modal__gloss">HOUSE</span>
+        </h2>
+        <button type="button"
+                class="c2-replay-modal__close"
+                id="heroReplayModalClose"
+                aria-label="Close avatar replay">&times;</button>
+      </header>
+      <!-- The av0 class lives ONLY on #avatarCanvas (live preview).
+           CWASA's _cwasaInitialise scans every .CWASAAvatar element
+           and runs av([0-9]+) over each class list; with three
+           .CWASAAvatar.av0 mounts the resulting allavs array becomes
+           [0,0,0] and CWASA calls avPanels[0].startAvatar() three
+           times, racing the mesh load and leaving Character.volMax
+           and skeleton null (production debug log shows getAdjustViewY
+           and setBones both throwing on null). The CWASAAvatar marker
+           still lets walkthrough.js find/reparent the canvas here. -->
+      <div class="c2-replay-modal__stage CWASAAvatar" id="heroAvatarMount"></div>
+      <p class="c2-replay-modal__caption">
+        Plays the SiGML the chat2hamnosys pipeline produced for the
+        <code>house</code> fixture session.
+      </p>
+    </div>
+  </div>
+
+  <!-- Walkthrough Step 4 replay modal. Mirror of #heroReplayModal so the
+       walkthrough's "Play in avatar" button gets the same viewport-scale
+       canvas (≥ 280×280) and prefers-reduced-motion guarantees the hero
+       modal already enforces — playback is gated entirely on the
+       explicit click. The CWASA canvas reparents into this mount on
+       open and back to the live preview when a real session opens. -->
+  <div class="c2-replay-modal" id="walkReplayModal" hidden role="dialog" aria-modal="true" aria-labelledby="walkReplayTitle">
+    <div class="c2-replay-modal__panel" role="document">
+      <header class="c2-replay-modal__head">
+        <h2 class="c2-replay-modal__title" id="walkReplayTitle">
+          <span class="c2-hero__card-chip">DGS</span>
+          <span class="c2-replay-modal__gloss">HAMBURG1^</span>
+        </h2>
+        <button type="button"
+                class="c2-replay-modal__close"
+                id="walkReplayModalClose"
+                aria-label="Close avatar replay">&times;</button>
+      </header>
+      <!-- See note on heroAvatarMount above re: dropping av0 here. -->
+      <div class="c2-replay-modal__stage CWASAAvatar" id="walkReplayMount"></div>
+      <p class="c2-replay-modal__caption">
+        Plays the SiGML for the German Sign Language entry
+        <code>HAMBURG1^</code> recorded in the open DGS corpus
+        (<code>data/German_SL_DGS.sigml</code>).
+      </p>
+    </div>
+  </div>
+
+  <!-- One-time keyboard hint. localStorage flag suppresses it after dismissal. -->
+  <div class="hint-strip" id="hintStrip" role="status" hidden>
+    <span class="hint-strip-body">
+      <kbd>Ctrl</kbd><kbd>K</kbd> <span data-i18n="contribute.hint_strip.body_change_lang">change language</span> &middot; <kbd>Ctrl</kbd><kbd>L</kbd> <span data-i18n="contribute.hint_strip.body_copy_link">copy session link</span>
+    </span>
+    <button type="button" class="hint-close" id="hintClose" aria-label="Dismiss hint">&times;</button>
+  </div>
+
+  <footer class="kz-footer" role="contentinfo">
+    <div class="kz-footer__inner">
+      <div class="kz-footer__brand">
+        <a href="/" class="kz-footer__logo">Sign<span>ify</span></a>
+        <p class="kz-footer__mission" data-i18n="common.footer_mission">Open-source translator from text and speech into sign language. Built with the Deaf community.</p>
+      </div>
+      <nav class="kz-footer__cols" aria-label="Footer">
+        <div class="kz-footer__col">
+          <h2  class="kz-footer__col-title" data-i18n="common.footer_col_use">Use</h2>
+          <ul>
+            <li><a href="/app.html" data-i18n="common.nav_translate">Translate</a></li>
+            <li><a href="/contribute.html" data-i18n="common.nav_contribute">Contribute</a></li>
+          </ul>
+        </div>
+        <div class="kz-footer__col">
+          <h2  class="kz-footer__col-title" data-i18n="common.footer_col_project">Project</h2>
+          <ul>
+            <li><a href="/progress" data-i18n="common.nav_progress">Progress</a></li>
+            <li><a href="/credits" data-i18n="common.nav_credits">Credits</a></li>
+            <li><a href="/governance.html" data-i18n="common.nav_governance">Governance</a></li>
+            <li><a href="/whats-new.html" data-i18n="common.nav_whats_new">What&rsquo;s new</a></li>
+          </ul>
+        </div>
+        <div class="kz-footer__col">
+          <h2  class="kz-footer__col-title" data-i18n="common.footer_col_community">Community</h2>
+          <ul>
+            <li><a href="https://github.com/zhan-a/Kozha" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="mailto:deaf-feedback@kozha.dev">deaf-feedback@kozha.dev</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="kz-footer__meta">
+        <p class="kz-footer__copy" data-i18n="landing.footer_copyright">© 2025–2026 Kozha. Open-source research project.</p>
+        <p class="kz-footer__os"><span data-i18n="common.footer_open_source">Open source on</span> <a href="https://github.com/zhan-a/Kozha" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- byokey.js must load first: it monkey-patches window.fetch to
+       inject X-OpenAI-Api-Key before any pipeline module fires a call. -->
+  <script src="/contribute-debug.js"></script>
+  <script src="/contribute-byokey.js"></script>
+  <script src="/contribute-context.js"></script>
+  <script src="/contribute-chat.js"></script>
+  <script src="/contribute-notation.js"></script>
+  <script src="/contribute-sigml-edit.js"></script>
+  <script src="/contribute-preview.js"></script>
+  <script src="/contribute-walkthrough.js"></script>
+  <script src="/contribute-submit.js"></script>
+  <script src="/contribute.js"></script>
+
+  <script src="/nav.js"></script>
+
+  <!-- Graceful-degradation probe. Hits the chat2hamnosys liveness route
+       once on load; if the backend is not reachable (network error, 404
+       because the sub-app failed to mount, or 5xx) we reveal
+       #contributeOffline. The form still works — drafts are held in
+       localStorage by contribute.js — the banner just tells the user
+       that Submit won't land until the backend returns. -->
+  <script>
+    (function () {
+      var offline = document.getElementById('contributeOffline');
+      if (!offline) return;
+      fetch('/api/chat2hamnosys/health', {
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store',
+      }).then(function (resp) {
+        if (!resp || !resp.ok) { offline.hidden = false; }
+      }).catch(function () {
+        offline.hidden = false;
+      });
+    }());
+  </script>
+
+  <!-- Interactive stepper + quickstart chip wiring (contribute redesign
+       2026-04). Scoped to the .c2-* markup above; everything else in
+       contribute.js is untouched. Silently no-ops if the markup is
+       absent, so removing the redesign never breaks the page. -->
+  <script>
+    (function () {
+      var STEP_COUNT = 5;
+      var tabs = document.querySelectorAll('.c2-walk__tab');
+      var panels = document.querySelectorAll('.c2-walk__panel');
+      var progressBar = document.querySelector('.c2-walk__progress-bar');
+      var counterEl = document.getElementById('c2-walk-current');
+      var prevBtn = document.getElementById('c2-walk-prev');
+      var nextBtn = document.getElementById('c2-walk-next');
+      if (!tabs.length || !panels.length) return;
+
+      var activeStep = 1;
+
+      function activate(step, opts) {
+        step = Math.max(1, Math.min(STEP_COUNT, step));
+        activeStep = step;
+        var shouldFocus = opts && opts.focus;
+        tabs.forEach(function (tab) {
+          var on = Number(tab.dataset.step) === step;
+          tab.classList.toggle('is-active', on);
+          tab.setAttribute('aria-selected', on ? 'true' : 'false');
+          tab.setAttribute('tabindex', on ? '0' : '-1');
+          if (on && shouldFocus) {
+            try { tab.focus({ preventScroll: true }); } catch (e) { tab.focus(); }
+          }
+        });
+        panels.forEach(function (panel) {
+          var on = Number(panel.dataset.step) === step;
+          panel.classList.toggle('is-active', on);
+          panel.hidden = !on;
+        });
+        if (progressBar) {
+          progressBar.style.setProperty('--c2-progress', (step / STEP_COUNT * 100) + '%');
+        }
+        if (counterEl) counterEl.textContent = String(step);
+        if (prevBtn) prevBtn.disabled = step === 1;
+        if (nextBtn) nextBtn.disabled = step === STEP_COUNT;
+      }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          activate(Number(tab.dataset.step));
+        });
+        tab.addEventListener('keydown', function (ev) {
+          var current = Number(tab.dataset.step);
+          if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') {
+            ev.preventDefault();
+            activate(current === STEP_COUNT ? 1 : current + 1, { focus: true });
+          } else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') {
+            ev.preventDefault();
+            activate(current === 1 ? STEP_COUNT : current - 1, { focus: true });
+          } else if (ev.key === 'Home') {
+            ev.preventDefault();
+            activate(1, { focus: true });
+          } else if (ev.key === 'End') {
+            ev.preventDefault();
+            activate(STEP_COUNT, { focus: true });
+          }
+        });
+      });
+
+      if (prevBtn) prevBtn.addEventListener('click', function () { activate(activeStep - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { activate(activeStep + 1); });
+
+      activate(1);
+    })();
+
+    // Quickstart chips: clicking a chip sets the hidden #pickerSelect
+    // value and dispatches change, so contribute.js takes over from
+    // there — same path as the dropdown. After selection, scroll the
+    // authoring form into view so the user lands directly on the gloss
+    // input without an extra click. Also fetches the full language list
+    // and renders a secondary "More languages" chip row, replacing the
+    // old <select>-only UI.
+    (function () {
+      var FLAGS = {
+        bsl:'🇬🇧', asl:'🇺🇸', dgs:'🇩🇪', lsf:'🇫🇷', lse:'🇪🇸',
+        pjm:'🇵🇱', gsl:'🇬🇷', rsl:'🇷🇺', ngt:'🇳🇱', fsl:'🇵🇭',
+        isl:'🇮🇳', vsl:'🇻🇳', algerian:'🇩🇿', bangla:'🇧🇩', kurdish:'🇮🇶',
+        ksl:'🇰🇿', usl:'🇺🇦', tid:'🇹🇷', jsl:'🇯🇵', kvk:'🇰🇷',
+        csl:'🇨🇳', arsl:'🌍', msl:'🇲🇳', zei:'🇮🇷'
+      };
+      var primaryCodes = ['bsl','asl','dgs','lsf'];
+
+      function allChips() {
+        return document.querySelectorAll('.qs__chip[data-lang]');
+      }
+
+      function trySelect(code) {
+        var select = document.getElementById('pickerSelect');
+        if (!select) return false;
+        for (var i = 0; i < select.options.length; i++) {
+          var opt = select.options[i];
+          if (opt.value && opt.value.toLowerCase() === code) {
+            select.value = opt.value;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function scrollToForm() {
+        requestAnimationFrame(function () {
+          var target = document.getElementById('authoring-root')
+                    || document.querySelector('.authoring-card')
+                    || document.getElementById('c2-quickstart');
+          if (!target) return;
+          try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+          catch (_e) { target.scrollIntoView(); }
+          // Focus the gloss input shortly after scroll to jumpstart typing.
+          setTimeout(function () {
+            var gloss = document.getElementById('glossInput');
+            if (gloss && !gloss.disabled) {
+              try { gloss.focus({ preventScroll: true }); } catch (_e) { gloss.focus(); }
+            }
+          }, 400);
+        });
+      }
+
+      function activateChip(chip) {
+        var code = (chip.dataset.lang || '').toLowerCase();
+        if (!code) return;
+        var attempts = 0;
+        (function tryOnce() {
+          if (trySelect(code)) {
+            allChips().forEach(function (o) { o.classList.remove('is-active'); });
+            chip.classList.add('is-active');
+            scrollToForm();
+            return;
+          }
+          if (attempts++ > 20) return;
+          setTimeout(tryOnce, 100);
+        })();
+      }
+
+      function bindChip(chip) {
+        chip.addEventListener('click', function () { activateChip(chip); });
+      }
+
+      document.querySelectorAll('.qs__chip[data-lang]').forEach(bindChip);
+
+      // Render the "more languages" chip row from /contribute-languages.json.
+      // Primary chips already cover BSL/ASL/DGS/LSF — the rest land here.
+      (function loadMore() {
+        var moreHost = document.getElementById('qsChipsMore');
+        var moreBtn  = document.getElementById('qsMoreBtn');
+        var moreCnt  = document.getElementById('qsMoreCount');
+        if (!moreHost || !moreBtn) return;
+
+        fetch('/contribute-languages.json', { cache: 'no-store' }).then(function (r) {
+          if (!r.ok) throw new Error('status ' + r.status);
+          return r.json();
+        }).then(function (data) {
+          var langs = (data && data.languages) || [];
+          var secondary = langs.filter(function (l) {
+            return primaryCodes.indexOf(l.code) === -1;
+          });
+          if (!secondary.length) {
+            moreBtn.hidden = true;
+            return;
+          }
+          if (moreCnt) moreCnt.textContent = '(' + secondary.length + ')';
+
+          // Bucket secondary entries by group so rare/seed languages
+          // cluster under their own subheading. Anything without a
+          // group lands in "established" by default.
+          var groups = { established: [], rare: [] };
+          secondary.forEach(function (lang) {
+            var g = lang.group === 'rare' ? 'rare' : 'established';
+            groups[g].push(lang);
+          });
+
+          function renderChip(lang) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'qs__chip qs__chip--small';
+            if (lang.group === 'rare') btn.classList.add('qs__chip--rare');
+            btn.dataset.lang = lang.code;
+            var seedTag = lang.data_completeness === 'seed'
+              ? '<span class="qs__chip-tag" aria-label="Seed language — first contributors welcome">seed</span>'
+              : '';
+            btn.innerHTML =
+              '<span class="qs__chip-flag" aria-hidden="true">' + (FLAGS[lang.code] || '🏳️') + '</span>' +
+              '<span class="qs__chip-body">' +
+                '<span class="qs__chip-code">' + lang.code.toUpperCase() + '</span>' +
+                '<span class="qs__chip-name">' + (lang.english_name || lang.name || lang.code) + '</span>' +
+              '</span>' + seedTag;
+            return btn;
+          }
+
+          if (groups.established.length) {
+            groups.established.forEach(function (lang) {
+              var btn = renderChip(lang);
+              moreHost.appendChild(btn);
+              bindChip(btn);
+            });
+          }
+          if (groups.rare.length) {
+            var heading = document.createElement('p');
+            heading.className = 'qs__chips-heading';
+            heading.textContent = 'Rare / emerging — first contributors welcome';
+            moreHost.appendChild(heading);
+            groups.rare.forEach(function (lang) {
+              var btn = renderChip(lang);
+              moreHost.appendChild(btn);
+              bindChip(btn);
+            });
+          }
+        }).catch(function (err) {
+          console.warn('[quickstart] more-languages load failed:', err.message);
+          moreBtn.hidden = true;
+        });
+
+        moreBtn.addEventListener('click', function () {
+          var open = moreBtn.getAttribute('aria-expanded') === 'true';
+          moreBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
+          moreHost.hidden = open;
+        });
+      })();
+    })();
+
+    // Hero CTA (#contributeOpenBtn) is now a plain anchor to #c2-quickstart.
+    // The pre-2026-04c gate that hid the workspace behind a class toggle
+    // made the page feel stub-like (no chips above the fold). The workspace
+    // is always visible now; the CTA just smooth-scrolls to it.
+
+    // Inline "Suggest a sign language" form (Prompt 02). The chip /
+    // <select> "Suggest one →" affordances call window.KOZHA_OPEN_SUGGEST_LANGUAGE
+    // which scrolls the form into view and focuses the first input.
+    // Posts to /api/chat2hamnosys/language-proposals; on 201 swaps the
+    // form for the thank-you note. The honeypot stays in the DOM but
+    // is visually hidden via the .suggest-language-honeypot CSS rule.
+    (function () {
+      var card    = document.getElementById('suggestLanguageCard');
+      var form    = document.getElementById('suggestLanguageForm');
+      var thanks  = document.getElementById('suggestLanguageThanks');
+      var openBtn = document.getElementById('qsSuggestBtn');
+      var cancel  = document.getElementById('suggestLanguageCancel');
+      var errEl   = document.getElementById('suggestLanguageError');
+      var submit  = document.getElementById('suggestLanguageSubmit');
+      if (!card || !form) return;
+
+      function open() {
+        card.hidden = false;
+        thanks.hidden = true;
+        form.hidden = false;
+        if (openBtn) openBtn.setAttribute('aria-expanded', 'true');
+        try { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        catch (_e) { card.scrollIntoView(); }
+        var first = document.getElementById('suggestNameInput');
+        if (first) {
+          setTimeout(function () { try { first.focus(); } catch (_e) {} }, 250);
+        }
+      }
+      function close() {
+        card.hidden = true;
+        if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
+      }
+      window.KOZHA_OPEN_SUGGEST_LANGUAGE = open;
+      if (openBtn) openBtn.addEventListener('click', open);
+      if (cancel)  cancel.addEventListener('click', close);
+
+      function setError(message) {
+        if (!errEl) return;
+        if (!message) {
+          errEl.hidden = true;
+          errEl.textContent = '';
+        } else {
+          errEl.textContent = message;
+          errEl.hidden = false;
+        }
+      }
+
+      form.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        setError('');
+        var data = new FormData(form);
+        var deafRaw = (data.get('submitter_is_deaf') || '').toString();
+        var deafVal = null;
+        if (deafRaw === 'yes') deafVal = true;
+        else if (deafRaw === 'no') deafVal = false;
+        var payload = {
+          name: (data.get('name') || '').toString().trim(),
+          endonym: (data.get('endonym') || '').toString().trim(),
+          iso_639_3: (data.get('iso_639_3') || '').toString().trim().toLowerCase(),
+          region: (data.get('region') || '').toString().trim(),
+          corpus_url: (data.get('corpus_url') || '').toString().trim(),
+          submitter_is_deaf: deafVal,
+          motivation: (data.get('motivation') || '').toString().trim(),
+          website: (data.get('website') || '').toString()
+        };
+        if (!payload.name) { setError('Please enter the sign language name.'); return; }
+        if (!/^[a-z]{3}$/.test(payload.iso_639_3)) {
+          setError('ISO code must be 3 lowercase letters.');
+          return;
+        }
+        if (!payload.motivation) {
+          setError('Please share a one-line reason.');
+          return;
+        }
+        if (submit) submit.disabled = true;
+        var headers = { 'Content-Type': 'application/json' };
+        try {
+          var contribTok = localStorage.getItem('kozha_contributor_token');
+          if (contribTok) headers['X-Contributor-Token'] = contribTok;
+        } catch (_e) { /* localStorage may be unavailable in some contexts */ }
+        fetch('/api/chat2hamnosys/language-proposals', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          return r.json().then(function (body) { return { ok: r.ok, status: r.status, body: body }; });
+        }).then(function (res) {
+          if (res.ok) {
+            form.hidden = true;
+            thanks.hidden = false;
+            return;
+          }
+          var msg = (res.body && res.body.error && res.body.error.message)
+            ? res.body.error.message
+            : 'Submission failed. Please try again.';
+          if (res.status === 429) {
+            msg = "You've sent a few suggestions already — please try again in a minute.";
+          }
+          setError(msg);
+        }).catch(function () {
+          setError('Network error. Please try again.');
+        }).finally(function () {
+          if (submit) submit.disabled = false;
+        });
+      });
+    })();
+
+    // Maintainer admin tab for the language-proposal queue (Prompt 02).
+    // Shown only when the page is loaded with ``?admin=proposals`` —
+    // the URL gate keeps the auth box out of the way for ordinary
+    // contributors. The board reviewer pastes their token; we send it
+    // via X-Reviewer-Token on every admin request, mirroring
+    // /admin/dashboard auth.
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('admin') !== 'proposals') return;
+
+      var card     = document.getElementById('proposalsAdmin');
+      var authForm = document.getElementById('proposalsAdminAuthForm');
+      var tokenIn  = document.getElementById('proposalsAdminToken');
+      var listEl   = document.getElementById('proposalsAdminList');
+      var rowsEl   = document.getElementById('proposalsAdminRows');
+      var statusEl = document.getElementById('proposalsAdminStatus');
+      var refresh  = document.getElementById('proposalsAdminRefreshBtn');
+      var errEl    = document.getElementById('proposalsAdminError');
+      if (!card || !authForm) return;
+      card.hidden = false;
+
+      var token = '';
+
+      function setError(msg) {
+        if (!errEl) return;
+        if (!msg) { errEl.hidden = true; errEl.textContent = ''; return; }
+        errEl.textContent = msg;
+        errEl.hidden = false;
+      }
+
+      function escapeHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
+        });
+      }
+
+      function renderProposals(rows) {
+        rowsEl.innerHTML = '';
+        if (!rows || !rows.length) {
+          var empty = document.createElement('li');
+          empty.className = 'proposals-admin-empty';
+          empty.textContent = '(no proposals)';
+          rowsEl.appendChild(empty);
+          return;
+        }
+        rows.forEach(function (p) {
+          var li = document.createElement('li');
+          li.className = 'proposals-admin-row';
+          var triage = p.triage_unknown_iso ? ' <span class="proposals-admin-triage">unknown ISO</span>' : '';
+          var deaf = p.submitter_is_deaf === true
+            ? 'Deaf / hard-of-hearing'
+            : (p.submitter_is_deaf === false ? 'hearing' : 'unspecified');
+          li.innerHTML =
+            '<div class="proposals-admin-head">' +
+              '<strong>' + escapeHtml(p.name) + '</strong>' +
+              ' <span class="proposals-admin-iso">' + escapeHtml(p.iso_639_3) + '</span>' +
+              triage +
+              ' <span class="proposals-admin-status">[' + escapeHtml(p.status) + ']</span>' +
+            '</div>' +
+            (p.endonym ? '<div>endonym: ' + escapeHtml(p.endonym) + '</div>' : '') +
+            (p.region ? '<div>region: ' + escapeHtml(p.region) + '</div>' : '') +
+            (p.corpus_url ? '<div>corpus: <a href="' + escapeHtml(p.corpus_url) + '" rel="noopener" target="_blank">' + escapeHtml(p.corpus_url) + '</a></div>' : '') +
+            '<div>submitter: ' + escapeHtml(deaf) + '</div>' +
+            '<div>motivation: ' + escapeHtml(p.motivation) + '</div>' +
+            (p.notes ? '<div>notes: ' + escapeHtml(p.notes) + '</div>' : '') +
+            '<div class="proposals-admin-actions">' +
+              '<button type="button" data-action="accept" data-id="' + escapeHtml(p.id) + '">Accept</button>' +
+              '<button type="button" data-action="reject" data-id="' + escapeHtml(p.id) + '">Reject</button>' +
+              '<button type="button" data-action="duplicate" data-id="' + escapeHtml(p.id) + '">Mark duplicate</button>' +
+            '</div>' +
+            '<pre class="proposals-admin-snippet" data-snippet-for="' + escapeHtml(p.id) + '" hidden></pre>';
+          rowsEl.appendChild(li);
+        });
+      }
+
+      function load() {
+        if (!token) return;
+        setError('');
+        var statusFilter = statusEl.value || '';
+        var url = '/api/chat2hamnosys/admin/language-proposals' +
+          (statusFilter ? ('?status=' + encodeURIComponent(statusFilter)) : '');
+        fetch(url, { headers: { 'X-Reviewer-Token': token } })
+          .then(function (r) {
+            return r.json().then(function (body) { return { ok: r.ok, status: r.status, body: body }; });
+          })
+          .then(function (res) {
+            if (!res.ok) {
+              setError((res.body && res.body.error && res.body.error.message) || 'Failed to load.');
+              listEl.hidden = true;
+              return;
+            }
+            listEl.hidden = false;
+            renderProposals(res.body.proposals || []);
+          })
+          .catch(function () { setError('Network error.'); });
+      }
+
+      authForm.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        token = tokenIn.value.trim();
+        if (!token) return;
+        load();
+      });
+
+      if (refresh) refresh.addEventListener('click', load);
+      if (statusEl) statusEl.addEventListener('change', load);
+
+      rowsEl.addEventListener('click', function (ev) {
+        var btn = ev.target;
+        if (!btn || btn.tagName !== 'BUTTON') return;
+        var action = btn.getAttribute('data-action');
+        var id = btn.getAttribute('data-id');
+        if (!action || !id) return;
+        var notes = '';
+        if (action !== 'accept') {
+          notes = window.prompt('Notes (optional, maintainer-only):') || '';
+        }
+        var url = '/api/chat2hamnosys/admin/language-proposals/' + encodeURIComponent(id) + '/' + action;
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Reviewer-Token': token },
+          body: JSON.stringify({ notes: notes })
+        }).then(function (r) {
+          return r.json().then(function (body) { return { ok: r.ok, status: r.status, body: body }; });
+        }).then(function (res) {
+          if (!res.ok) {
+            setError((res.body && res.body.error && res.body.error.message) || 'Action failed.');
+            return;
+          }
+          if (action === 'accept' && res.body && res.body.seed_snippet) {
+            var pre = document.querySelector('[data-snippet-for="' + id + '"]');
+            if (pre) {
+              pre.textContent = res.body.seed_snippet;
+              pre.hidden = false;
+            }
+          }
+          load();
+        }).catch(function () { setError('Network error.'); });
+      });
+    })();
+  </script>
+</body>
+</html>

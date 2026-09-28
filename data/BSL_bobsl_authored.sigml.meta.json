@@ -1,0 +1,10 @@
+{
+  "language": "bsl",
+  "dataset": "BOBSL (BBC-Oxford British Sign Language)",
+  "source": "Oxford VGG / BBC Broadcasts",
+  "generated_date": "2026-09-03",
+  "total_unique_glosses": 8,
+  "active_authored_signs": 8,
+  "license": "Non-commercial Academic Research License (Oxford VGG)",
+  "citation": "Albanie et al., BOBSL: BBC-Oxford British Sign Language Dataset, 2021"
+}

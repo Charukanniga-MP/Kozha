@@ -1,0 +1,679 @@
+/* ---------------------------------------------------------------------
+ * /progress page styles
+ *
+ * Uses the shared --kozha-* tokens and .kz-* components from
+ * styles/tokens.css + styles/components.css. Nothing here reaches
+ * outside the token set — if a value feels off, it should be fixed in
+ * the token first.
+ *
+ * Layout strategy: table on desktop, card-per-language list below 768px
+ * (the table is visible=false, cards visible=true). JS flips the
+ * `hidden` attribute + `aria-hidden` so assistive tech sees exactly
+ * one representation at a time.
+ * ------------------------------------------------------------------ */
+
+/* Box-sizing reset only — universal "padding: 0" wiped the unified
+   .kz-header padding (components.css uses :where() for zero
+   specificity). Element-typed resets keep the design-system rules
+   intact across every sub-page. */
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote {
+  margin: 0;
+}
+ul, ol { padding-left: 0; list-style: none; }
+
+html { scroll-behavior: smooth; }
+
+body.progress-body {
+  font-family: var(--kozha-font-sans);
+  background: var(--kozha-color-paper);
+  color: var(--kozha-color-ink);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ===== Skip link ===== */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  background: var(--kozha-color-accent);
+  color: var(--kozha-color-white);
+  padding: 8px 16px;
+  border-radius: var(--kozha-radius-sm);
+  font-size: var(--kozha-text-body);
+  font-weight: var(--kozha-weight-semibold);
+  z-index: var(--kozha-z-skip);
+  text-decoration: none;
+}
+.skip-link:focus { top: 8px; }
+
+/* ===== Nav (mirrors index.html shape; the .kz-header token-driven
+ *       base handles positioning, backdrop, and hairline border) ===== */
+
+.kz-header .nav-logo {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-step-title);
+  color: var(--kozha-color-ink);
+  text-decoration: none;
+  letter-spacing: var(--kozha-tracking-tight);
+}
+.kz-header .nav-logo span { color: var(--kozha-color-accent); }
+
+.kz-header .nav-links {
+  display: flex;
+  gap: var(--kozha-space-8);
+  list-style: none;
+}
+
+.kz-header .nav-links .is-active {
+  color: var(--kozha-color-accent);
+}
+
+.kz-header .nav-cta { display: flex; gap: var(--kozha-space-2); align-items: center; }
+.kz-header .btn-primary {
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  font-weight: var(--kozha-weight-semibold);
+  color: var(--kozha-color-white);
+  background: var(--kozha-color-accent);
+  border: none;
+  border-radius: var(--kozha-radius-sm);
+  padding: 10px 18px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--kozha-duration-slow),
+              box-shadow var(--kozha-duration-slow),
+              transform var(--kozha-duration-slow);
+}
+.kz-header .btn-primary:hover {
+  background: var(--kozha-color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--kozha-shadow-btn-hover-sm);
+}
+.kz-header .nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--kozha-space-2);
+  margin-right: calc(-1 * var(--kozha-space-2));
+  color: var(--kozha-color-ink-2);
+}
+
+/* ===== Main layout ===== */
+
+.progress-main {
+  max-width: var(--kozha-layout-page-max);
+  margin: 0 auto;
+  /* Match governance / whats-new / credits padding: clears the
+     fixed .kz-header and gives the breadcrumb the same top breathing
+     room as the other sub-pages. */
+  padding: calc(var(--kozha-layout-nav-h) + var(--kozha-space-8))
+           var(--kozha-space-8)
+           var(--kozha-space-16);
+}
+
+/* Top panel now mirrors the sub-page pattern: breadcrumb → left-
+   aligned serif h1 → lede → timestamp. The prior centered "hero"
+   with an accent-pill eyebrow and a hero-sized H1 didn't sit next
+   to the rest of the site — it read as a separate brand. */
+.progress-h1 {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-hero-h1);
+  font-weight: var(--kozha-weight-regular);
+  letter-spacing: var(--kozha-tracking-tightest);
+  line-height: var(--kozha-leading-tight);
+  color: var(--kozha-color-ink);
+  margin: 0 0 var(--kozha-space-4);
+}
+.progress-lede {
+  font-size: var(--kozha-text-hero-sub);
+  line-height: var(--kozha-leading-loose);
+  color: var(--kozha-color-ink-2);
+  max-width: 62ch;
+  margin: 0 0 var(--kozha-space-3);
+}
+.progress-dash { color: var(--kozha-color-accent); font-weight: var(--kozha-weight-semibold); }
+.progress-generated {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 var(--kozha-space-8);
+}
+
+/* ===== Section scaffold ===== */
+
+.progress-section { margin-top: var(--kozha-space-16); }
+.progress-section-head {
+  margin-bottom: var(--kozha-space-6);
+}
+.progress-section-title {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-contribute-h2);
+  font-weight: var(--kozha-weight-regular);
+  letter-spacing: var(--kozha-tracking-tight);
+  color: var(--kozha-color-ink);
+  margin-bottom: var(--kozha-space-2);
+}
+.progress-section-note {
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink-3);
+  max-width: 640px;
+}
+
+/* ===== Top-line stats ===== */
+
+.progress-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--kozha-space-6);
+}
+.progress-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--kozha-space-2);
+  padding: var(--kozha-space-8) var(--kozha-space-6);
+}
+.progress-stat-num {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-step-num);
+  font-weight: var(--kozha-weight-regular);
+  letter-spacing: var(--kozha-tracking-tight);
+  color: var(--kozha-color-ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.progress-stat-num.is-partial,
+.progress-stat-num.is-empty { color: var(--kozha-color-ink-3); }
+.progress-stat-label {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+  font-weight: var(--kozha-weight-medium);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+}
+
+/* ===== Table ===== */
+
+.progress-table-wrap {
+  padding: 0;
+  overflow: hidden;
+}
+.progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--kozha-text-body);
+}
+.progress-table thead th {
+  text-align: left;
+  padding: 0;
+  background: var(--kozha-color-paper-2);
+  color: var(--kozha-color-ink-2);
+  font-weight: var(--kozha-weight-semibold);
+  font-size: var(--kozha-text-caption-lg);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--kozha-color-border);
+}
+.progress-table th.progress-col-num { text-align: right; }
+.progress-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  transition: background var(--kozha-duration-fast), color var(--kozha-duration-fast);
+}
+.progress-table th.progress-col-num .progress-sort { justify-content: flex-end; }
+.progress-sort:hover { background: var(--kozha-color-paper-3); color: var(--kozha-color-ink); }
+.progress-sort:focus-visible {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: -2px;
+  background: var(--kozha-color-paper-3);
+}
+.progress-sort-icon { width: 10px; display: inline-block; opacity: 0.4; font-size: 11px; }
+.progress-sort.is-active .progress-sort-icon { opacity: 1; color: var(--kozha-color-accent); }
+.progress-sort.is-active[data-direction="asc"]  .progress-sort-icon::before { content: '\25B2'; }
+.progress-sort.is-active[data-direction="desc"] .progress-sort-icon::before { content: '\25BC'; }
+.progress-table tbody td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--kozha-color-border);
+  vertical-align: middle;
+  color: var(--kozha-color-ink-2);
+}
+.progress-table tbody tr:last-child td { border-bottom: none; }
+.progress-table tbody tr:hover td { background: var(--kozha-color-paper-2); }
+.progress-table td.progress-col-num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.progress-lang-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.progress-lang-code {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption);
+  text-transform: uppercase;
+  letter-spacing: var(--kozha-tracking-wide);
+  color: var(--kozha-color-ink-3);
+}
+.progress-lang-name {
+  font-weight: var(--kozha-weight-medium);
+  color: var(--kozha-color-ink);
+}
+
+.progress-source-cell {
+  max-width: 18rem;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+}
+.progress-source-kind {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wider);
+  text-transform: uppercase;
+  padding: 2px 8px;
+  margin-right: 6px;
+  border-radius: var(--kozha-radius-pill);
+  vertical-align: 1px;
+  background: var(--kozha-color-paper-2);
+  color: var(--kozha-color-ink-3);
+  border: 1px solid var(--kozha-color-border);
+}
+.progress-source-kind.is-corpus { background: var(--kozha-badge-reviewed-bg); color: var(--kozha-badge-reviewed-fg); border-color: var(--kozha-badge-reviewed-border); }
+/* Deep-link to /credits — the source label becomes a citation pointer
+   for the reader who wants the full license terms and author credit. */
+.progress-source-link {
+  color: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--kozha-color-border);
+  transition: color var(--kozha-duration-base), text-decoration-color var(--kozha-duration-base);
+}
+.progress-source-link:hover,
+.progress-source-link:focus-visible {
+  color: var(--kozha-color-accent);
+  text-decoration-color: var(--kozha-color-accent);
+  outline: none;
+}
+
+.progress-partial {
+  font-size: var(--kozha-text-caption);
+  color: var(--kozha-color-ink-3);
+  font-style: italic;
+  cursor: help;
+  border-bottom: 1px dotted var(--kozha-color-ink-3);
+}
+
+.progress-alphabet-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--kozha-text-caption);
+  font-weight: var(--kozha-weight-semibold);
+  padding: 3px 10px;
+  border-radius: var(--kozha-radius-pill);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.progress-alphabet-badge.is-full {
+  color: var(--kozha-badge-reviewed-fg);
+  background: var(--kozha-badge-reviewed-bg);
+  border-color: var(--kozha-badge-reviewed-border);
+}
+.progress-alphabet-badge.is-partial {
+  color: var(--kozha-color-ink-2);
+  background: var(--kozha-color-paper-2);
+  border-color: var(--kozha-color-border);
+}
+.progress-alphabet-badge.is-none {
+  color: var(--kozha-color-ink-3);
+  background: var(--kozha-color-paper-2);
+  border-color: var(--kozha-color-border);
+}
+
+.progress-table-empty td {
+  padding: var(--kozha-space-10) var(--kozha-space-6);
+  text-align: center;
+  color: var(--kozha-color-ink-3);
+}
+
+/* ===== Card list (mobile only) =====
+ *
+ * Cards are hidden on desktop — the table above carries the same
+ * information. The media query below flips the table off and the
+ * cards on at narrow viewports. The `hidden` attribute on the
+ * container (set in markup) provides graceful no-CSS behavior but CSS
+ * owns the visibility at runtime. */
+
+.progress-cards {
+  display: none;
+  gap: var(--kozha-space-4);
+}
+.progress-card {
+  padding: var(--kozha-space-6);
+}
+.progress-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--kozha-space-4);
+  margin-bottom: var(--kozha-space-4);
+}
+.progress-card-title {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-feature-title);
+  color: var(--kozha-color-ink);
+  line-height: 1.2;
+}
+.progress-card-code {
+  font-family: var(--kozha-font-mono);
+  font-size: var(--kozha-text-caption);
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+}
+.progress-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--kozha-space-4) var(--kozha-space-6);
+}
+.progress-card-row { display: flex; flex-direction: column; gap: 2px; }
+.progress-card-row-label {
+  font-size: var(--kozha-text-caption);
+  color: var(--kozha-color-ink-3);
+  text-transform: uppercase;
+  letter-spacing: var(--kozha-tracking-wide);
+}
+.progress-card-row-value {
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink);
+  font-variant-numeric: tabular-nums;
+}
+.progress-card-source {
+  grid-column: 1 / -1;
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+  padding-top: var(--kozha-space-3);
+  border-top: 1px solid var(--kozha-color-border);
+}
+
+/* ===== At-a-glance hero CTA + reviewed meter ===== */
+
+.progress-glance .progress-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kozha-space-4);
+  flex-wrap: wrap;
+}
+.progress-glance-cta {
+  white-space: nowrap;
+}
+
+/* Reviewed-share meter on the third stat card. The bar is the
+   coverage percentage; the trailing label spells out "X% of corpus"
+   so screen readers and quick-glance users both get the meaning. */
+.progress-stat-meter {
+  margin-top: var(--kozha-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.progress-stat-meter-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--kozha-color-accent);
+  transition: width var(--kozha-duration-base, 200ms) var(--kozha-ease-standard);
+}
+.progress-stat-meter[hidden] { display: none; }
+.progress-stat[data-stat="reviewed"] {
+  position: relative;
+}
+.progress-stat[data-stat="reviewed"] > .progress-stat-meter {
+  background: var(--kozha-color-paper-2);
+  border-radius: 999px;
+  padding: 0;
+  position: relative;
+  height: 6px;
+}
+.progress-stat-meter-pct {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+  font-variant-numeric: tabular-nums;
+  margin-top: var(--kozha-space-2);
+}
+
+/* ===== Per-language table — search toolbar + inline reviewed bar ===== */
+
+.progress-table-toolbar {
+  display: flex;
+  align-items: baseline;
+  gap: var(--kozha-space-3);
+  margin: 0 0 var(--kozha-space-3);
+  flex-wrap: wrap;
+}
+.progress-search-label {
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-caption-lg);
+  font-weight: var(--kozha-weight-semibold);
+  letter-spacing: var(--kozha-tracking-wide);
+  text-transform: uppercase;
+  color: var(--kozha-color-ink-3);
+}
+.progress-search {
+  flex: 1 1 280px;
+  max-width: 360px;
+  font-family: var(--kozha-font-sans);
+  font-size: var(--kozha-text-body);
+  padding: var(--kozha-space-2) var(--kozha-space-3);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-sm);
+  background: var(--kozha-color-white);
+  color: var(--kozha-color-ink);
+}
+.progress-search:focus {
+  outline: 2px solid var(--kozha-color-accent);
+  outline-offset: 1px;
+}
+.progress-search-count {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Inline reviewed-share bar inside each per-language table row. The
+   number stays scan-able on the left; the share % and bar sit
+   underneath so the eye reads number → share at-a-glance. */
+.progress-reviewed-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 90px;
+}
+.progress-reviewed-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--kozha-space-2);
+  justify-content: flex-end;
+}
+.progress-reviewed-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--kozha-weight-medium);
+  color: var(--kozha-color-ink);
+}
+.progress-reviewed-pct {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.progress-reviewed-bar {
+  height: 4px;
+  width: 100%;
+  background: var(--kozha-color-paper-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-reviewed-bar-fill {
+  height: 100%;
+  background: var(--kozha-color-accent);
+  transition: width var(--kozha-duration-base, 200ms) var(--kozha-ease-standard);
+}
+
+/* ===== Help wanted ===== */
+
+.progress-help-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--kozha-space-6);
+}
+.progress-help-card { padding: var(--kozha-space-8); }
+.progress-help-h3 {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-feature-title);
+  color: var(--kozha-color-ink);
+  margin-bottom: var(--kozha-space-2);
+}
+.progress-help-body {
+  font-size: var(--kozha-text-body);
+  color: var(--kozha-color-ink-3);
+  margin-bottom: var(--kozha-space-4);
+}
+.progress-help-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kozha-space-2);
+  list-style: none;
+}
+.progress-help-list .progress-help-empty {
+  color: var(--kozha-color-ink-3);
+  font-style: italic;
+}
+.progress-help-list .progress-help-done {
+  color: var(--kozha-color-success);
+}
+.progress-help-list a {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: var(--kozha-color-paper-2);
+  border: 1px solid var(--kozha-color-border);
+  border-radius: var(--kozha-radius-pill);
+  color: var(--kozha-color-ink);
+  text-decoration: none;
+  font-size: var(--kozha-text-body-sm);
+  font-weight: var(--kozha-weight-medium);
+  transition: background var(--kozha-duration-fast),
+              border-color var(--kozha-duration-fast),
+              color var(--kozha-duration-fast);
+}
+.progress-help-list a:hover,
+.progress-help-list a:focus-visible {
+  background: var(--kozha-color-accent-light);
+  border-color: var(--kozha-color-border-accent);
+  color: var(--kozha-color-accent);
+  outline: none;
+}
+
+/* ===== Footer ===== */
+
+.kz-footer .footer-inner {
+  max-width: var(--kozha-layout-page-max);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kozha-space-6);
+  flex-wrap: wrap;
+}
+.kz-footer .footer-logo {
+  font-family: var(--kozha-font-serif);
+  font-size: var(--kozha-text-hero-sub);
+  color: var(--kozha-color-ink);
+}
+.kz-footer .footer-logo span { color: var(--kozha-color-accent); }
+.kz-footer .footer-links {
+  display: flex;
+  gap: var(--kozha-space-6);
+  list-style: none;
+  flex-wrap: wrap;
+}
+.kz-footer .footer-links a {
+  font-size: var(--kozha-text-body-sm);
+  color: var(--kozha-color-ink-3);
+  text-decoration: none;
+  transition: color var(--kozha-duration-base);
+}
+.kz-footer .footer-links a:hover { color: var(--kozha-color-accent); }
+.kz-footer .footer-copy {
+  font-size: var(--kozha-text-caption-lg);
+  color: var(--kozha-color-ink-3);
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 960px) {
+  .progress-stats { grid-template-columns: repeat(2, 1fr); }
+  .progress-help-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .kz-header { padding: 0 var(--kozha-space-5); }
+  .kz-header .nav-links {
+    display: none;
+    position: absolute;
+    top: var(--kozha-layout-nav-h);
+    left: 0; right: 0;
+    flex-direction: column;
+    background: var(--kozha-color-paper-translucent-strong);
+    backdrop-filter: blur(var(--kozha-blur-nav));
+    border-bottom: 1px solid var(--kozha-color-border);
+    padding: var(--kozha-space-4) var(--kozha-space-5);
+    gap: 0;
+  }
+  .kz-header .nav-links.open { display: flex; }
+  .kz-header .nav-links li a { display: block; padding: 12px 0; font-size: var(--kozha-text-button-lg); }
+  .kz-header .nav-hamburger { display: block; }
+  .kz-header .btn-primary { padding: 8px 14px; font-size: var(--kozha-text-body-sm); }
+  .progress-main { padding: calc(var(--kozha-layout-nav-h) + var(--kozha-space-8))
+                            var(--kozha-space-5) var(--kozha-space-12); }
+  .progress-section { margin-top: var(--kozha-space-12); }
+}
+
+@media (max-width: 768px) {
+  .progress-stats { grid-template-columns: repeat(2, 1fr); gap: var(--kozha-space-4); }
+  .progress-stat { padding: var(--kozha-space-6); }
+  .progress-stat-num { font-size: 40px; }
+  .progress-table-wrap { display: none; }
+  .progress-cards { display: grid; }
+  .progress-h1 { font-size: var(--kozha-text-hero-h1-mobile); }
+  .progress-glance .progress-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-main { padding: calc(var(--kozha-layout-nav-h) + var(--kozha-space-6))
+                            var(--kozha-space-4) var(--kozha-space-10); }
+  .progress-stats { grid-template-columns: 1fr; }
+  .kz-footer { padding: var(--kozha-space-6) var(--kozha-space-4); }
+  .kz-footer .footer-inner { flex-direction: column; gap: var(--kozha-space-4); text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kz-header .btn-primary, .progress-sort, .progress-help-list a { transition: none; }
+  html { scroll-behavior: auto; }
+}

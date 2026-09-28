@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sigml_collection language="American_SL_ASL" count="15">
+
+  <hns_sign gloss="MOTHER">
+    <hamnosys_manual>
+      <hamflathand />
+      <hamthumboutmod />
+      <hamextfingeru />
+      <hampalmd />
+      <hamchin />
+      <hamlrat />
+      <hamnomotion />
+      <hamrepeatfromstart />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="FATHER">
+    <hamnosys_manual>
+      <hamflathand />
+      <hamthumboutmod />
+      <hamextfingeru />
+      <hampalml />
+      <hamforehead />
+      <hamlrat />
+      <hamnomotion />
+      <hamrepeatfromstart />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="YES">
+    <hamnosys_manual>
+      <hamfist />
+      <hamextfingero />
+      <hampalmd />
+      <hamneutralspace />
+      <hamnomotion />
+      <hamrepeatfromstart />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="NO">
+    <hamnosys_manual>
+      <hamfinger23spread />
+      <hamextfingero />
+      <hampalmd />
+      <hamneutralspace />
+      <hamnomotion />
+      <hamrepeatfromstart />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="HELLO">
+    <hamnosys_manual>
+      <hamflathand />
+      <hamextfingeru />
+      <hampalml />
+      <hamforehead />
+      <hamlrat />
+      <hammoveo />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="THANK-YOU">
+    <hamnosys_manual>
+      <hamflathand />
+      <hamextfingeru />
+      <hampalmd />
+      <hamchin />
+      <hamlrat />
+      <hammoveo />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="EAT">
+    <hamnosys_manual>
+      <hampinchall />
+      <hamfingerbendmod />
+      <hamextfingeru />
+      <hampalmd />
+      <hamlips />
+      <hamlrat />
+      <hammoveo />
+      <hamrepeatfromstart />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="DRINK">
+    <hamnosys_manual>
+      <hamceeall />
+      <hamfingerbendmod />
+      <hamextfingeru />
+      <hampalmd />
+      <hamchin />
+      <hamlrat />
+      <hammoveo />
+      <hamarcu />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="GOOD">
+    <hamnosys_manual>
+      <hamflathand />
+      <hamextfingeru />
+      <hampalmd />
+      <hamchin />
+      <hamlrat />
+      <hammoveo />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="LEARN">
+    <hamnosys_manual>
+      <hampinchall />
+      <hamfingerbendmod />
+      <hamextfingero />
+      <hampalmd />
+      <hampalm />
+      <hamlrat />
+      <hammoveo />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="HELP">
+    <hamnosys_manual>
+      <hamfist />
+      <hamthumboutmod />
+      <hamextfingero />
+      <hampalmd />
+      <hampalm />
+      <hamlrat />
+      <hammoveo />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="WANT">
+    <hamnosys_manual>
+      <hamsymmlr />
+      <hamfinger2345 />
+      <hamfingerbendmod />
+      <hamextfingero />
+      <hampalmr />
+      <hamneutralspace />
+      <hammover />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="HOUSE">
+    <hamnosys_manual>
+      <hamsymmlr />
+      <hamflathand />
+      <hamextfingero />
+      <hampalmr />
+      <hamneutralspace />
+      <hammover />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="NAME">
+    <hamnosys_manual>
+      <hamsymmlr />
+      <hamfinger23 />
+      <hamextfingero />
+      <hampalmd />
+      <hamfingertip />
+      <hamlrat />
+      <hammover />
+      <hamrepeatfromstart />
+    </hamnosys_manual>
+  </hns_sign>
+
+  <hns_sign gloss="FINISH">
+    <hamnosys_manual>
+      <hamsymmlr />
+      <hamflathand />
+      <hamthumboutmod />
+      <hamextfingero />
+      <hampalmr />
+      <hamneutralspace />
+      <hammover />
+    </hamnosys_manual>
+  </hns_sign>
+
+</sigml_collection>

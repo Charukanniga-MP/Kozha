@@ -1,0 +1,10 @@
+{
+  "language": "isl",
+  "dataset": "iSign: A Benchmark for Indian Sign Language Processing",
+  "source": "IIT Kanpur / Exploration-Lab (ACL 2024)",
+  "generated_date": "2026-09-03",
+  "total_unique_glosses": 9,
+  "active_authored_signs": 8,
+  "license": "Non-commercial Academic Research License (HuggingFace Exploration-Lab/iSign)",
+  "citation": "Joshi et al., iSign: A Benchmark for Indian Sign Language Processing, Findings of ACL 2024"
+}

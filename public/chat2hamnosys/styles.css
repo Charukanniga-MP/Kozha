@@ -1,0 +1,901 @@
+:root {
+  --ink: #1a1612;
+  --ink-2: #3d3630;
+  --ink-3: #685d54;
+  --paper: #f5f1eb;
+  --paper-2: #ede8e0;
+  --paper-3: #e4ddd3;
+  /* `--accent` is used wherever the accent meets text or interactive
+     ink on the paper background. #b3441b clears WCAG AA at small text
+     against both --paper (4.80:1) and --accent-light (4.74:1).
+     `--accent-bright` is the original brighter shade; reserve it for
+     button-hover lift, region-tint fills, and other non-text uses. */
+  --accent: #b3441b;
+  --accent-bright: #c96a2e;
+  --accent-2: #e8843e;
+  --accent-light: #faeee0;
+  --green: #2d6a4f;
+  --green-light: #d4edda;
+  --amber: #b07a14;
+  --amber-light: #faecc7;
+  --red: #a02b1f;
+  --red-light: #f7d8d3;
+  --border: rgba(26, 22, 18, 0.12);
+  --border-strong: rgba(26, 22, 18, 0.28);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 1px 3px rgba(26, 22, 18, 0.05);
+  --topbar-h: 56px;
+  --tabs-h: 0px;
+  --focus: #1f64c5;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 100%; }
+html.fs-large { font-size: 112.5%; }
+html.fs-xlarge { font-size: 125%; }
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  /* Pin to the dynamic viewport so the page never grows past one screen.
+     `100dvh` collapses with the iOS Safari toolbar; `100vh` is a fallback
+     for older browsers where dvh isn't supported. */
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.45;
+  /* The page itself does not scroll — each inner column scrolls
+     independently. See `.chat-log`, `.preview-stage`, `.inspector-body`.
+     This is the structural fix for the empty band that used to open
+     beneath the chat when one column was shorter than another. */
+  overflow: hidden;
+}
+
+/* High-contrast mode */
+body.hc {
+  --ink: #000;
+  --ink-2: #000;
+  --ink-3: #1f1f1f;
+  --paper: #fff;
+  --paper-2: #f0f0f0;
+  --paper-3: #e0e0e0;
+  --accent: #b03900;
+  --accent-light: #ffe4c8;
+  --border: #000;
+  --border-strong: #000;
+  --green: #0b5132;
+  --amber: #8a4f00;
+  --red: #7d0000;
+}
+body.hc .panel { border: 2px solid #000; }
+body.hc .badge { border: 1px solid currentColor; }
+
+.skip-link {
+  position: absolute;
+  left: -1000px;
+  top: 0;
+  padding: 8px 12px;
+  background: var(--ink);
+  color: var(--paper);
+  z-index: 1000;
+  text-decoration: none;
+}
+.skip-link:focus { left: 8px; top: 8px; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+/* Focus rings */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Topbar */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+  height: var(--topbar-h);
+  background: rgba(245, 241, 235, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px;
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.brand-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.topbar-controls {
+  display: flex; align-items: center; gap: 8px;
+}
+.ctl-group { display: inline-flex; gap: 4px; }
+.ctl {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  background: transparent;
+  color: var(--ink-2);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+.ctl:hover { background: var(--paper-2); }
+.ctl[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* Status banner */
+.status-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px;
+  background: var(--accent-light);
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Layout — desktop grid (3 columns: chat | avatar | status).
+ *
+ * `flex: 1; min-height: 0` lets the layout shrink to fit the body's
+ * remaining height without itself scrolling. Each panel uses
+ * `display: flex; flex-direction: column; min-height: 0` so its
+ * scroll-region children (.chat-log, .preview-stage, .inspector-body)
+ * own the overflow.
+ *
+ * The relative widths come from product weight, not equal thirds:
+ *   chat     1.0fr  — primary input target
+ *   preview  1.2fr  — visual centerpiece
+ *   status   0.7fr  — supporting metadata, narrower
+ */
+.layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(320px, 1fr)
+    minmax(360px, 1.2fr)
+    minmax(260px, 0.7fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "chat preview inspect";
+  gap: 16px;
+  padding: 16px;
+  max-width: 1500px;
+  width: 100%;
+  margin: 0 auto;
+}
+.panel-chat    { grid-area: chat;    }
+.panel-preview { grid-area: preview; }
+.panel-inspect { grid-area: inspect; }
+
+.panel {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* `min-width: 0` is the partner of `min-height: 0` for grid items;
+     without it long inline content (e.g. an unwrapped session id) blows
+     the column out and triggers an outer scroll. */
+  min-width: 0;
+  box-shadow: var(--shadow-sm);
+  /* Each panel owns its overflow; nothing inside escapes. */
+  overflow: hidden;
+}
+
+.panel-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.panel-head h1, .panel-head h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.panel-sub {
+  font-size: 12px;
+  color: var(--ink-3);
+  flex-basis: 100%;
+}
+
+/* Buttons */
+.btn {
+  appearance: none;
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.05s;
+}
+.btn:hover { background: var(--paper-2); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.btn-primary:hover { background: var(--ink-2); }
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-tiny { font-size: 12px; padding: 4px 10px; }
+
+/* === Chat panel === */
+.chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+.msg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 92%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--paper-2);
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+.msg[data-role="user"]      { align-self: flex-end; background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.msg[data-role="assistant"] { align-self: flex-start; background: var(--paper); }
+.msg[data-role="system"]    { align-self: center; max-width: 100%; background: var(--accent-light); color: var(--accent); font-size: 12px; padding: 6px 12px; border-color: transparent; text-align: center; }
+.msg[data-role="generated"] { align-self: stretch; background: var(--green-light); color: var(--green); border-color: transparent; }
+.msg[data-role="error"]     { align-self: stretch; background: var(--red-light); color: var(--red); border-color: transparent; }
+
+.msg-head {
+  display: flex; gap: 8px; align-items: baseline;
+  font-size: 11px;
+  opacity: 0.75;
+}
+.msg[data-role="user"] .msg-head { color: var(--paper); }
+.msg-author { font-weight: 600; }
+.msg-body { white-space: pre-wrap; word-wrap: break-word; }
+.msg-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.msg-opt {
+  appearance: none;
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 10px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.msg-opt:hover { background: var(--accent-light); border-color: var(--accent); }
+.msg-opt.freeform { border-style: dashed; }
+
+.chat-form {
+  border-top: 1px solid var(--border);
+  padding: 12px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chat-form-label { font-size: 12px; font-weight: 500; color: var(--ink-3); }
+.chat-form-gloss { display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); margin-bottom: 4px; }
+.chat-form-gloss input {
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.chat-form-gloss[hidden] { display: none; }
+.chat-form textarea {
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--ink);
+  resize: vertical;
+  min-height: 60px;
+}
+.chat-form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.chat-hint { font-size: 12px; color: var(--ink-3); flex: 1; min-width: 200px; }
+.chat-form-actions { display: flex; gap: 8px; }
+.correction-context {
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.correction-context .clear {
+  background: transparent; border: none; color: inherit;
+  cursor: pointer; font-size: 12px; text-decoration: underline;
+}
+
+/* === Preview panel === */
+.preview-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px;
+  gap: 12px;
+  min-height: 0;
+}
+
+/* Status chip mirrors session/avatar state. Owned by app.js
+   setPreviewStatus(); the data-state attribute drives the dot colour. */
+.preview-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--paper-2);
+  border: 1px solid var(--border);
+  color: var(--ink-2);
+  max-width: 100%;
+}
+.preview-status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  flex: none;
+}
+.preview-status-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.preview-status[data-state="loading"] .preview-status-dot {
+  background: var(--accent-bright);
+  animation: previewStatusPulse 1.4s ease-in-out infinite;
+}
+.preview-status[data-state="playing"] {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent-light);
+}
+.preview-status[data-state="playing"] .preview-status-dot { background: var(--accent); }
+.preview-status[data-state="awaiting"] {
+  background: var(--amber-light);
+  color: var(--amber);
+  border-color: var(--amber-light);
+}
+.preview-status[data-state="awaiting"] .preview-status-dot { background: var(--amber); }
+.preview-status[data-state="error"],
+.preview-status[data-state="unavailable"] {
+  background: var(--red-light);
+  color: var(--red);
+  border-color: var(--red-light);
+}
+.preview-status[data-state="error"] .preview-status-dot,
+.preview-status[data-state="unavailable"] .preview-status-dot {
+  background: var(--red);
+}
+@keyframes previewStatusPulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preview-status[data-state="loading"] .preview-status-dot { animation: none; opacity: 1; }
+}
+
+/* The mount is the headline fix. Old layout used flex+percentages, which
+   collapsed the CWASA canvas to zero (see docs/contrib-fix/prompts/
+   07-authoring-avatar-debug.md). The container is now an aspect-ratio
+   box anchored at min-height: 320px; every slot stacks inside it via
+   `position: absolute; inset: 0` so the percentage chain through
+   .CWASAAvatar → .divAv → .canvasAv resolves against a definite
+   parent. */
+.preview-mount {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 320px;
+  max-height: min(60vh, 520px);
+  background: linear-gradient(180deg, var(--paper-2), var(--paper-3));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.preview-mount[aria-busy="true"]::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(245, 241, 235, 0.55);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Every slot fills the mount. `display: none !important` on [hidden] is
+   load-bearing: author CSS that sets `display:` on a class wins over
+   the user-agent `[hidden] { display: none }` rule because both have
+   specificity (0,1,0); without !important the .cwasa-mount slot would
+   show through even when it should be hidden. */
+.preview-slot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.preview-mount > [hidden] { display: none !important; }
+
+#previewVideo.preview-slot {
+  object-fit: contain;
+  background: #000;
+}
+.cwasa-mount {
+  display: block;
+  background: transparent;
+}
+.cwasa-mount > .CWASAAvatar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.preview-placeholder {
+  color: var(--ink-3);
+  text-align: center;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.preview-placeholder-text { color: var(--ink-3); font-size: 13px; }
+
+/* Snapshot fallback (Pattern B from prompt 03) — shown when CWASA
+   doesn't reach ready in 6s. Layout mirrors c2-snapshot-card so the
+   visual idiom is consistent with the rest of the contribution flow. */
+.snapshot-fallback {
+  padding: 18px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  background: var(--paper);
+  overflow: auto;
+}
+.snapshot-fallback__rubric {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.snapshot-fallback__glyphs {
+  font-size: clamp(28px, 6vw, 44px);
+  line-height: 1.2;
+  word-break: break-all;
+  color: var(--ink);
+}
+.snapshot-fallback__gloss {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.snapshot-fallback__details {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.snapshot-fallback__sigml {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--paper-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: auto;
+  max-height: 180px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.snapshot-fallback__note {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+.region-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.region-overlay .region {
+  fill: rgba(201, 106, 46, 0);
+  stroke: rgba(201, 106, 46, 0);
+  stroke-width: 0.5;
+  cursor: pointer;
+  pointer-events: fill;
+  transition: fill 0.12s ease-out, stroke 0.12s ease-out;
+  outline: none;
+}
+.region-overlay .region:hover,
+.region-overlay .region:focus-visible {
+  fill: rgba(201, 106, 46, 0.18);
+  stroke: var(--accent);
+}
+
+/* Brief pulse on click — 200ms "yes I heard you" feedback. */
+.region-overlay .region.is-pulsing {
+  animation: regionPulse 0.2s ease-out;
+}
+@keyframes regionPulse {
+  0%   { fill: rgba(201, 106, 46, 0.55); stroke: var(--accent); }
+  100% { fill: rgba(201, 106, 46, 0);    stroke: rgba(201, 106, 46, 0); }
+}
+
+/* Debug calibration overlay — ``?debug=1``. Draws each polygon with
+   a visible outline and a per-region tint so you can see where the
+   hit zones sit relative to the live avatar. */
+.region-overlay.debug-regions .region {
+  fill: rgba(31, 100, 197, 0.12);
+  stroke: var(--focus);
+  stroke-width: 0.35;
+}
+.region-overlay.debug-regions .region-label {
+  font-size: 3px;
+  fill: var(--focus);
+  pointer-events: none;
+  text-anchor: middle;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Correction popover anchored to the last click. */
+.region-popover {
+  position: absolute;
+  z-index: 20;
+  min-width: 220px;
+  max-width: 280px;
+  padding: 10px 12px 12px;
+  background: var(--paper);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 18px rgba(26, 22, 18, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.region-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.region-popover-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.region-popover-close {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink-3);
+  padding: 0 4px;
+}
+.region-popover-close:hover { color: var(--ink); }
+.region-popover-label {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.region-popover input {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--ink);
+}
+.region-popover-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Keyboard region picker — mirrors the click-target list. */
+.region-select-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.region-select-label {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.region-select {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--ink);
+  min-width: 160px;
+}
+.region-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.preview-captions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--paper-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+.caption-gloss { font-weight: 600; color: var(--ink); }
+.caption-prose { color: var(--ink-2); font-size: 12px; }
+
+.preview-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.timeline-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 140px;
+}
+#timeline {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.timeline-label {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--ink-3);
+  min-width: 64px;
+  text-align: right;
+}
+.selection-hint {
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+}
+
+/* === Inspector panel === */
+.inspector-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 18px 16px;
+  min-height: 0;
+}
+.inspector-empty {
+  color: var(--ink-3);
+  font-size: 13px;
+  font-style: italic;
+}
+.inspector-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ip-row { display: flex; flex-direction: column; }
+.ip-row-btn {
+  appearance: none;
+  font: inherit;
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 2fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.ip-row-btn:hover { background: var(--paper-2); }
+.ip-name { font-size: 12px; color: var(--ink-3); font-weight: 500; }
+.ip-value { font-size: 13px; color: var(--ink); word-break: break-word; }
+.ip-value.empty { color: var(--ink-3); font-style: italic; }
+.ip-reason {
+  margin: 2px 10px 4px;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.inspector-legend {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Status badges */
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.badge.confirmed { background: var(--green-light); color: var(--green); }
+.badge.inferred  { background: var(--amber-light); color: var(--amber); }
+.badge.gap       { background: var(--red-light); color: var(--red); }
+
+/* === Composer is sticky to the bottom of the chat column ===
+ *
+ * .chat-log scrolls; .chat-form is the non-shrinking footer. The user
+ * never has to scroll the column to find the input — it's always
+ * pinned to the bottom of the panel.
+ *
+ * `flex-shrink: 0` is the load-bearing rule: without it, when a
+ * keyboard pops up on iOS the form would compress instead of the log
+ * scrolling. */
+.panel-head { flex-shrink: 0; }
+.chat-form { flex-shrink: 0; }
+
+/* On the narrowest mobile viewports the textarea's default 60 px floor
+   plus the gloss row + send-row footer can eat half the screen. Cap
+   the textarea so the chat-log keeps a usable scroll window. */
+@media (max-width: 600px) {
+  .chat-form textarea {
+    min-height: 48px;
+    max-height: 22dvh;
+  }
+}
+
+/* === Tablet (768 – 1023 px): two columns ===
+ *
+ * Drop the dedicated status column; fold the inspector into a
+ * single-row strip across the top so it stays visible without stealing
+ * width from chat or avatar. Inspector body is collapsed by default
+ * on this viewport (set by app.js initInspectorState()).
+ */
+@media (max-width: 1023px) {
+  .layout {
+    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "inspect inspect"
+      "chat    preview";
+  }
+  /* Inspector strip across the top; once collapsed it's just the
+     header (one row), so it stays out of the way. */
+  .panel-inspect {
+    max-height: 100%;
+  }
+}
+
+/* === Mobile (< 768 px): single stacked column ===
+ *
+ * Stacking order top-to-bottom: status (collapsed by default), avatar,
+ * chat. Chat sits at the bottom — iOS / messaging convention; gives
+ * the on-screen keyboard the room it expects.
+ *
+ * The grid rows are: inspect=auto (~50 px when collapsed), preview=
+ * minmax(180px, 32dvh) so the avatar gets a visible-but-compact slot
+ * (the desktop 320 px square would push chat off-screen on a 700 px
+ * tall device), chat=1fr to soak up the remainder.
+ */
+@media (max-width: 767px) {
+  .topbar { padding: 0 12px; }
+  .ctl-label { display: none; }
+
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(180px, 32dvh) minmax(0, 1fr);
+    grid-template-areas:
+      "inspect"
+      "preview"
+      "chat";
+    padding: 12px;
+    gap: 10px;
+  }
+
+  /* Mobile mount sizing. The desktop rule (`aspect-ratio: 1/1;
+     min-height: 320px`) would push the chat composer off-screen on a
+     414×896 device, so we shrink the floor to 200 px and let the
+     stage scroll if the chip + captions + controls don't fit beside
+     it. The 1:1 aspect ratio is preserved so the canvas's percentage
+     chain resolves the same way it does on desktop — the mount is
+     still a definite-sized parent for `.CWASAAvatar > .divAv >
+     .canvasAv`. */
+  .preview-mount {
+    aspect-ratio: 1 / 1;
+    min-height: 200px;
+    max-height: 38dvh;
+    width: auto;
+    margin-inline: auto;        /* center under stage padding */
+  }
+
+  /* Tighten the preview-stage padding and let it scroll internally
+     — the mount + chip + captions + controls usually overflow a
+     single mobile screen, and an internal scroll is preferable to
+     forcing the page itself to scroll. */
+  .preview-stage {
+    padding: 10px 12px;
+    gap: 8px;
+    overflow-y: auto;
+  }
+}
