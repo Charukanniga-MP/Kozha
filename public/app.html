@@ -2247,9 +2247,7 @@
     // (actual `<hns_sign gloss=*>` entries loadable by the parser).
     // Coverage per sign language — source: progress_snapshot.json + dataset integrations
     const SIGN_LANG_COVERAGE = {
-      isl: 5420, asl: 5250, vsl: 3564, dgs: 1940, pjm: 1046, bsl: 907,
-      kurdish: 558, gsl: 534, lsf: 250, ngt: 65, bangla: 60,
-      algerian: 1, lse: 0, rsl: 0, fsl: 0, ksl: 0
+      isl: 5420, bsl: 907, asl: 5250
     };
 
     // Corpus attribution per sign language — surfaced as per-sign provenance
@@ -2322,7 +2320,7 @@
         const snapshot = await resp.json();
         if (snapshot && Array.isArray(snapshot.languages)) {
           for (const lang of snapshot.languages) {
-            if (lang.code && typeof lang.total === 'number') {
+            if (lang.code && typeof lang.total === 'number' && (lang.code in SIGN_LANG_COVERAGE)) {
               SIGN_LANG_COVERAGE[lang.code] = lang.total;
             }
           }
