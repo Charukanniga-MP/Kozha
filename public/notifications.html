@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signify — Notifications</title>
+  <meta name="description" content="Stay updated with your sign language live calls, contacts, translations, and system activities.">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <script src="/user-store.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #FAF7F2;
+      --card-bg: #FFFFFF;
+      --accent: #C04A22;
+      --accent-hover: #A83E1B;
+      --text-dark: #1C1917;
+      --text-muted: #78716C;
+      --border-color: #E7E5E4;
+      --accent-soft: #FFF5F2;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      font-family: 'DM Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Top Navigation Header */
+    .kz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: transparent;
+    }
+    .kz-header__logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1C1917;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .kz-header__logo span { color: var(--accent); }
+    .kz-header__nav {
+      display: flex;
+      list-style: none;
+      gap: 28px;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+    }
+    .kz-header__link {
+      text-decoration: none;
+      color: #57534E;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kz-header__link:hover { color: #1C1917; }
+    .kz-header__link.is-active {
+      color: var(--accent);
+      background: #FFF0EB;
+      border: 1px solid var(--accent);
+      font-weight: 600;
+    }
+
+    .user-nav-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      cursor: pointer;
+    }
+
+    /* Main Container Card */
+    .notif-container {
+      max-width: 1240px;
+      width: 92%;
+      margin: 10px auto 40px auto;
+      flex: 1;
+    }
+
+    .notif-main-card {
+      background: #FFFFFF;
+      border-radius: 28px;
+      padding: 36px 40px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.04);
+      border: 1px solid #E7E5E4;
+    }
+
+    /* Header Row */
+    .notif-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 46px;
+      font-weight: 700;
+      color: #1C1917;
+      margin: 0 0 6px 0;
+    }
+    .page-sub {
+      color: #78716C;
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .btn-mark-read {
+      background: #FFF5F2;
+      border: 1px solid #F5C6B8;
+      color: var(--accent);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-mark-read:hover {
+      background: #FFE8E0;
+      border-color: var(--accent);
+    }
+
+    /* Filter Pills Row */
+    .filter-pills-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .pill-btn {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      color: #57534E;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .pill-btn:hover {
+      border-color: #D6D3D1;
+      background: #FFFFFF;
+    }
+    .pill-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(192, 74, 34, 0.25);
+    }
+
+    /* 2-Column Grid Layout */
+    .notif-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Left Column: Notification Cards List */
+    .notif-list-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .notif-item-card {
+      background: #FAF8F5;
+      border: 1px solid #F5F5F4;
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .notif-item-card:hover {
+      background: #FFFFFF;
+      border-color: #E7E5E4;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    }
+    .notif-item-card.selected {
+      background: #FFF5F2;
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px rgba(192, 74, 34, 0.12);
+    }
+
+    .notif-left-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* Icon Avatars */
+    .icon-avatar-wrap {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+    .icon-avatar-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .icon-circle-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+    }
+
+    .badge-icon-overlay {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #DC2626;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      border: 2px solid white;
+    }
+
+    .notif-title-text {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1C1917;
+      margin-bottom: 2px;
+    }
+    .notif-sub-text {
+      font-size: 13px;
+      color: #78716C;
+    }
+
+    .notif-right-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #78716C;
+      white-space: nowrap;
+    }
+    .unread-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    /* Right Column: Notification Detail Panel */
+    .notif-detail-panel {
+      background: linear-gradient(135deg, #FFF9F5 0%, #F5ECE4 100%);
+      border: 1px solid #F0E6DF;
+      border-radius: 24px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 20px;
+    }
+
+    .detail-close-btn {
+      align-self: flex-end;
+      background: none;
+      border: none;
+      color: #78716C;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .detail-close-btn:hover { color: #1C1917; }
+
+    .detail-header-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .detail-avatar-box {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+    }
+    .detail-avatar-box img, .detail-avatar-box .icon-circle-badge {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .detail-badge-overlay {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #DC2626;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      border: 2px solid white;
+    }
+
+    .detail-timestamp {
+      font-size: 12px;
+      color: #78716C;
+      margin-bottom: 4px;
+    }
+    .detail-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #1C1917;
+      margin: 0 0 4px 0;
+      line-height: 1.2;
+    }
+    .detail-sub {
+      font-size: 13px;
+      color: #78716C;
+      margin: 0;
+    }
+
+    /* Metadata Table Box inside details */
+    .detail-meta-box {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .meta-icon {
+      color: #78716C;
+      font-size: 16px;
+      margin-top: 1px;
+    }
+    .meta-label {
+      font-size: 12px;
+      color: #78716C;
+      margin-bottom: 2px;
+    }
+    .meta-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1C1917;
+    }
+
+    /* Action Buttons Row inside detail panel */
+    .detail-actions-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .btn-act-filled {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(192, 74, 34, 0.25);
+    }
+    .btn-act-filled:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Rich Messaging Modal & Attachment System */
+    .rich-msg-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(18, 22, 26, 0.75);
+      backdrop-filter: blur(10px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .rich-msg-card {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 680px;
+      height: 720px;
+      max-height: 90vh;
+      border-radius: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #E7E5E4;
+      position: relative;
+    }
+
+    .rich-msg-header {
+      padding: 18px 24px;
+      background: #FAF8F5;
+      border-bottom: 1px solid #E7E5E4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rich-msg-contact-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .rich-msg-avatar-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+    }
+
+    .rich-msg-name {
+      font-weight: 700;
+      font-size: 16px;
+      color: #1C1917;
+    }
+
+    .rich-msg-status {
+      font-size: 12px;
+      color: #166534;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rich-msg-status::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      background: #22C55E;
+      border-radius: 50%;
+    }
+
+    .rich-msg-body {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: #FDFBF7;
+    }
+
+    /* Message Bubbles */
+    .msg-wrap {
+      display: flex;
+      flex-direction: column;
+      max-width: 80%;
+    }
+
+    .msg-wrap.mine {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .msg-wrap.remote {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .msg-sender-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #78716C;
+      margin-bottom: 4px;
+    }
+
+    .msg-bubble {
+      padding: 12px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .msg-wrap.mine .msg-bubble {
+      background: var(--accent);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-wrap.remote .msg-bubble {
+      background: #FFFFFF;
+      color: #1C1917;
+      border: 1px solid #E7E5E4;
+      border-bottom-left-radius: 4px;
+    }
+
+    /* Attachment Media Cards */
+    .media-preview-img {
+      max-width: 100%;
+      border-radius: 14px;
+      margin-top: 6px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .media-preview-video {
+      width: 100%;
+      border-radius: 14px;
+      margin-top: 6px;
+      outline: none;
+    }
+
+    .audio-player-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.15);
+      padding: 10px 14px;
+      border-radius: 14px;
+      margin-top: 6px;
+    }
+    .msg-wrap.remote .audio-player-card {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+    }
+
+    .doc-card-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      padding: 10px 14px;
+      border-radius: 14px;
+      color: #1C1917;
+      margin-top: 6px;
+    }
+
+    /* Poll Card Component */
+    .poll-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 18px;
+      padding: 16px;
+      width: 280px;
+      color: #1C1917;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+    .poll-question {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 12px;
+      color: #1C1917;
+    }
+    .poll-option-btn {
+      width: 100%;
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .poll-option-btn:hover {
+      border-color: var(--accent);
+      background: #FFF5F2;
+    }
+    .poll-progress-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: rgba(192, 74, 34, 0.12);
+      transition: width 0.3s ease;
+      pointer-events: none;
+    }
+
+    /* Live Location Card Component */
+    .location-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 18px;
+      padding: 14px;
+      width: 270px;
+      color: #1C1917;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+    .location-map-graphic {
+      height: 110px;
+      background: linear-gradient(135deg, #3B82F6, #10B981);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 32px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    /* Attachment & Input Controls Bar */
+    .rich-msg-footer {
+      padding: 16px 20px;
+      background: #FAF8F5;
+      border-top: 1px solid #E7E5E4;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rich-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-icon-attach {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 1px solid #D6D3D1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #57534E;
+    }
+    .btn-icon-attach:hover {
+      background: #FFF5F2;
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: scale(1.05);
+    }
+
+    .rich-msg-textarea {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid #D6D3D1;
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+      resize: none;
+      height: 42px;
+      line-height: 20px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .rich-msg-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(192, 74, 34, 0.1);
+    }
+
+    .btn-send-msg {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      height: 42px;
+    }
+    .btn-send-msg:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Popup Menus for Attachments & Emojis */
+    .attachment-popup-grid {
+      position: absolute;
+      bottom: 80px;
+      left: 20px;
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 20px;
+      padding: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 290px;
+      z-index: 100;
+    }
+
+    .attach-grid-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 10px;
+      border-radius: 14px;
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .attach-grid-item:hover {
+      background: #FFF5F2;
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .attach-item-icon {
+      font-size: 22px;
+    }
+    .attach-item-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #57534E;
+    }
+
+    .emoji-picker-box {
+      position: absolute;
+      bottom: 80px;
+      left: 70px;
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 20px;
+      padding: 12px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      z-index: 100;
+    }
+    .emoji-btn-item {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 10px;
+      transition: transform 0.15s;
+    }
+    .emoji-btn-item:hover {
+      transform: scale(1.3);
+      background: #FAF8F5;
+    }
+    .btn-act-outline:hover {
+      background: #FFE8E0;
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="kz-header" aria-label="Main navigation">
+    <a href="/" class="kz-header__logo">Sign<span>ify</span></a>
+    
+    <ul class="kz-header__nav">
+      <li><a href="/" class="kz-header__link">Home</a></li>
+      <li><a href="/app.html" class="kz-header__link">Translate</a></li>
+      <li><a href="/call.html" class="kz-header__link">Live Call</a></li>
+      <li>
+        <a href="/notifications.html" class="kz-header__link is-active" aria-current="page">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notifications
+        </a>
+      </li>
+      <li><a href="/profile.html" class="kz-header__link">Profile</a></li>
+      <li>
+        <img src="/images/luna_3d.jpg" alt="User Profile Avatar" class="user-nav-avatar" title="Logged in as Charu" onclick="window.location.href='/profile.html'" />
+      </li>
+    </ul>
+  </header>
+
+  <main class="notif-container">
+    
+    <div class="notif-main-card">
+      
+      <!-- Header Row -->
+      <div class="notif-header-row">
+        <div>
+          <h1 class="page-title">Notifications</h1>
+          <p class="page-sub">Stay updated with your calls, messages and important activities.</p>
+        </div>
+
+        <button class="btn-mark-read" onclick="markAllAsRead()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Mark all as read
+        </button>
+      </div>
+
+      <!-- Filter Pills Row -->
+      <div class="filter-pills-row">
+        <button class="pill-btn active" id="pillAll" onclick="filterNotifications('all')">All</button>
+
+        <button class="pill-btn" id="pillCalls" onclick="filterNotifications('calls')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Calls (<span id="cntCalls">4</span>)
+        </button>
+
+        <button class="pill-btn" id="pillContacts" onclick="filterNotifications('contacts')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Contacts (<span id="cntContacts">2</span>)
+        </button>
+
+        <button class="pill-btn" id="pillTranslations" onclick="filterNotifications('translations')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6"/><path d="M4 14e1 0 1 1 0-2"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
+          Translations (<span id="cntTranslations">3</span>)
+        </button>
+
+        <button class="pill-btn" id="pillSystem" onclick="filterNotifications('system')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          System (<span id="cntSystem">2</span>)
+        </button>
+      </div>
+
+      <!-- 2-COLUMN GRID -->
+      <div class="notif-grid">
+        
+        <!-- LEFT COLUMN: NOTIFICATION CARDS -->
+        <div id="notifListContainer" class="notif-list-col"></div>
+
+        <!-- RIGHT COLUMN: NOTIFICATION DETAIL PANEL -->
+        <div id="notifDetailPanel" class="notif-detail-panel">
+          <button class="detail-close-btn" onclick="closeDetailPanel()" title="Close Details">✕</button>
+
+          <div class="detail-header-wrap">
+            <div class="detail-avatar-box" id="detAvatarBox">
+              <img src="/images/luna_3d.jpg" alt="Luna" id="detAvatarImg" />
+              <div class="detail-badge-overlay" id="detBadgeOverlay">🔀</div>
+            </div>
+
+            <div>
+              <div class="detail-timestamp" id="detTimestamp">Today, 10:45 AM</div>
+              <h3 class="detail-title" id="detTitle">Missed call from Luna (Signify AI)</h3>
+              <p class="detail-sub" id="detSub">You missed a sign language call.</p>
+            </div>
+          </div>
+
+          <!-- Metadata Properties Box -->
+          <div class="detail-meta-box">
+            <div class="meta-row">
+              <div class="meta-icon">🕒</div>
+              <div>
+                <div class="meta-label">Time</div>
+                <div class="meta-value" id="detMetaTime">10:45 AM, 17 Sep 2026</div>
+              </div>
+            </div>
+
+            <div class="meta-row">
+              <div class="meta-icon">📞</div>
+              <div>
+                <div class="meta-label">Call type</div>
+                <div class="meta-value" id="detMetaType">Missed Call</div>
+              </div>
+            </div>
+
+            <div class="meta-row">
+              <div class="meta-icon">👤</div>
+              <div>
+                <div class="meta-label">From</div>
+                <div class="meta-value" id="detMetaFrom">Luna (Signify AI)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="detail-actions-row">
+            <button class="btn-act-filled" onclick="handleDetailCall()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Call Back
+            </button>
+
+            <button class="btn-act-outline" onclick="openRichMessagingModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Message
+            </button>
+
+            <button class="btn-act-outline" onclick="alert('Contact added to your favourites ⭐')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Add to Favourites
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RICH MESSAGING & ATTACHMENT MODAL OVERLAY -->
+    <div id="richMessageModal" class="rich-msg-modal-overlay hidden">
+      <div class="rich-msg-card">
+        
+        <!-- Modal Header -->
+        <div class="rich-msg-header">
+          <div class="rich-msg-contact-info">
+            <img id="richMsgContactAvatar" src="/images/luna_3d.jpg" alt="Contact Avatar" class="rich-msg-avatar-img" />
+            <div>
+              <div class="rich-msg-name" id="richMsgContactName">Luna (Signify AI)</div>
+              <div class="rich-msg-status">Active now</div>
+            </div>
+          </div>
+          <button type="button" onclick="closeRichMessagingModal()" style="background:transparent; border:none; font-size:22px; cursor:pointer; color:#78716C;">✕</button>
+        </div>
+
+        <!-- Message History Container -->
+        <div id="richMsgContainer" class="rich-msg-body">
+          <!-- Default welcome bubble -->
+          <div class="msg-wrap remote">
+            <span class="msg-sender-name" id="richMsgSenderName">Luna (Signify AI)</span>
+            <div class="msg-bubble">
+              Hey! Feel free to send text, emojis, voice notes, photos, videos, PDFs, interactive polls, or live location here!
+            </div>
+          </div>
+        </div>
+
+        <!-- Attachment Popup Grid Menu -->
+        <div id="attachmentPopup" class="attachment-popup-grid hidden">
+          <label class="attach-grid-item" for="fileInputImage">
+            <span class="attach-item-icon">🖼️</span>
+            <span class="attach-item-label">Photos</span>
+          </label>
+          <input type="file" id="fileInputImage" accept="image/*" class="hidden" onchange="handleImageAttachment(event)" />
+
+          <label class="attach-grid-item" for="fileInputVideo">
+            <span class="attach-item-icon">📹</span>
+            <span class="attach-item-label">Videos</span>
+          </label>
+          <input type="file" id="fileInputVideo" accept="video/*" class="hidden" onchange="handleVideoAttachment(event)" />
+
+          <label class="attach-grid-item" for="fileInputAudio">
+            <span class="attach-item-icon">🎵</span>
+            <span class="attach-item-label">Audio</span>
+          </label>
+          <input type="file" id="fileInputAudio" accept="audio/*" class="hidden" onchange="handleAudioAttachment(event)" />
+
+          <label class="attach-grid-item" for="fileInputDoc">
+            <span class="attach-item-icon">📄</span>
+            <span class="attach-item-label">PDF / Doc</span>
+          </label>
+          <input type="file" id="fileInputDoc" accept=".pdf,.doc,.docx" class="hidden" onchange="handleDocAttachment(event)" />
+
+          <div class="attach-grid-item" onclick="openPollCreatorModal()">
+            <span class="attach-item-icon">📊</span>
+            <span class="attach-item-label">Poll</span>
+          </div>
+
+          <div class="attach-grid-item" onclick="shareLiveLocationCard()">
+            <span class="attach-item-icon">📍</span>
+            <span class="attach-item-label">Location</span>
+          </div>
+        </div>
+
+        <!-- Emoji Picker Box -->
+        <div id="emojiPickerPopup" class="emoji-picker-box hidden">
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('😍')">😍</button>
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('🤟')">🤟</button>
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('❤️')">❤️</button>
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('👍')">👍</button>
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('👏')">👏</button>
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('🔥')">🔥</button>
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('🎉')">🎉</button>
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('💯')">💯</button>
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('✨')">✨</button>
+          <button type="button" class="emoji-btn-item" onclick="insertEmoji('😊')">😊</button>
+        </div>
+
+        <!-- Footer Controls -->
+        <form class="rich-msg-footer" onsubmit="handleSendRichTextMessage(event)">
+          <div class="rich-input-row">
+            <button type="button" class="btn-icon-attach" onclick="toggleAttachmentMenu()" title="Attach File / Poll / Location">📎</button>
+            <button type="button" class="btn-icon-attach" onclick="toggleEmojiPicker()" title="Emoji Picker">😀</button>
+            <button type="button" class="btn-icon-attach" onclick="sendVoiceMessageNote()" title="Voice Note">🎙️</button>
+            <input type="text" id="richMsgInput" class="rich-msg-textarea" placeholder="Type a message or share content..." />
+            <button type="submit" class="btn-send-msg">Send ➔</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- POLL CREATOR MODAL -->
+    <div id="pollCreatorModal" class="rich-msg-modal-overlay hidden">
+      <div style="background:#FFF; border-radius:24px; width:400px; padding:24px; border:1px solid #E7E5E4; box-shadow:0 20px 50px rgba(0,0,0,0.2);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+          <h3 style="font-family:'Instrument Serif', serif; font-size:24px; margin:0;">Create a Poll</h3>
+          <button type="button" onclick="closePollCreatorModal()" style="background:transparent; border:none; font-size:18px; cursor:pointer;">✕</button>
+        </div>
+
+        <form onsubmit="submitCreatedPoll(event)">
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700; color:#57534E; display:block; margin-bottom:4px;">Poll Question</label>
+            <input type="text" id="pollQuestionInput" placeholder="Ask a question..." required style="width:100%; padding:10px 14px; border:1px solid #D6D3D1; border-radius:12px; font-size:14px; outline:none;" />
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:700; color:#57534E; display:block; margin-bottom:4px;">Option 1</label>
+            <input type="text" id="pollOpt1" placeholder="First choice" required style="width:100%; padding:10px 14px; border:1px solid #D6D3D1; border-radius:12px; font-size:14px; outline:none;" />
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <label style="font-size:12px; font-weight:700; color:#57534E; display:block; margin-bottom:4px;">Option 2</label>
+            <input type="text" id="pollOpt2" placeholder="Second choice" required style="width:100%; padding:10px 14px; border:1px solid #D6D3D1; border-radius:12px; font-size:14px; outline:none;" />
+          </div>
+
+          <button type="submit" style="width:100%; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:700; cursor:pointer;">Create &amp; Share Poll</button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let activeFilter = 'all';
+    let selectedNotifId = 'n1';
+
+    const notificationsDataset = [
+      {
+        id: 'n1',
+        category: 'calls',
+        title: 'Missed call from Luna (Signify AI)',
+        sub: 'You missed a sign language call.',
+        time: '10:45 AM',
+        dateStr: '10:45 AM, 17 Sep 2026',
+        unread: true,
+        typeLabel: 'Missed Call',
+        fromLabel: 'Luna (Signify AI)',
+        avatarImg: '/images/luna_3d.jpg',
+        badgeIcon: '🔀',
+        badgeBg: '#DC2626'
+      },
+      {
+        id: 'n2',
+        category: 'calls',
+        title: 'Incoming call from Keerthi',
+        sub: 'Keerthi tried to reach you.',
+        time: '09:12 AM',
+        dateStr: '09:12 AM, 17 Sep 2026',
+        unread: true,
+        typeLabel: 'Incoming Call',
+        fromLabel: 'Keerthi (9834567290)',
+        avatarBg: '#2ECC71',
+        iconChar: '📞'
+      },
+      {
+        id: 'n3',
+        category: 'contacts',
+        title: 'New contact request',
+        sub: 'Priya sent you a contact request.',
+        time: 'Yesterday, 06:30 PM',
+        dateStr: '06:30 PM, 16 Sep 2026',
+        unread: true,
+        typeLabel: 'Contact Request',
+        fromLabel: 'Priya (9876543210)',
+        avatarBg: '#3B82F6',
+        iconChar: '👤'
+      },
+      {
+        id: 'n4',
+        category: 'contacts',
+        title: 'Contact added to favourites',
+        sub: 'Alex Rivers was added to your favourites.',
+        time: 'Yesterday, 04:15 PM',
+        dateStr: '04:15 PM, 16 Sep 2026',
+        unread: false,
+        typeLabel: 'Favourite Update',
+        fromLabel: 'Alex Rivers',
+        avatarBg: '#F59E0B',
+        iconChar: '⭐'
+      },
+      {
+        id: 'n5',
+        category: 'translations',
+        title: 'Translation completed',
+        sub: 'Your video has been successfully translated to BSL.',
+        time: 'Yesterday, 02:20 PM',
+        dateStr: '02:20 PM, 16 Sep 2026',
+        unread: true,
+        typeLabel: 'BSL Translation',
+        fromLabel: 'Signify Translation Engine',
+        avatarBg: '#8B5CF6',
+        iconChar: '🆎'
+      },
+      {
+        id: 'n6',
+        category: 'contacts',
+        title: 'Contact saved successfully',
+        sub: 'Keerthi (9834567290) has been added to your contacts.',
+        time: 'Yesterday, 11:18 AM',
+        dateStr: '11:18 AM, 16 Sep 2026',
+        unread: false,
+        typeLabel: 'Contact Save',
+        fromLabel: 'Keerthi',
+        avatarBg: '#10B981',
+        iconChar: '✓'
+      },
+      {
+        id: 'n7',
+        category: 'system',
+        title: 'System update',
+        sub: 'New sign language animations are now available.',
+        time: '16 Sep 2026',
+        dateStr: '12:00 PM, 16 Sep 2026',
+        unread: false,
+        typeLabel: 'System Update',
+        fromLabel: 'Signify Core System',
+        avatarBg: '#9CA3AF',
+        iconChar: '⚙️'
+      },
+      {
+        id: 'n8',
+        category: 'system',
+        title: 'Contact blocked',
+        sub: 'Ravi Kumar has been blocked.',
+        time: '15 Sep 2026',
+        dateStr: '05:30 PM, 15 Sep 2026',
+        unread: false,
+        typeLabel: 'Security Action',
+        fromLabel: 'Ravi Kumar (9876012345)',
+        avatarBg: '#FCA5A5',
+        iconChar: '🚫'
+      }
+    ];
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadDynamicAccountNotifications();
+      renderNotificationsList();
+      selectNotification('n1');
+    });
+
+    async function loadDynamicAccountNotifications() {
+      const u = SignifyUserStore.getLoggedInUser();
+      const userNavAvatar = document.querySelector('.user-nav-avatar');
+      if (userNavAvatar) {
+        userNavAvatar.title = `Logged in as ${u.name}`;
+      }
+    }
+
+    function renderNotificationsList() {
+      const container = document.getElementById('notifListContainer');
+      container.innerHTML = '';
+
+      const filtered = notificationsDataset.filter(n => {
+        if (activeFilter === 'all') return true;
+        return n.category === activeFilter;
+      });
+
+      // Update counters
+      document.getElementById('cntCalls').textContent = notificationsDataset.filter(n => n.category === 'calls').length;
+      document.getElementById('cntContacts').textContent = notificationsDataset.filter(n => n.category === 'contacts').length;
+      document.getElementById('cntTranslations').textContent = notificationsDataset.filter(n => n.category === 'translations').length;
+      document.getElementById('cntSystem').textContent = notificationsDataset.filter(n => n.category === 'system').length;
+
+      filtered.forEach(n => {
+        const isSelected = n.id === selectedNotifId;
+        const card = document.createElement('div');
+        card.className = `notif-item-card ${isSelected ? 'selected' : ''}`;
+        card.onclick = () => selectNotification(n.id);
+
+        let avatarHtml = '';
+        if (n.avatarImg) {
+          avatarHtml = `
+            <div class="icon-avatar-wrap">
+              <img src="${n.avatarImg}" alt="${escapeHtml(n.title)}" class="icon-avatar-img" />
+              <div class="badge-icon-overlay" style="background:${n.badgeBg || '#DC2626'}">${n.badgeIcon || '🔀'}</div>
+            </div>
+          `;
+        } else {
+          avatarHtml = `
+            <div class="icon-avatar-wrap">
+              <div class="icon-circle-badge" style="background:${n.avatarBg || '#C04A22'}">${n.iconChar || '🔔'}</div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="notif-left-info">
+            ${avatarHtml}
+            <div>
+              <div class="notif-title-text">${escapeHtml(n.title)}</div>
+              <div class="notif-sub-text">${escapeHtml(n.sub)}</div>
+            </div>
+          </div>
+
+          <div class="notif-right-meta">
+            <span>${escapeHtml(n.time)}</span>
+            ${n.unread ? '<span class="unread-dot"></span>' : ''}
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function selectNotification(id) {
+      selectedNotifId = id;
+      const n = notificationsDataset.find(item => item.id === id);
+      if (!n) return;
+
+      n.unread = false; // mark selected as read
+      renderNotificationsList();
+
+      // Update Details Panel
+      const panel = document.getElementById('notifDetailPanel');
+      panel.classList.remove('hidden');
+
+      const avatarBox = document.getElementById('detAvatarBox');
+      if (n.avatarImg) {
+        avatarBox.innerHTML = `
+          <img src="${n.avatarImg}" alt="${escapeHtml(n.title)}" />
+          <div class="detail-badge-overlay" style="background:${n.badgeBg || '#DC2626'}">${n.badgeIcon || '🔀'}</div>
+        `;
+      } else {
+        avatarBox.innerHTML = `
+          <div class="icon-circle-badge" style="background:${n.avatarBg || '#C04A22'}">${n.iconChar || '🔔'}</div>
+        `;
+      }
+
+      document.getElementById('detTimestamp').textContent = n.time;
+      document.getElementById('detTitle').textContent = n.title;
+      document.getElementById('detSub').textContent = n.sub;
+
+      document.getElementById('detMetaTime').textContent = n.dateStr;
+      document.getElementById('detMetaType').textContent = n.typeLabel;
+      document.getElementById('detMetaFrom').textContent = n.fromLabel;
+    }
+
+    function filterNotifications(category) {
+      activeFilter = category;
+      document.querySelectorAll('.filter-pills-row .pill-btn').forEach(btn => btn.classList.remove('active'));
+      
+      const cap = category.charAt(0).toUpperCase() + category.slice(1);
+      const activeBtn = document.getElementById('pill' + cap);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      renderNotificationsList();
+    }
+
+    function markAllAsRead() {
+      notificationsDataset.forEach(n => n.unread = false);
+      renderNotificationsList();
+    }
+
+    function closeDetailPanel() {
+      document.getElementById('notifDetailPanel').classList.add('hidden');
+    }
+
+    function handleDetailCall() {
+      window.location.href = '/call.html';
+    }
+
+    // RICH MESSAGING SYSTEM & ATTACHMENT HANDLERS
+    let pollIdCounter = 1;
+
+    function openRichMessagingModal() {
+      const n = notificationsDataset.find(item => item.id === selectedNotifId) || notificationsDataset[0];
+      
+      const modal = document.getElementById('richMessageModal');
+      modal.classList.remove('hidden');
+
+      const contactName = n ? n.fromLabel : 'Signify User';
+      document.getElementById('richMsgContactName').textContent = contactName;
+      document.getElementById('richMsgSenderName').textContent = contactName;
+
+      const avatarImg = document.getElementById('richMsgContactAvatar');
+      if (n && n.avatarImg) {
+        avatarImg.src = n.avatarImg;
+        avatarImg.style.display = 'block';
+      } else {
+        avatarImg.src = '/images/luna_3d.jpg';
+      }
+
+      document.getElementById('attachmentPopup').classList.add('hidden');
+      document.getElementById('emojiPickerPopup').classList.add('hidden');
+    }
+
+    function closeRichMessagingModal() {
+      document.getElementById('richMessageModal').classList.add('hidden');
+    }
+
+    function toggleAttachmentMenu() {
+      document.getElementById('emojiPickerPopup').classList.add('hidden');
+      document.getElementById('attachmentPopup').classList.toggle('hidden');
+    }
+
+    function toggleEmojiPicker() {
+      document.getElementById('attachmentPopup').classList.add('hidden');
+      document.getElementById('emojiPickerPopup').classList.toggle('hidden');
+    }
+
+    function insertEmoji(emoji) {
+      const input = document.getElementById('richMsgInput');
+      input.value += emoji;
+      input.focus();
+      document.getElementById('emojiPickerPopup').classList.add('hidden');
+    }
+
+    function handleSendRichTextMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('richMsgInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendUserBubble(text, 'text');
+      input.value = '';
+
+      // Auto-reply simulation
+      setTimeout(() => {
+        appendRemoteBubble('Received your message! I will reply shortly 👍', 'text');
+      }, 1000);
+    }
+
+    // Media & File Attachments
+    function handleImageAttachment(e) {
+      document.getElementById('attachmentPopup').classList.add('hidden');
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const imgHtml = `<div style="font-weight:700; margin-bottom:4px;">🖼️ Shared Photo:</div><img src="${evt.target.result}" class="media-preview-img" alt="Attached photo" />`;
+        appendUserBubble(imgHtml, 'html');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleVideoAttachment(e) {
+      document.getElementById('attachmentPopup').classList.add('hidden');
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      const videoHtml = `<div style="font-weight:700; margin-bottom:4px;">📹 Shared Video:</div><video src="${url}" controls class="media-preview-video"></video>`;
+      appendUserBubble(videoHtml, 'html');
+    }
+
+    function handleAudioAttachment(e) {
+      document.getElementById('attachmentPopup').classList.add('hidden');
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      const audioHtml = `<div style="font-weight:700; margin-bottom:4px;">🎵 Shared Audio:</div><audio src="${url}" controls style="width:100%; margin-top:4px;"></audio>`;
+      appendUserBubble(audioHtml, 'html');
+    }
+
+    function handleDocAttachment(e) {
+      document.getElementById('attachmentPopup').classList.add('hidden');
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const sizeKb = Math.round(file.size / 1024);
+      const docHtml = `
+        <div class="doc-card-pill">
+          <span style="font-size:24px;">📄</span>
+          <div style="flex:1;">
+            <div style="font-weight:700; font-size:13px;">${escapeHtml(file.name)}</div>
+            <div style="font-size:11px; color:#78716C;">${sizeKb} KB • PDF Document</div>
+          </div>
+          <a href="#" onclick="alert('Downloading ${escapeHtml(file.name)}'); return false;" style="color:var(--accent); font-weight:700; text-decoration:none; font-size:12px;">Download</a>
+        </div>
+      `;
+      appendUserBubble(docHtml, 'html');
+    }
+
+    function sendVoiceMessageNote() {
+      const voiceHtml = `
+        <div style="font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:6px;">🎙️ Voice Note (0:14):</div>
+        <div class="audio-player-card">
+          <button type="button" onclick="const a=this.nextElementSibling; a.paused?a.play():a.pause();" style="background:var(--accent); color:white; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:14px;">▶</button>
+          <audio src="https://actions.google.com/sounds/v1/ambiences/rain_heavy.ogg"></audio>
+          <div style="flex:1; height:4px; background:rgba(0,0,0,0.15); border-radius:2px; position:relative; overflow:hidden;">
+            <div style="width:45%; height:100%; background:var(--accent);"></div>
+          </div>
+          <span style="font-size:11px; opacity:0.8;">0:14</span>
+        </div>
+      `;
+      appendUserBubble(voiceHtml, 'html');
+    }
+
+    // Polls
+    function openPollCreatorModal() {
+      document.getElementById('attachmentPopup').classList.add('hidden');
+      document.getElementById('pollCreatorModal').classList.remove('hidden');
+    }
+
+    function closePollCreatorModal() {
+      document.getElementById('pollCreatorModal').classList.add('hidden');
+    }
+
+    function submitCreatedPoll(e) {
+      e.preventDefault();
+      const q = document.getElementById('pollQuestionInput').value.trim();
+      const o1 = document.getElementById('pollOpt1').value.trim();
+      const o2 = document.getElementById('pollOpt2').value.trim();
+
+      if (!q || !o1 || !o2) return;
+
+      closePollCreatorModal();
+      pollIdCounter++;
+      const currentPollId = 'poll_' + pollIdCounter;
+
+      const pollHtml = `
+        <div class="poll-card" id="${currentPollId}">
+          <div class="poll-question">📊 ${escapeHtml(q)}</div>
+          <button type="button" class="poll-option-btn" onclick="voteOnPoll('${currentPollId}', 0)">
+            <div class="poll-progress-fill" style="width: 0%;"></div>
+            <span style="position:relative; z-index:2;">${escapeHtml(o1)}</span>
+            <span style="position:relative; z-index:2; font-size:11px; color:#78716C;" class="poll-count">0 votes (0%)</span>
+          </button>
+          <button type="button" class="poll-option-btn" onclick="voteOnPoll('${currentPollId}', 1)">
+            <div class="poll-progress-fill" style="width: 0%;"></div>
+            <span style="position:relative; z-index:2;">${escapeHtml(o2)}</span>
+            <span style="position:relative; z-index:2; font-size:11px; color:#78716C;" class="poll-count">0 votes (0%)</span>
+          </button>
+        </div>
+      `;
+      appendUserBubble(pollHtml, 'html');
+
+      // Reset form
+      document.getElementById('pollQuestionInput').value = '';
+      document.getElementById('pollOpt1').value = '';
+      document.getElementById('pollOpt2').value = '';
+    }
+
+    function voteOnPoll(pollId, optIndex) {
+      const pollCard = document.getElementById(pollId);
+      if (!pollCard) return;
+
+      const btns = pollCard.querySelectorAll('.poll-option-btn');
+      btns.forEach((btn, idx) => {
+        const fill = btn.querySelector('.poll-progress-fill');
+        const countSpan = btn.querySelector('.poll-count');
+        if (idx === optIndex) {
+          fill.style.width = '100%';
+          countSpan.textContent = '1 vote (100%)';
+          btn.style.borderColor = 'var(--accent)';
+        } else {
+          fill.style.width = '0%';
+          countSpan.textContent = '0 votes (0%)';
+        }
+      });
+    }
+
+    // Live Location Card
+    function shareLiveLocationCard() {
+      document.getElementById('attachmentPopup').classList.add('hidden');
+
+      const locHtml = `
+        <div class="location-card">
+          <div class="location-map-graphic">
+            <span>📍</span>
+          </div>
+          <div style="font-weight:700; font-size:14px; margin-bottom:2px;">Live Location Shared</div>
+          <div style="font-size:12px; color:#78716C; margin-bottom:10px;">12.9716° N, 77.5946° E • Updated live</div>
+          <button type="button" onclick="alert('Opening live location map pin...')" style="width:100%; background:#FAF8F5; border:1px solid #E7E5E4; border-radius:10px; padding:8px; font-weight:700; font-size:12px; color:var(--accent); cursor:pointer;">View on Map ➔</button>
+        </div>
+      `;
+      appendUserBubble(locHtml, 'html');
+    }
+
+    function appendUserBubble(content, mode) {
+      const container = document.getElementById('richMsgContainer');
+      const wrap = document.createElement('div');
+      wrap.className = 'msg-wrap mine';
+
+      const sender = document.createElement('span');
+      sender.className = 'msg-sender-name';
+      sender.textContent = 'You';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bubble';
+      if (mode === 'html') {
+        bubble.innerHTML = content;
+      } else {
+        bubble.textContent = content;
+      }
+
+      wrap.appendChild(sender);
+      wrap.appendChild(bubble);
+      container.appendChild(wrap);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendRemoteBubble(content, mode) {
+      const n = notificationsDataset.find(item => item.id === selectedNotifId) || notificationsDataset[0];
+      const container = document.getElementById('richMsgContainer');
+      const wrap = document.createElement('div');
+      wrap.className = 'msg-wrap remote';
+
+      const sender = document.createElement('span');
+      sender.className = 'msg-sender-name';
+      sender.textContent = n ? n.fromLabel : 'Contact';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bubble';
+      if (mode === 'html') {
+        bubble.innerHTML = content;
+      } else {
+        bubble.textContent = content;
+      }
+
+      wrap.appendChild(sender);
+      wrap.appendChild(bubble);
+      container.appendChild(wrap);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+</body>
+</html>

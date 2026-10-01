@@ -1,0 +1,252 @@
+{
+  "charu@gmail.com": {
+    "user_id": "charu@gmail.com",
+    "profile": {
+      "name": "charu@gmail.com",
+      "email": "charu@gmail.com",
+      "phone": "9876543210",
+      "role": "Sign Language User",
+      "avatar": "/images/luna_3d.jpg"
+    },
+    "contacts": [
+      {
+        "id": "c_luna",
+        "name": "Luna (Signify AI)",
+        "phone": "+1 (800) 555-LUNA",
+        "avatar": "/images/luna_3d.jpg",
+        "isFav": true,
+        "isBlocked": false
+      },
+      {
+        "id": "c_keerthi",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "avatar": null,
+        "isFav": true,
+        "isBlocked": false
+      },
+      {
+        "id": "c_alex",
+        "name": "Alex Rivers",
+        "phone": "+1 (555) 019-2834",
+        "avatar": null,
+        "isFav": true,
+        "isBlocked": false
+      },
+      {
+        "id": "c_priya",
+        "name": "Priya",
+        "phone": "9876543210",
+        "avatar": null,
+        "isFav": false,
+        "isBlocked": false
+      },
+      {
+        "id": "c_sanjay",
+        "name": "Sanjay",
+        "phone": "9123456780",
+        "avatar": null,
+        "isFav": false,
+        "isBlocked": false
+      },
+      {
+        "id": "c_meena",
+        "name": "Meena",
+        "phone": "9887766554",
+        "avatar": null,
+        "isFav": false,
+        "isBlocked": false
+      },
+      {
+        "id": "c_ravi",
+        "name": "Ravi Kumar",
+        "phone": "9876012345",
+        "avatar": null,
+        "isFav": false,
+        "isBlocked": true
+      },
+      {
+        "id": "c_spam",
+        "name": "Spam Caller",
+        "phone": "+1 (444) 222-9999",
+        "avatar": null,
+        "isFav": false,
+        "isBlocked": true
+      }
+    ],
+    "callHistory": [
+      {
+        "id": "h_1790834975938",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790834663164",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790834604465",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1",
+        "name": "Luna (Signify AI)",
+        "phone": "+1 (800) 555-LUNA",
+        "time": "Today, 10:45 AM",
+        "type": "incoming",
+        "avatar": "/images/luna_3d.jpg"
+      }
+    ],
+    "notifications": [
+      {
+        "id": "n_1",
+        "title": "Welcome to Signify",
+        "text": "Hello charu@gmail.com! Your account has been initialized.",
+        "time": "Just now",
+        "read": false
+      },
+      {
+        "id": "n_2",
+        "title": "Avatar Ready",
+        "text": "Your 3D full-body avatar is ready for sign language live calls.",
+        "time": "1 hour ago",
+        "read": true
+      }
+    ],
+    "avatarSettings": {
+      "selectedAvatar": "luna",
+      "skinTone": "#F5D6BA",
+      "hairStyle": "style_1",
+      "hairColor": "#29231F",
+      "eyeColor": "#16A34A",
+      "outfit": "outfit_green",
+      "pose": 0
+    },
+    "preferences": {
+      "language": "en",
+      "signLanguage": "bsl",
+      "subtitles": true,
+      "theme": "light"
+    }
+  },
+  "keerthi@gmail.com": {
+    "user_id": "keerthi@gmail.com",
+    "profile": {
+      "name": "keerthi@gmail.com",
+      "email": "keerthi@gmail.com",
+      "phone": "9834567290",
+      "role": "Sign Language User",
+      "avatar": "/images/anna_3d.jpg"
+    },
+    "contacts": [
+      {
+        "id": "c_luna",
+        "name": "Luna (Signify AI)",
+        "phone": "+1 (800) 555-LUNA",
+        "avatar": "/images/luna_3d.jpg",
+        "isFav": true,
+        "isBlocked": false
+      },
+      {
+        "id": "c_charu",
+        "name": "Charu",
+        "phone": "6382472844",
+        "avatar": null,
+        "isFav": true,
+        "isBlocked": false
+      },
+      {
+        "id": "c_alex",
+        "name": "Alex Rivers",
+        "phone": "+1 (555) 019-2834",
+        "avatar": null,
+        "isFav": true,
+        "isBlocked": false
+      },
+      {
+        "id": "c_sanjay",
+        "name": "Sanjay",
+        "phone": "9123456780",
+        "avatar": null,
+        "isFav": false,
+        "isBlocked": false
+      }
+    ],
+    "callHistory": [
+      {
+        "id": "h_1790834977658",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790834665213",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790834607712",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1",
+        "name": "Luna (Signify AI)",
+        "phone": "+1 (800) 555-LUNA",
+        "time": "Today, 10:45 AM",
+        "type": "incoming",
+        "avatar": "/images/luna_3d.jpg"
+      }
+    ],
+    "notifications": [
+      {
+        "id": "n_1",
+        "title": "Welcome to Signify",
+        "text": "Hello keerthi@gmail.com! Your account has been initialized.",
+        "time": "Just now",
+        "read": false
+      },
+      {
+        "id": "n_2",
+        "title": "Avatar Ready",
+        "text": "Your 3D full-body avatar is ready for sign language live calls.",
+        "time": "1 hour ago",
+        "read": true
+      }
+    ],
+    "avatarSettings": {
+      "selectedAvatar": "anna",
+      "skinTone": "#F5D6BA",
+      "hairStyle": "style_1",
+      "hairColor": "#29231F",
+      "eyeColor": "#16A34A",
+      "outfit": "outfit_green",
+      "pose": 0
+    },
+    "preferences": {
+      "language": "en",
+      "signLanguage": "bsl",
+      "subtitles": true,
+      "theme": "light"
+    }
+  }
+}

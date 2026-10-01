@@ -1,0 +1,2771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signify — Live Call</title>
+  <meta name="description" content="Real-time sign language live call with Luna & Anna 3D Avatars, dual video boxes, live captions, and cross-tab communication.">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+
+  <script>
+    if (typeof window !== 'undefined' && window.WebAssembly && !window.__nativeWebAssembly) {
+      window.__nativeWebAssembly = window.WebAssembly;
+    }
+  </script>
+
+  <link rel="stylesheet" href="/cwa/cwasa.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script defer src="/cwa/allcsa.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="/sigml-validator.js"></script>
+  <script src="/user-store.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #FAF7F2;
+      --card-bg: #FFFFFF;
+      --accent: #C04A22;
+      --accent-hover: #A83E1B;
+      --text-dark: #1C1917;
+      --text-muted: #78716C;
+      --border-color: #E7E5E4;
+      --call-green: #2ECC71;
+      --call-red: #E74C3C;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      font-family: 'DM Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Top Navigation Header */
+    .kz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: transparent;
+    }
+    .kz-header__logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1C1917;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .kz-header__logo span { color: var(--accent); }
+    .kz-header__nav {
+      display: flex;
+      list-style: none;
+      gap: 32px;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+    }
+    .kz-header__link {
+      text-decoration: none;
+      color: #57534E;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .kz-header__link:hover { color: #1C1917; }
+    .kz-header__link.is-active {
+      color: var(--accent);
+      background: rgba(192, 74, 34, 0.08);
+      font-weight: 600;
+    }
+    .kz-header__link.is-active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 12px; right: 12px;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .call-container {
+      max-width: 1240px;
+      width: 90%;
+      margin: 10px auto 40px auto;
+      flex: 1;
+    }
+
+    /* Main Container White Card */
+    .call-main-card {
+      background: #FFFFFF;
+      border-radius: 28px;
+      padding: 36px 40px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.04);
+      border: 1px solid #E7E5E4;
+    }
+
+    /* User Profile Bar */
+    .user-profile-bar {
+      background: #1C1917;
+      color: white;
+      border-radius: 16px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .user-badge-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar-initial {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .user-text-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .user-role-title { font-size: 11px; text-transform: uppercase; color: #A1A1AA; letter-spacing: 0.5px; }
+    .user-role-name { font-weight: 700; font-size: 15px; }
+
+    .btn-switch-user {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-switch-user:hover { background: rgba(255,255,255,0.25); }
+
+    .call-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .call-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 38px;
+      font-weight: 400;
+      margin: 0 0 6px 0;
+      color: #1C1917;
+    }
+    .call-sub {
+      color: #78716C;
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .badge-connected {
+      background: #E6F4EA;
+      color: #137333;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot-connected {
+      width: 8px;
+      height: 8px;
+      background: #137333;
+      border-radius: 50%;
+    }
+
+    /* Video Workspace Grid Layout */
+    .video-call-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.85fr 260px;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    /* Box 1: Local Video Box (Luna Avatar) */
+    .video-box-luna {
+      background: #8FA2A6;
+      border-radius: 24px;
+      position: relative;
+      height: 380px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    /* Box 2: Remote Video Box (Anna Avatar) */
+    .video-box-anna {
+      background: #D8C3A5;
+      border-radius: 24px;
+      position: relative;
+      height: 380px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    .box-name-badge {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(8px);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 20;
+    }
+
+    .box-top-actions {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      z-index: 20;
+    }
+    .btn-box-action {
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: white;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .box-caption-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 22, 26, 0.88);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 20;
+      white-space: nowrap;
+      max-width: 90%;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .wave-icon {
+      color: #E87A5D;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .wave-bar {
+      width: 3px;
+      height: 12px;
+      background: #E87A5D;
+      border-radius: 2px;
+      animation: wavePulse 1s infinite ease-in-out alternate;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.2s; height: 16px; }
+    .wave-bar:nth-child(3) { animation-delay: 0.4s; height: 10px; }
+    @keyframes wavePulse {
+      0% { transform: scaleY(0.5); }
+      100% { transform: scaleY(1.3); }
+    }
+
+    /* Avatar Stage & 3D Full-Body Rendering */
+    .avatar-render-stage {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.25) 0%, rgba(0, 0, 0, 0.2) 100%);
+    }
+
+    .avatar-3d-wrapper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .avatar-3d-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 15%;
+      border-radius: 20px;
+      transition: transform 0.3s ease, filter 0.3s ease;
+    }
+
+    /* Animated sign language action movement on the 3D full body character */
+    .avatar-3d-wrapper.signing-active {
+      animation: signBodyMotion 0.45s infinite ease-in-out alternate;
+    }
+    .avatar-3d-wrapper.signing-active .avatar-3d-img {
+      filter: brightness(1.08) contrast(1.04);
+    }
+
+    @keyframes signBodyMotion {
+      0% { transform: scale(1) translateY(0) rotate(0deg); }
+      50% { transform: scale(1.03) translateY(-10px) rotate(-2deg); }
+      100% { transform: scale(1.02) translateY(-4px) rotate(2deg); }
+    }
+
+    .signing-hand-overlay {
+      position: absolute;
+      top: 32%;
+      right: 22%;
+      background: linear-gradient(135deg, #C04A22, #F39C12);
+      backdrop-filter: blur(8px);
+      border: 2px solid #FFFFFF;
+      color: white;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      opacity: 0;
+      transform: scale(0.4);
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(192, 74, 34, 0.5);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .avatar-3d-wrapper.signing-active .signing-hand-overlay {
+      opacity: 1;
+      transform: scale(1.1);
+      animation: handSignPulse 0.4s infinite alternate ease-in-out;
+    }
+
+    @keyframes handSignPulse {
+      0% { transform: scale(1) rotate(-12deg); }
+      100% { transform: scale(1.28) rotate(16deg); }
+    }
+
+    /* Screen Sharing Overlay Styles */
+    .screen-share-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      background: #12161A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 20px;
+    }
+    .shared-screen-elem {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+    .screen-share-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 20;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .live-pulse-red {
+      width: 8px;
+      height: 8px;
+      background: #E74C3C;
+      border-radius: 50%;
+      animation: pulseRed 1.2s infinite ease-in-out;
+    }
+    @keyframes pulseRed {
+      0% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.3); }
+      100% { opacity: 0.3; transform: scale(0.8); }
+    }
+    .btn-stop-share-sm {
+      background: #E74C3C;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-left: 6px;
+      transition: background 0.2s;
+    }
+    .btn-stop-share-sm:hover { background: #C0392B; }
+
+    .share-option-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border: 2px solid #E7E5E4;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #FAF8F5;
+    }
+    .share-option-card:hover, .share-option-card.selected {
+      border-color: #C04A22;
+      background: #FFF5F2;
+    }
+
+    /* Box 3: Participants Panel */
+    .participants-panel {
+      background: #FAF8F5;
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid #E7E5E4;
+      display: flex;
+      flex-direction: column;
+    }
+    .participants-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 26px;
+      font-weight: 400;
+      margin: 0 0 18px 0;
+      color: #1C1917;
+    }
+    .participant-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .participant-item {
+      background: #FFFFFF;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid #E7E5E4;
+    }
+    .part-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .part-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .part-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: #1C1917;
+    }
+    .part-status {
+      font-size: 12px;
+      color: #78716C;
+    }
+    .part-mic-icon {
+      color: #137333;
+    }
+
+    /* More Options Menu */
+    .more-options-wrap {
+      position: relative;
+    }
+    .more-options-menu {
+      position: absolute;
+      bottom: 74px;
+      right: 0;
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 16px;
+      padding: 8px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.14);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 220px;
+      z-index: 100;
+    }
+    .more-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: transparent;
+      border: none;
+      color: #1C1917;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      width: 100%;
+      text-align: left;
+    }
+    .more-menu-item:hover {
+      background: #FAF8F5;
+      color: var(--accent);
+      transform: translateX(2px);
+    }
+
+    /* Reactions Bar & Animations */
+    .reactions-bar {
+      position: absolute;
+      bottom: 84px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(28, 25, 23, 0.94);
+      backdrop-filter: blur(12px);
+      border-radius: 30px;
+      padding: 8px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      z-index: 100;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-emoji-react {
+      background: transparent;
+      border: none;
+      font-size: 26px;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 4px;
+      border-radius: 50%;
+    }
+    .btn-emoji-react:hover {
+      transform: scale(1.4) translateY(-4px);
+    }
+
+    /* Floating Reactions Overlay */
+    .floating-reaction-stage {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 80;
+    }
+    .floating-emoji {
+      position: absolute;
+      font-size: 44px;
+      pointer-events: none;
+      z-index: 90;
+      animation: floatEmojiUp 2.8s ease-out forwards;
+    }
+    @keyframes floatEmojiUp {
+      0% { opacity: 1; transform: translateY(0) scale(0.6) rotate(0deg); }
+      30% { transform: translateY(-110px) scale(1.25) rotate(12deg); }
+      70% { transform: translateY(-240px) scale(1.05) rotate(-10deg); }
+      100% { opacity: 0; transform: translateY(-380px) scale(0.7) rotate(15deg); }
+    }
+
+    /* Live Chat Drawer */
+    .chat-drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 380px;
+      max-width: 90vw;
+      background: #FFFFFF;
+      box-shadow: -10px 0 36px rgba(0,0,0,0.15);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #E7E5E4;
+      transition: transform 0.3s ease;
+    }
+    .chat-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #E7E5E4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #FAF8F5;
+    }
+    .chat-messages-container {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #FFF;
+    }
+    .chat-bubble-wrap {
+      display: flex;
+      flex-direction: column;
+      max-width: 82%;
+    }
+    .chat-bubble-wrap.mine {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+    .chat-bubble-wrap.remote {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+    .chat-bubble-sender {
+      font-size: 11px;
+      font-weight: 700;
+      color: #78716C;
+      margin-bottom: 3px;
+    }
+    .chat-bubble {
+      padding: 10px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .chat-bubble-wrap.mine .chat-bubble {
+      background: var(--accent);
+      color: white;
+      border-bottom-right-radius: 2px;
+    }
+    .chat-bubble-wrap.remote .chat-bubble {
+      background: #F5F5F4;
+      color: #1C1917;
+      border-bottom-left-radius: 2px;
+    }
+    .chat-input-row {
+      padding: 16px;
+      border-top: 1px solid #E7E5E4;
+      display: flex;
+      gap: 10px;
+      background: #FAF8F5;
+    }
+
+    /* Bottom Control Bar */
+    .call-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 12px;
+    }
+    .control-btn-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-circle-control {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      color: #292524;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+    .btn-circle-control:hover {
+      background: #FFFFFF;
+      border-color: #D6D3D1;
+      transform: translateY(-2px);
+    }
+    .btn-circle-control.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .btn-circle-endcall {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 6px 16px rgba(192, 74, 34, 0.3);
+    }
+    .btn-circle-endcall:hover {
+      background: #A83E1B;
+      transform: scale(1.08);
+    }
+    .control-btn-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #57534E;
+    }
+
+    /* Speech Drawer Input */
+    .speech-drawer {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+    }
+    .speech-drawer-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid #D6D3D1;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+    .speech-drawer-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* Ringing Screen Overlays */
+    .call-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(18, 22, 26, 0.95);
+      backdrop-filter: blur(12px);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    .ring-avatar-wrap { position: relative; margin-bottom: 24px; }
+    .ring-avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: linear-gradient(135deg, #C04A22, #F39C12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px; font-weight: 700; color: white;
+      box-shadow: 0 0 40px rgba(192, 74, 34, 0.5); z-index: 2; position: relative;
+    }
+    .ring-pulse {
+      position: absolute; top: -20px; left: -20px; right: -20px; bottom: -20px;
+      border: 2px solid rgba(192, 74, 34, 0.6); border-radius: 50%;
+      animation: pulseRipple 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+    .ring-pulse-2 { animation-delay: 0.6s; }
+    @keyframes pulseRipple {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+    .ring-controls { display: flex; gap: 28px; }
+    .btn-ring-action {
+      width: 72px; height: 72px; border-radius: 50%; border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.2s;
+    }
+    .btn-ring-action:hover { transform: scale(1.1); }
+    .btn-ring-answer { background: var(--call-green); color: white; box-shadow: 0 0 24px rgba(46, 204, 113, 0.6); }
+    .btn-ring-decline { background: var(--call-red); color: white; box-shadow: 0 0 24px rgba(231, 76, 60, 0.6); }
+
+    /* Mockup Dashboard Layout Styles */
+    .btn-add-contact {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(192, 74, 34, 0.3);
+    }
+    .btn-add-contact:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .dash-card-panel {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+    }
+    .panel-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .panel-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-title {
+      font-weight: 700;
+      font-size: 17px;
+      color: #1C1917;
+    }
+    .panel-link-btn {
+      background: none;
+      border: none;
+      color: #C04A22;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+    }
+    .panel-link-btn:hover { text-decoration: underline; }
+
+    /* Favourites Grid */
+    .fav-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .fav-card-item {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .fav-card-item:hover {
+      border-color: #D6D3D1;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+    }
+    .fav-avatar-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #C04A22;
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .fav-avatar-circle img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    /* Contacts Table List */
+    .contacts-table-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .contact-table-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: #FAF8F5;
+      border: 1px solid #F5F5F4;
+      transition: all 0.15s;
+    }
+    .contact-table-row:hover {
+      background: #FFFFFF;
+      border-color: #E7E5E4;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    /* Blocked & History Lists */
+    .compact-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .compact-row-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #FAF8F5;
+      border: 1px solid #F5F5F4;
+      border-radius: 14px;
+    }
+
+    /* History Filter Pills */
+    .history-filter-pills {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .pill-btn {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      color: #57534E;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pill-btn.active {
+      background: #FFF5F2;
+      border-color: #C04A22;
+      color: #C04A22;
+    }
+
+    .badge-status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 10px;
+    }
+    .badge-status-pill.blocked { background: #FEE2E2; color: #DC2626; }
+    .badge-status-pill.missed { background: #FEE2E2; color: #DC2626; }
+    .badge-status-pill.incoming { background: #DCFCE7; color: #16A34A; }
+    .badge-status-pill.outgoing { background: #DCFCE7; color: #16A34A; }
+
+    .btn-circle-call-sm {
+      background: #2ECC71;
+      color: white;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 10px rgba(46,204,113,0.3);
+      flex-shrink: 0;
+    }
+    .btn-circle-call-sm:hover {
+      background: #27AE60;
+      transform: scale(1.06);
+    }
+
+    .btn-more-dots {
+      background: none;
+      border: none;
+      color: #78716C;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .btn-more-dots:hover { background: #E7E5E4; color: #1C1917; }
+
+    .dropdown-popover {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      padding: 6px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      min-width: 140px;
+    }
+    .dropdown-popover button {
+      background: none;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1C1917;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dropdown-popover button:hover { background: #FAF8F5; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="kz-header" aria-label="Main navigation">
+    <a href="/" class="kz-header__logo">Sign<span>ify</span></a>
+    <ul class="kz-header__nav">
+      <li><a href="/" class="kz-header__link">Home</a></li>
+      <li><a href="/app.html" class="kz-header__link">Translate</a></li>
+      <li><a href="/call.html" class="kz-header__link is-active" aria-current="page">Live Call</a></li>
+      <li>
+        <a href="/notifications.html" class="kz-header__link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notifications
+        </a>
+      </li>
+      <li><a href="/profile.html" class="kz-header__link">Profile</a></li>
+      <li>
+        <img src="/images/luna_3d.jpg" alt="User Profile Avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #C04A22; cursor:pointer;" title="Logged in as Charu" onclick="window.location.href='/profile.html'" />
+      </li>
+    </ul>
+  </header>
+
+  <main class="call-container">
+
+    <!-- USER ROLE HEADER BAR -->
+    <div class="user-profile-bar">
+      <div class="user-badge-info">
+        <div class="user-avatar-initial" id="userInitialBadge">C</div>
+        <div class="user-text-details">
+          <span class="user-role-title">Logged in Tab Identity</span>
+          <span class="user-role-name" id="userRoleName">Charu (6382472844)</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn-switch-user" onclick="switchUserRole('Charu', '6382472844')">Switch to Charu</button>
+        <button class="btn-switch-user" onclick="switchUserRole('Keerthi', '9834567290')">Switch to Keerthi</button>
+        <button class="btn-switch-user" style="background:#C04A22; border-color:#C04A22;" onclick="openSecondTab()">➕ Open 2nd Tab</button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: CONTACTS DASHBOARD (MATCHING MOCKUP) -->
+    <div id="setupView" class="call-main-card">
+      
+      <!-- Header Row -->
+      <div class="call-header-row" style="margin-bottom: 16px;">
+        <div>
+          <h1 class="call-title" style="font-family: 'Instrument Serif', serif; font-size: 46px; font-weight: 700; color: #1C1917; margin: 0 0 4px 0;">Contacts</h1>
+          <p class="call-sub" style="color: #78716C; font-size: 15px; margin: 0;">Manage your contacts, favourites and call history for quick access.</p>
+        </div>
+        <button class="btn-add-contact" onclick="openAddContactModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg>
+          Add Contact
+        </button>
+      </div>
+
+      <!-- Full-width Search Bar -->
+      <div style="position: relative; margin-bottom: 24px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#78716C" stroke-width="2" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="contactSearchInput" oninput="renderDashboard()" placeholder="Search contacts by name or number..." style="width: 100%; padding: 14px 20px 14px 48px; background: #FAF8F5; border: 1px solid #E7E5E4; border-radius: 16px; font-size: 14px; outline: none; transition: border-color 0.2s;" />
+      </div>
+
+      <!-- 2-COLUMN DASHBOARD GRID -->
+      <div style="display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 24px; align-items: start;">
+        
+        <!-- LEFT COLUMN: Favourites & All Contacts -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <!-- SECTION 1: FAVOURITES -->
+          <div class="dash-card-panel">
+            <div class="panel-header-row">
+              <div class="panel-title-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#C04A22" stroke="#C04A22" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span class="panel-title">Favourites (<span id="favCount">3</span>)</span>
+              </div>
+              <button class="panel-link-btn" onclick="alert('Viewing all favourites')">View all →</button>
+            </div>
+
+            <div id="favouritesCardsGrid" class="fav-cards-grid"></div>
+          </div>
+
+          <!-- SECTION 2: ALL CONTACTS -->
+          <div class="dash-card-panel">
+            <div class="panel-header-row">
+              <div class="panel-title-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span class="panel-title">All Contacts (<span id="allCount">6</span>)</span>
+              </div>
+              <select id="sortSelect" onchange="renderDashboard()" style="background: #FFF; border: 1px solid #E7E5E4; border-radius: 10px; padding: 4px 12px; font-size: 13px; font-weight: 500; color: #57534E; outline: none; cursor: pointer;">
+                <option value="name">Sort by Name ▾</option>
+                <option value="recent">Sort by Recent ▾</option>
+              </select>
+            </div>
+
+            <div id="allContactsList" class="contacts-table-list"></div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Blocked Contacts & Call History -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <!-- SECTION 3: BLOCKED CONTACTS -->
+          <div class="dash-card-panel">
+            <div class="panel-header-row">
+              <div class="panel-title-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                <span class="panel-title">Blocked Contacts (<span id="blockedCount">2</span>)</span>
+              </div>
+              <button class="panel-link-btn" onclick="alert('Viewing all blocked contacts')">View all →</button>
+            </div>
+
+            <div id="blockedContactsList" class="compact-card-list"></div>
+          </div>
+
+          <!-- SECTION 4: CALL HISTORY -->
+          <div class="dash-card-panel">
+            <div class="panel-header-row">
+              <div class="panel-title-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span class="panel-title">Call History</span>
+              </div>
+              <button class="panel-link-btn" onclick="alert('Viewing call history')">View all →</button>
+            </div>
+
+            <!-- History Filter Pills -->
+            <div class="history-filter-pills">
+              <button class="pill-btn active" id="pillAll" onclick="setHistoryFilter('all')">All</button>
+              <button class="pill-btn" id="pillMissed" onclick="setHistoryFilter('missed')">Missed (2)</button>
+              <button class="pill-btn" id="pillIncoming" onclick="setHistoryFilter('incoming')">Incoming</button>
+              <button class="pill-btn" id="pillOutgoing" onclick="setHistoryFilter('outgoing')">Outgoing</button>
+            </div>
+
+            <div id="callHistoryList" class="compact-card-list"></div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: ACTIVE CONNECTED CALL SCREEN (LUNA & ANNA AVATAR BOXES) -->
+    <div id="activeCallScreen" class="call-main-card hidden">
+      
+      <div class="call-header-row">
+        <div>
+          <h1 class="call-title">Live Sign Language Call</h1>
+          <p class="call-sub">Connect with anyone using real-time sign language translation.</p>
+        </div>
+
+        <div class="badge-connected">
+          <span class="dot-connected"></span> Connected
+        </div>
+      </div>
+
+      <!-- 3-Column Video Workspace Grid (Luna & Anna Avatars) -->
+      <div class="video-call-grid">
+        
+        <!-- BOX 1: LUNA AVATAR BOX -->
+        <div class="video-box-luna">
+          <div class="box-name-badge">
+            <span id="box1NameLabel">Charu</span>
+            <span style="opacity: 0.8; font-family: monospace;" id="timerBox1">00:02:14</span>
+          </div>
+
+          <div class="box-top-actions">
+            <button class="btn-box-action" title="Fullscreen">⛶</button>
+            <button class="btn-box-action" title="Settings">⚙️</button>
+          </div>
+
+          <!-- Avatar Stage for Luna (Box 1) -->
+          <div class="avatar-render-stage" id="lunaStage">
+            <!-- Real Webcam Camera Video Stream for Local Party -->
+            <video id="webcamVideoLocal" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:8; border-radius:20px;" class="hidden"></video>
+
+            <!-- CWASA WebGL Mount -->
+            <div class="CWASAAvatar SToCA" id="lunaAvatarMount" style="width:100%!important; height:100%!important; position:absolute; inset:0; z-index:2; opacity:0.1;"></div>
+            
+            <!-- Full Body 3D Luna Avatar Character (Top to Bottom) -->
+            <div class="avatar-3d-wrapper" id="lunaWrapper">
+              <img src="/images/luna_3d.jpg" alt="Luna 3D Avatar" class="avatar-3d-img" id="lunaImg" />
+              <div class="signing-hand-overlay" id="lunaSignOverlay">
+                <span>🤟</span>
+              </div>
+            </div>
+
+            <!-- Screen Share Display Layer for Box 1 -->
+            <div id="screenShareOverlayBox1" class="screen-share-overlay hidden">
+              <video id="sharedScreenVideo" class="shared-screen-elem hidden" autoplay playsinline muted></video>
+              <canvas id="sharedScreenFallbackCanvas" class="shared-screen-elem hidden"></canvas>
+              <div class="screen-share-badge">
+                <span class="live-pulse-red"></span> Sharing Screen (<span id="sharerNameTag">Charu</span>)
+                <button class="btn-stop-share-sm" onclick="stopScreenShare()">Stop Sharing</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Subtitle Caption Overlay for Luna -->
+          <div class="box-caption-bar">
+            <div class="wave-icon">
+              <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+            </div>
+            <span id="box1CaptionText">Listening... Speak to translate</span>
+          </div>
+        </div>
+
+        <!-- BOX 2: ANNA AVATAR BOX -->
+        <div class="video-box-anna">
+          <div class="box-name-badge">
+            <span id="box2NameLabel">Keerthi</span>
+            <span style="opacity: 0.8; font-family: monospace;" id="timerBox2">00:02:14</span>
+          </div>
+
+          <div class="box-top-actions">
+            <button class="btn-box-action" title="Signal Strength">📶</button>
+          </div>
+
+          <!-- Avatar Stage for Anna (Box 2) -->
+          <div class="avatar-render-stage" id="annaStage">
+            <!-- Remote Webcam Feed Display -->
+            <img id="remoteWebcamFrameImg" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:8; border-radius:20px;" class="hidden" alt="Remote Camera Feed" />
+
+            <!-- CWASA WebGL Mount -->
+            <div class="CWASAAvatar SToCA" id="annaAvatarMount" style="width:100%!important; height:100%!important; position:absolute; inset:0; z-index:2; opacity:0.1;"></div>
+
+            <!-- Full Body 3D Anna Avatar Character (Top to Bottom) -->
+            <div class="avatar-3d-wrapper" id="annaWrapper">
+              <img src="/images/anna_3d.jpg" alt="Anna 3D Avatar" class="avatar-3d-img" id="annaImg" />
+              <div class="signing-hand-overlay" id="annaSignOverlay">
+                <span>👋</span>
+              </div>
+            </div>
+
+            <!-- Remote Screen Share Display Layer for Box 2 -->
+            <div id="screenShareOverlayBox2" class="screen-share-overlay hidden">
+              <img id="remoteScreenFrameImg" class="shared-screen-elem" alt="Remote Shared Screen Stream" />
+              <div class="screen-share-badge">
+                <span class="live-pulse-red"></span> <span id="remoteSharerNameTag">Keerthi</span>'s Shared Screen
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Subtitle Caption Overlay for Anna -->
+          <div class="box-caption-bar">
+            <div class="wave-icon">
+              <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+            </div>
+            <span id="box2CaptionText">Waiting for speech...</span>
+          </div>
+        </div>
+
+        <!-- BOX 3: PARTICIPANTS (2) PANEL -->
+        <div class="participants-panel">
+          <h3 class="participants-title">Participants (2)</h3>
+          
+          <div class="participant-list">
+            <div class="participant-item">
+              <div class="part-info">
+                <div class="part-avatar" id="part1Initial">C</div>
+                <div>
+                  <div class="part-name" id="part1Name">Charu</div>
+                  <div class="part-status">Online</div>
+                </div>
+              </div>
+              <div class="part-mic-icon">🎤</div>
+            </div>
+
+            <div class="participant-item">
+              <div class="part-info">
+                <div class="part-avatar" id="part2Initial">K</div>
+                <div>
+                  <div class="part-name" id="part2Name">Keerthi</div>
+                  <div class="part-status">Online</div>
+                </div>
+              </div>
+              <div class="part-mic-icon">🎤</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Floating Reactions Stage Container -->
+      <div id="floatingReactionStage" class="floating-reaction-stage"></div>
+
+      <!-- Floating Quick Emoji Reactions Bar -->
+      <div id="reactionsBar" class="reactions-bar hidden">
+        <button type="button" class="btn-emoji-react" onclick="sendEmojiReaction('❤️')" title="Love">❤️</button>
+        <button type="button" class="btn-emoji-react" onclick="sendEmojiReaction('👏')" title="Clap">👏</button>
+        <button type="button" class="btn-emoji-react" onclick="sendEmojiReaction('👍')" title="Thumbs Up">👍</button>
+        <button type="button" class="btn-emoji-react" onclick="sendEmojiReaction('🎉')" title="Party">🎉</button>
+        <button type="button" class="btn-emoji-react" onclick="sendEmojiReaction('🔥')" title="Fire">🔥</button>
+        <button type="button" class="btn-emoji-react" onclick="sendEmojiReaction('😮')" title="Wow">😮</button>
+        <button type="button" class="btn-emoji-react" onclick="sendEmojiReaction('🤟')" title="Sign Language Love">🤟</button>
+      </div>
+
+      <!-- Bottom Control Bar -->
+      <div class="call-controls-row">
+        <div class="control-btn-wrap">
+          <button class="btn-circle-control" id="btnMute" onclick="toggleMute()" title="Mute">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+          </button>
+          <span class="control-btn-label" id="muteBtnLabel">Mute</span>
+        </div>
+
+        <div class="control-btn-wrap">
+          <button class="btn-circle-control" id="btnVideo" onclick="toggleVideo()" title="Stop Video">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          </button>
+          <span class="control-btn-label" id="videoBtnLabel">Stop Video</span>
+        </div>
+
+        <div class="control-btn-wrap">
+          <button class="btn-circle-endcall" onclick="endCallSession()" title="End Call">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"/></svg>
+          </button>
+          <span class="control-btn-label" style="color:var(--accent); font-weight:700;">End Call</span>
+        </div>
+
+        <div class="control-btn-wrap">
+          <button class="btn-circle-control" id="btnShareScreen" onclick="toggleScreenShare()" title="Share Screen">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </button>
+          <span class="control-btn-label" id="shareBtnLabel">Share Screen</span>
+        </div>
+
+        <div class="control-btn-wrap more-options-wrap">
+          <button class="btn-circle-control" id="btnMoreMenu" onclick="toggleMoreMenu()" title="More Options">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+          </button>
+          <span class="control-btn-label">More</span>
+
+          <!-- More Options Menu Popup -->
+          <div id="moreOptionsMenu" class="more-options-menu hidden">
+            <button type="button" class="more-menu-item" onclick="openLiveChat()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>Live Chatting</span>
+            </button>
+            <button type="button" class="more-menu-item" onclick="toggleReactionsBar()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              <span>Send Reactions</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LIVE CHAT SLIDE-OUT DRAWER -->
+    <div id="liveChatDrawer" class="chat-drawer hidden">
+      <div class="chat-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span style="font-family:'Instrument Serif', serif; font-size:24px; font-weight:700; color:#1C1917;">Live Call Chat</span>
+        </div>
+        <button type="button" onclick="closeLiveChat()" style="background:transparent; border:none; font-size:20px; cursor:pointer; color:#78716C;">✕</button>
+      </div>
+
+      <div id="chatMessagesContainer" class="chat-messages-container">
+        <div class="chat-bubble-wrap remote">
+          <span class="chat-bubble-sender">System</span>
+          <div class="chat-bubble">Call connected. You can now chat in real time with end-to-end translation.</div>
+        </div>
+      </div>
+
+      <form class="chat-input-row" onsubmit="sendChatMessage(event)">
+        <input type="text" id="chatMessageInput" placeholder="Type a message..." style="flex:1; padding:10px 14px; border:1px solid #D6D3D1; border-radius:12px; font-size:14px; outline:none;" />
+        <button type="submit" style="background:var(--accent); color:white; border:none; padding:10px 18px; border-radius:12px; font-weight:700; cursor:pointer;">Send</button>
+      </form>
+    </div>
+
+    <!-- OUTGOING CALL RINGING OVERLAY -->
+    <div id="outgoingCallScreen" class="call-overlay hidden">
+      <div class="ring-avatar-wrap">
+        <div class="ring-pulse"></div>
+        <div class="ring-pulse ring-pulse-2"></div>
+        <div class="ring-avatar" id="outRingAvatarLetter">K</div>
+      </div>
+      <div style="font-size:26px; font-weight:700; margin-bottom:6px;" id="outRingContactName">Keerthi</div>
+      <div style="font-size:15px; color:#A1A1AA; margin-bottom:28px;" id="outRingContactPhone">9834567290</div>
+      <div style="color:#2ECC71; font-weight:600; margin-bottom:40px;">Calling <span id="outRingTargetLabel">Keerthi</span>... Ringing</div>
+      <button class="btn-ring-action btn-ring-decline" title="Cancel Call" onclick="endCallSession()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"/></svg>
+      </button>
+    </div>
+
+    <!-- INCOMING CALL RINGING OVERLAY -->
+    <div id="incomingCallScreen" class="call-overlay hidden">
+      <div class="ring-avatar-wrap">
+        <div class="ring-pulse"></div>
+        <div class="ring-pulse ring-pulse-2"></div>
+        <div class="ring-avatar" id="inRingAvatarLetter">C</div>
+      </div>
+      <div style="font-size:14px; font-weight:700; color:#2ECC71; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px;">INCOMING SIGN CALL</div>
+      <div style="font-size:28px; font-weight:700; margin-bottom:6px;" id="inRingCallerName">Charu</div>
+      <div style="font-size:15px; color:#A1A1AA; margin-bottom:12px;" id="inRingCallerPhone">6382472844</div>
+      <div style="color:#2ECC71; font-weight:500; margin-bottom:36px;"><span id="inRingCallingText">Charu is calling you...</span></div>
+      
+      <div class="ring-controls">
+        <button class="btn-ring-action btn-ring-decline" title="Reject Call" onclick="declineIncomingCall()">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"/></svg>
+        </button>
+        <button class="btn-ring-action btn-ring-answer" title="Accept Call" onclick="answerIncomingCall()">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN SHARE OPTION SELECTION MODAL -->
+    <div id="screenShareModal" class="call-overlay hidden" style="background: rgba(18, 22, 26, 0.85); z-index: 10000;">
+      <div style="background: #FFFFFF; color: #1C1917; border-radius: 24px; padding: 32px; max-width: 480px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid #E7E5E4;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+          <h2 style="font-family: 'Instrument Serif', serif; font-size: 28px; margin: 0; color: #1C1917;">Share Your Screen</h2>
+          <button onclick="closeScreenShareModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #78716C; padding: 4px;">✕</button>
+        </div>
+        <p style="color: #78716C; font-size: 14px; margin-top: 0; margin-bottom: 24px;">Choose what you would like to share with other participants in the call:</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px;">
+          <label class="share-option-card selected" id="optCurrentWindow" onclick="selectShareOption('window')">
+            <input type="radio" name="shareType" value="window" checked style="accent-color: #C04A22;" />
+            <div style="flex:1;">
+              <div style="font-weight: 700; font-size: 15px; color: #1C1917;">🖥️ Current Screen / Window</div>
+              <div style="font-size: 13px; color: #78716C;">Share your current active window or browser tab</div>
+            </div>
+          </label>
+
+          <label class="share-option-card" id="optEntireScreen" onclick="selectShareOption('entire')">
+            <input type="radio" name="shareType" value="entire" style="accent-color: #C04A22;" />
+            <div style="flex:1;">
+              <div style="font-weight: 700; font-size: 15px; color: #1C1917;">📺 Entire Screen</div>
+              <div style="font-size: 13px; color: #78716C;">Share your complete monitor display screen</div>
+            </div>
+          </label>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button onclick="closeScreenShareModal()" style="background: #F5F5F4; border: 1px solid #E7E5E4; color: #57534E; padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;">Cancel</button>
+          <button onclick="confirmStartScreenShare()" style="background: #2ECC71; border: none; color: white; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(46,204,113,0.4);">Start Sharing ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD / EDIT CONTACT MODAL -->
+    <div id="contactFormModal" class="call-overlay hidden" style="background: rgba(18, 22, 26, 0.85); z-index: 10000;">
+      <div style="background: #FFFFFF; color: #1C1917; border-radius: 24px; padding: 32px; max-width: 440px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid #E7E5E4;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+          <h2 style="font-family: 'Instrument Serif', serif; font-size: 28px; margin: 0; color: #1C1917;" id="contactModalTitle">Add New Contact</h2>
+          <button type="button" onclick="closeContactModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #78716C; padding:4px;">✕</button>
+        </div>
+        
+        <form onsubmit="handleSaveContactForm(event)" style="display: flex; flex-direction: column; gap: 18px;">
+          <input type="hidden" id="editContactId" value="" />
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#57534E;">Full Name</label>
+            <input type="text" id="contactNameInput" required placeholder="e.g. Charu or Keerthi" style="width:100%; padding:12px 14px; border:1px solid #D6D3D1; border-radius:10px; font-size:14px; outline:none;" />
+          </div>
+
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#57534E;">Phone Number</label>
+            <input type="tel" id="contactPhoneInput" required placeholder="e.g. 9834567290" style="width:100%; padding:12px 14px; border:1px solid #D6D3D1; border-radius:10px; font-size:14px; outline:none;" />
+          </div>
+
+          <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px;">
+            <button type="button" onclick="closeContactModal()" style="background: #F5F5F4; border: 1px solid #E7E5E4; color: #57534E; padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;">Cancel</button>
+            <button type="submit" style="background: #2ECC71; border: none; color: white; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(46,204,113,0.4);">Save Contact ➔</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  <script>
+    const tabId = 'tab_' + Math.random().toString(36).substr(2, 9);
+    const callChannel = new BroadcastChannel('signify_live_call_channel');
+
+    let currentUser = SignifyUserStore.getLoggedInUser();
+    let historyFilter = 'all'; // 'all', 'missed', 'incoming', 'outgoing'
+
+    let contacts = [];
+    let callHistory = [];
+
+    async function loadAccountData() {
+      currentUser = SignifyUserStore.getLoggedInUser();
+      updateUserDisplay();
+      const userData = await SignifyUserStore.loadUserData();
+      contacts = userData.contacts || [];
+      callHistory = userData.callHistory || [];
+      renderDashboard();
+    }
+
+    function saveContacts() {
+      SignifyUserStore.updateField('contacts', contacts);
+    }
+
+    function saveCallHistory() {
+      SignifyUserStore.updateField('callHistory', callHistory);
+    }
+
+    // MAIN DASHBOARD RENDERING FUNCTION
+    function renderDashboard() {
+      const searchInput = document.getElementById('contactSearchInput');
+      const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+      const sortVal = document.getElementById('sortSelect') ? document.getElementById('sortSelect').value : 'name';
+
+      // 1. Favourites Grid
+      const favGrid = document.getElementById('favouritesCardsGrid');
+      const favList = contacts.filter(c => c.isFav && !c.isBlocked && matchesSearch(c, query));
+      document.getElementById('favCount').textContent = contacts.filter(c => c.isFav && !c.isBlocked).length;
+      
+      favGrid.innerHTML = '';
+      favList.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'fav-card-item';
+        card.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+            <div class="fav-avatar-circle">
+              ${c.avatar ? `<img src="${c.avatar}" alt="${escapeHtml(c.name)}" />` : escapeHtml(getInitials(c.name))}
+            </div>
+            <div style="overflow:hidden;">
+              <div style="font-weight:700; font-size:14px; color:#1C1917; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(c.name)}</div>
+              <div style="font-size:12px; color:#78716C; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(c.phone)}</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="2" style="cursor:pointer;" title="Remove Favourite" onclick="toggleFavoriteContact('${c.id}')"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <button class="btn-circle-call-sm" title="Call ${escapeHtml(c.name)}" onclick="startOutgoingCall('${c.id}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </button>
+          </div>
+        `;
+        favGrid.appendChild(card);
+      });
+
+      // 2. All Contacts List
+      const allContainer = document.getElementById('allContactsList');
+      let allList = contacts.filter(c => !c.isBlocked && matchesSearch(c, query));
+      if (sortVal === 'name') {
+        allList.sort((a, b) => a.name.localeCompare(b.name));
+      }
+      document.getElementById('allCount').textContent = contacts.filter(c => !c.isBlocked).length;
+
+      allContainer.innerHTML = '';
+      allList.forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'contact-table-row';
+        row.innerHTML = `
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="fav-avatar-circle" style="width:36px; height:36px; font-size:13px;">
+              ${c.avatar ? `<img src="${c.avatar}" alt="${escapeHtml(c.name)}" />` : escapeHtml(getInitials(c.name))}
+            </div>
+            <div style="font-weight:700; font-size:14px; color:#1C1917; min-width:120px;">${escapeHtml(c.name)}</div>
+          </div>
+          
+          <div style="font-size:13px; color:#78716C; font-family:monospace;">${escapeHtml(c.phone)}</div>
+          
+          <div style="display:flex; align-items:center; gap:12px; position:relative;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="${c.isFav ? '#F59E0B' : 'none'}" stroke="${c.isFav ? '#F59E0B' : '#A8A29E'}" stroke-width="2" style="cursor:pointer;" title="${c.isFav ? 'Unfavourite' : 'Favourite'}" onclick="toggleFavoriteContact('${c.id}')"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            
+            <button class="btn-circle-call-sm" title="Call ${escapeHtml(c.name)}" onclick="startOutgoingCall('${c.id}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </button>
+
+            <button class="btn-more-dots" onclick="toggleContactMenu(event, '${c.id}', 'all')">⋮</button>
+          </div>
+        `;
+        allContainer.appendChild(row);
+      });
+
+      // 3. Blocked Contacts List
+      const blockedContainer = document.getElementById('blockedContactsList');
+      const blockedList = contacts.filter(c => c.isBlocked && matchesSearch(c, query));
+      document.getElementById('blockedCount').textContent = contacts.filter(c => c.isBlocked).length;
+
+      blockedContainer.innerHTML = '';
+      blockedList.forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'compact-row-item';
+        row.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="fav-avatar-circle" style="width:36px; height:36px; background:#C04A22; font-size:13px;">
+              ${escapeHtml(getInitials(c.name))}
+            </div>
+            <div>
+              <div style="font-weight:700; font-size:14px; color:#1C1917;">${escapeHtml(c.name)}</div>
+              <div style="font-size:12px; color:#78716C;">${escapeHtml(c.phone)}</div>
+            </div>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:8px; position:relative;">
+            <span class="badge-status-pill blocked">Blocked</span>
+            <button class="btn-more-dots" onclick="toggleContactMenu(event, '${c.id}', 'blocked')">⋮</button>
+          </div>
+        `;
+        blockedContainer.appendChild(row);
+      });
+
+      // 4. Call History List
+      const historyContainer = document.getElementById('callHistoryList');
+      let histFiltered = callHistory.filter(h => {
+        if (historyFilter !== 'all' && h.type !== historyFilter) return false;
+        return matchesSearch(h, query);
+      });
+
+      // Update Missed Pill badge count
+      const missedCount = callHistory.filter(h => h.type === 'missed').length;
+      document.getElementById('pillMissed').textContent = `Missed (${missedCount})`;
+
+      historyContainer.innerHTML = '';
+      histFiltered.forEach(h => {
+        const row = document.createElement('div');
+        row.className = 'compact-row-item';
+
+        let directionIcon = '';
+        let badgeClass = '';
+        let badgeText = '';
+
+        if (h.type === 'missed') {
+          directionIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><polyline points="18 12 18 6 12 6"/></svg>`;
+          badgeClass = 'missed';
+          badgeText = 'Missed';
+        } else if (h.type === 'incoming') {
+          directionIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="18" x2="18" y2="6"/><polyline points="6 12 6 18 12 18"/></svg>`;
+          badgeClass = 'incoming';
+          badgeText = 'Incoming';
+        } else {
+          directionIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="18" x2="18" y2="6"/><polyline points="18 12 18 6 12 6"/></svg>`;
+          badgeClass = 'outgoing';
+          badgeText = 'Outgoing';
+        }
+
+        row.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div>${directionIcon}</div>
+            <div class="fav-avatar-circle" style="width:36px; height:36px; font-size:13px;">
+              ${h.avatar ? `<img src="${h.avatar}" alt="${escapeHtml(h.name)}" />` : escapeHtml(getInitials(h.name))}
+            </div>
+            <div>
+              <div style="font-weight:700; font-size:14px; color:#1C1917;">${escapeHtml(h.name)}</div>
+              <div style="font-size:12px; color:#78716C;">${escapeHtml(h.phone)}</div>
+            </div>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:10px; position:relative;">
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:#78716C;">${escapeHtml(h.time)}</div>
+              <span class="badge-status-pill ${badgeClass}">${badgeText}</span>
+            </div>
+            <button class="btn-more-dots" onclick="toggleHistoryMenu(event, '${h.id}')">⋮</button>
+          </div>
+        `;
+        historyContainer.appendChild(row);
+      });
+    }
+
+    function matchesSearch(item, q) {
+      if (!q) return true;
+      return item.name.toLowerCase().includes(q) || item.phone.includes(q);
+    }
+
+    function getInitials(name) {
+      if (!name) return '?';
+      const parts = name.trim().split(/\s+/);
+      if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      return name.substring(0, 1).toUpperCase();
+    }
+
+    function setHistoryFilter(filter) {
+      historyFilter = filter;
+      document.querySelectorAll('.history-filter-pills .pill-btn').forEach(btn => btn.classList.remove('active'));
+      if (filter === 'all') document.getElementById('pillAll').classList.add('active');
+      if (filter === 'missed') document.getElementById('pillMissed').classList.add('active');
+      if (filter === 'incoming') document.getElementById('pillIncoming').classList.add('active');
+      if (filter === 'outgoing') document.getElementById('pillOutgoing').classList.add('active');
+      renderDashboard();
+    }
+
+    // CONTACT ACTION POPOVERS
+    function toggleContactMenu(e, contactId, section) {
+      e.stopPropagation();
+      closeAllPopovers();
+
+      const btn = e.currentTarget;
+      const c = contacts.find(item => item.id === contactId);
+      if (!c) return;
+
+      const popover = document.createElement('div');
+      popover.className = 'dropdown-popover';
+      popover.innerHTML = `
+        <button onclick="startOutgoingCall('${c.id}')">📞 Call ${escapeHtml(c.name)}</button>
+        <button onclick="openEditContactModal('${c.id}')">✏️ Edit Contact</button>
+        <button onclick="toggleFavoriteContact('${c.id}')">${c.isFav ? '⭐️ Remove Favourite' : '⭐ Add Favourite'}</button>
+        <button onclick="toggleBlockContact('${c.id}')">${c.isBlocked ? '🔓 Unblock Contact' : '🚫 Block Contact'}</button>
+        <button style="color:#DC2626;" onclick="deleteContact('${c.id}')">🗑️ Delete Contact</button>
+      `;
+
+      btn.parentElement.appendChild(popover);
+    }
+
+    function toggleHistoryMenu(e, historyId) {
+      e.stopPropagation();
+      closeAllPopovers();
+
+      const btn = e.currentTarget;
+      const h = callHistory.find(item => item.id === historyId);
+      if (!h) return;
+
+      const popover = document.createElement('div');
+      popover.className = 'dropdown-popover';
+      popover.innerHTML = `
+        <button onclick="startOutgoingCallByPhone('${h.phone}', '${escapeHtml(h.name)}')">📞 Call Back</button>
+        <button style="color:#DC2626;" onclick="deleteHistoryItem('${h.id}')">🗑️ Remove from Log</button>
+      `;
+
+      btn.parentElement.appendChild(popover);
+    }
+
+    function closeAllPopovers() {
+      document.querySelectorAll('.dropdown-popover').forEach(el => el.remove());
+    }
+
+    document.addEventListener('click', () => closeAllPopovers());
+
+    // CONTACT EDIT / ADD MODAL
+    function openAddContactModal() {
+      document.getElementById('contactModalTitle').textContent = 'Add New Contact';
+      document.getElementById('editContactId').value = '';
+      document.getElementById('contactNameInput').value = '';
+      document.getElementById('contactPhoneInput').value = '';
+      document.getElementById('contactFormModal').classList.remove('hidden');
+    }
+
+    function openEditContactModal(contactId) {
+      closeAllPopovers();
+      const c = contacts.find(item => item.id === contactId);
+      if (!c) return;
+      document.getElementById('contactModalTitle').textContent = 'Edit Contact';
+      document.getElementById('editContactId').value = c.id;
+      document.getElementById('contactNameInput').value = c.name;
+      document.getElementById('contactPhoneInput').value = c.phone;
+      document.getElementById('contactFormModal').classList.remove('hidden');
+    }
+
+    function closeContactModal() {
+      document.getElementById('contactFormModal').classList.add('hidden');
+    }
+
+    function handleSaveContactForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('editContactId').value;
+      const name = document.getElementById('contactNameInput').value.trim();
+      const phone = document.getElementById('contactPhoneInput').value.trim();
+
+      if (!name || !phone) return;
+
+      if (id) {
+        const c = contacts.find(item => item.id === id);
+        if (c) {
+          c.name = name;
+          c.phone = phone;
+        }
+      } else {
+        const newId = 'usr_' + Math.random().toString(36).substr(2, 7);
+        contacts.push({ id: newId, name: name, phone: phone, avatar: null, isFav: false, isBlocked: false });
+      }
+
+      saveContacts();
+      closeContactModal();
+      renderDashboard();
+    }
+
+    function toggleFavoriteContact(contactId) {
+      closeAllPopovers();
+      const c = contacts.find(item => item.id === contactId);
+      if (c) {
+        c.isFav = !c.isFav;
+        saveContacts();
+        renderDashboard();
+      }
+    }
+
+    function toggleBlockContact(contactId) {
+      closeAllPopovers();
+      const c = contacts.find(item => item.id === contactId);
+      if (c) {
+        c.isBlocked = !c.isBlocked;
+        saveContacts();
+        renderDashboard();
+      }
+    }
+
+    function deleteContact(contactId) {
+      closeAllPopovers();
+      if (!confirm('Are you sure you want to delete this contact?')) return;
+      contacts = contacts.filter(c => c.id !== contactId);
+      saveContacts();
+      renderDashboard();
+    }
+
+    function deleteHistoryItem(historyId) {
+      closeAllPopovers();
+      callHistory = callHistory.filter(h => h.id !== historyId);
+      saveCallHistory();
+      renderDashboard();
+    }
+
+    function recordCallHistory(name, phone, type) {
+      const entry = {
+        id: 'h_' + Date.now(),
+        name: name || 'Unknown',
+        phone: phone || '',
+        time: 'Just now',
+        type: type, // 'missed', 'incoming', 'outgoing'
+        avatar: null
+      };
+      callHistory.unshift(entry);
+      saveCallHistory();
+      renderDashboard();
+    }
+
+    function startOutgoingCallByPhone(phone, name) {
+      let c = contacts.find(item => item.phone === phone);
+      if (!c) {
+        c = { id: 'usr_' + Date.now(), name: name, phone: phone, isFav: false, isBlocked: false };
+      }
+      startOutgoingCall(c.id);
+    }
+
+    // CALL SIGNALING & USER TAB IDENTITY
+    let activeCallRemote = null;
+    let callState = 'idle';
+    let isMuted = false;
+    let isVideoOn = true;
+    let callSeconds = 134; // 00:02:14
+    let callTimerInterval = null;
+
+    let audioCtx = null;
+    let ringingInterval = null;
+
+    let cwasaReady = false;
+    const glossToSign = new Map();
+    const letterToSign = new Map();
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadAccountData();
+      initCwasaEngine();
+      initSpeechRecognition();
+      listenCrossTabEvents();
+    });
+
+    function switchUserRole(name, phone) {
+      SignifyUserStore.switchUser({ name: name, phone: phone });
+      loadAccountData();
+    }
+
+    function updateUserDisplay() {
+      currentUser = SignifyUserStore.getLoggedInUser();
+      document.getElementById('userInitialBadge').textContent = (currentUser.name || '?').charAt(0).toUpperCase();
+      document.getElementById('userRoleName').textContent = `${currentUser.name} (${currentUser.phone})`;
+    }
+
+    function openSecondTab() {
+      window.open('/call.html', '_blank');
+    }
+
+    // CALL SIGNALING
+    function startOutgoingCall(contactId) {
+      const contact = contacts.find(c => c.id === contactId);
+      if (!contact) return;
+
+      activeCallRemote = contact;
+      callState = 'outgoing_ringing';
+      recordCallHistory(contact.name, contact.phone, 'outgoing');
+
+      document.getElementById('outRingAvatarLetter').textContent = getInitials(contact.name);
+      document.getElementById('outRingContactName').textContent = contact.name;
+      document.getElementById('outRingContactPhone').textContent = contact.phone;
+      document.getElementById('outRingTargetLabel').textContent = contact.name;
+
+      document.getElementById('setupView').classList.add('hidden');
+      document.getElementById('outgoingCallScreen').classList.remove('hidden');
+
+      startRingingAudio();
+
+      callChannel.postMessage({
+        type: 'TARGETED_CALL_INITIATED',
+        senderId: tabId,
+        caller: currentUser,
+        recipientPhone: contact.phone,
+        recipientName: contact.name
+      });
+    }
+
+    function showIncomingCallScreen(caller) {
+      activeCallRemote = caller;
+      callState = 'incoming_ringing';
+
+      document.getElementById('inRingAvatarLetter').textContent = getInitials(caller.name);
+      document.getElementById('inRingCallerName').textContent = caller.name;
+      document.getElementById('inRingCallerPhone').textContent = caller.phone;
+      document.getElementById('inRingCallingText').textContent = `${caller.name} is calling you...`;
+
+      document.getElementById('setupView').classList.add('hidden');
+      document.getElementById('outgoingCallScreen').classList.add('hidden');
+      document.getElementById('incomingCallScreen').classList.remove('hidden');
+
+      startRingingAudio();
+    }
+
+    function answerIncomingCall() {
+      stopRingingAudio();
+      connectActiveCallSession();
+
+      if (activeCallRemote) {
+        recordCallHistory(activeCallRemote.name, activeCallRemote.phone, 'incoming');
+      }
+
+      callChannel.postMessage({
+        type: 'TARGETED_CALL_ANSWERED',
+        senderId: tabId,
+        answeringUser: currentUser
+      });
+    }
+
+    function declineIncomingCall() {
+      stopRingingAudio();
+      const prevCaller = activeCallRemote;
+      if (prevCaller) {
+        recordCallHistory(prevCaller.name, prevCaller.phone, 'missed');
+      }
+      endCallSession();
+
+      callChannel.postMessage({
+        type: 'TARGETED_CALL_DECLINED',
+        senderId: tabId,
+        declinedBy: currentUser.name,
+        callerPhone: prevCaller ? prevCaller.phone : ''
+      });
+    }
+
+    function connectActiveCallSession() {
+      stopRingingAudio();
+      callState = 'active';
+
+      // Box 1 = Luna (Local User), Box 2 = Anna (Remote User)
+      document.getElementById('box1NameLabel').textContent = currentUser.name;
+      document.getElementById('box2NameLabel').textContent = activeCallRemote ? activeCallRemote.name : 'Remote Party';
+
+      document.getElementById('part1Initial').textContent = getInitials(currentUser.name);
+      document.getElementById('part1Name').textContent = currentUser.name;
+
+      document.getElementById('part2Initial').textContent = activeCallRemote ? getInitials(activeCallRemote.name) : 'R';
+      document.getElementById('part2Name').textContent = activeCallRemote ? activeCallRemote.name : 'Remote Party';
+
+      document.getElementById('setupView').classList.add('hidden');
+      document.getElementById('outgoingCallScreen').classList.add('hidden');
+      document.getElementById('incomingCallScreen').classList.add('hidden');
+      document.getElementById('activeCallScreen').classList.remove('hidden');
+
+      startCallTimer();
+      ensureAvatarsMounted();
+    }
+
+    function endCallSession() {
+      stopRingingAudio();
+      stopCallTimer();
+
+      callState = 'idle';
+      const prevRemote = activeCallRemote;
+      activeCallRemote = null;
+
+      document.getElementById('outgoingCallScreen').classList.add('hidden');
+      document.getElementById('incomingCallScreen').classList.add('hidden');
+      document.getElementById('activeCallScreen').classList.add('hidden');
+      document.getElementById('setupView').classList.remove('hidden');
+
+      callChannel.postMessage({
+        type: 'CALL_ENDED',
+        senderId: tabId,
+        remotePhone: prevRemote ? prevRemote.phone : ''
+      });
+    }
+
+    function startCallTimer() {
+      if (callTimerInterval) clearInterval(callTimerInterval);
+      callSeconds = 134; // 00:02:14
+      callTimerInterval = setInterval(() => {
+        callSeconds++;
+        const h = Math.floor(callSeconds / 3600).toString().padStart(2, '0');
+        const m = Math.floor((callSeconds % 3600) / 60).toString().padStart(2, '0');
+        const s = (callSeconds % 60).toString().padStart(2, '0');
+        const formatted = `${h}:${m}:${s}`;
+        document.getElementById('timerBox1').textContent = formatted;
+        document.getElementById('timerBox2').textContent = formatted;
+      }, 1000);
+    }
+
+    function stopCallTimer() {
+      if (callTimerInterval) clearInterval(callTimerInterval);
+      callTimerInterval = null;
+    }
+
+    // WebAudio Ringing Generator
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      return audioCtx;
+    }
+
+    function startRingingAudio() {
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const playRingPulse = () => {
+          if (callState !== 'outgoing_ringing' && callState !== 'incoming_ringing') return;
+          const o1 = ctx.createOscillator();
+          const o2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          o1.type = 'sine'; o1.frequency.value = 440;
+          o2.type = 'sine'; o2.frequency.value = 480;
+
+          gain.gain.value = 0.15;
+          o1.connect(gain);
+          o2.connect(gain);
+          gain.connect(ctx.destination);
+
+          o1.start(); o2.start();
+          setTimeout(() => {
+            try { o1.stop(); o2.stop(); } catch(e){}
+          }, 1800);
+        };
+
+        playRingPulse();
+        ringingInterval = setInterval(playRingPulse, 3800);
+      } catch (e){}
+    }
+
+    function stopRingingAudio() {
+      if (ringingInterval) clearInterval(ringingInterval);
+      ringingInterval = null;
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      const btn = document.getElementById('btnMute');
+      const label = document.getElementById('muteBtnLabel');
+      const caption = document.getElementById('box1CaptionText');
+
+      if (isMuted) {
+        btn.classList.add('active');
+        if (label) label.textContent = 'Unmute';
+        if (caption) caption.textContent = 'You are muted';
+      } else {
+        btn.classList.remove('active');
+        if (label) label.textContent = 'Mute';
+        if (caption) caption.textContent = 'Listening... Speak to translate';
+      }
+    }
+
+    let localVideoStream = null;
+    let webcamBroadcastInterval = null;
+
+    async function toggleVideo() {
+      isVideoOn = !isVideoOn;
+      const btn = document.getElementById('btnVideo');
+      const label = document.getElementById('videoBtnLabel');
+      const localVideoElem = document.getElementById('webcamVideoLocal');
+
+      if (isVideoOn) {
+        btn.classList.remove('active');
+        if (label) label.textContent = 'Stop Video';
+
+        try {
+          localVideoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          if (localVideoElem) {
+            localVideoElem.srcObject = localVideoStream;
+            localVideoElem.classList.remove('hidden');
+          }
+          startWebcamFrameBroadcast();
+        } catch (err) {
+          console.warn('Camera access unavailable or denied', err);
+          if (localVideoElem) localVideoElem.classList.add('hidden');
+        }
+      } else {
+        btn.classList.add('active');
+        if (label) label.textContent = 'Start Video';
+
+        if (localVideoStream) {
+          localVideoStream.getTracks().forEach(t => t.stop());
+          localVideoStream = null;
+        }
+        if (webcamBroadcastInterval) clearInterval(webcamBroadcastInterval);
+        if (localVideoElem) localVideoElem.classList.add('hidden');
+
+        callChannel.postMessage({
+          type: 'WEBCAM_STOPPED',
+          senderId: tabId
+        });
+      }
+    }
+
+    function startWebcamFrameBroadcast() {
+      const videoElem = document.getElementById('webcamVideoLocal');
+      if (!videoElem) return;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 480;
+      canvas.height = 360;
+      const ctx = canvas.getContext('2d');
+
+      if (webcamBroadcastInterval) clearInterval(webcamBroadcastInterval);
+      webcamBroadcastInterval = setInterval(() => {
+        if (!isVideoOn || !localVideoStream) return;
+        try {
+          ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+          const frameData = canvas.toDataURL('image/jpeg', 0.4);
+          callChannel.postMessage({
+            type: 'WEBCAM_FRAME',
+            senderId: tabId,
+            frame: frameData
+          });
+        } catch(e){}
+      }, 120);
+    }
+
+    function toggleMoreMenu() {
+      const menu = document.getElementById('moreOptionsMenu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function closeMoreMenu() {
+      const menu = document.getElementById('moreOptionsMenu');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    function toggleReactionsBar() {
+      closeMoreMenu();
+      const bar = document.getElementById('reactionsBar');
+      if (bar) bar.classList.toggle('hidden');
+    }
+
+    function sendEmojiReaction(emoji) {
+      renderFloatingEmoji(emoji);
+
+      callChannel.postMessage({
+        type: 'EMOJI_REACTION',
+        senderId: tabId,
+        emoji: emoji
+      });
+    }
+
+    function renderFloatingEmoji(emoji) {
+      const stage = document.getElementById('floatingReactionStage');
+      if (!stage) return;
+
+      const el = document.createElement('div');
+      el.className = 'floating-emoji';
+      el.textContent = emoji;
+
+      const randomLeft = Math.floor(Math.random() * 70) + 15;
+      el.style.left = `${randomLeft}%`;
+      el.style.bottom = '90px';
+
+      stage.appendChild(el);
+      setTimeout(() => {
+        el.remove();
+      }, 2800);
+    }
+
+    function openLiveChat() {
+      closeMoreMenu();
+      const drawer = document.getElementById('liveChatDrawer');
+      if (drawer) drawer.classList.remove('hidden');
+      const input = document.getElementById('chatMessageInput');
+      if (input) input.focus();
+    }
+
+    function closeLiveChat() {
+      const drawer = document.getElementById('liveChatDrawer');
+      if (drawer) drawer.classList.add('hidden');
+    }
+
+    function sendChatMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('chatMessageInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      appendChatBubble(currentUser.name, msg, true);
+
+      callChannel.postMessage({
+        type: 'CHAT_MESSAGE',
+        senderId: tabId,
+        senderName: currentUser.name,
+        message: msg
+      });
+
+      input.value = '';
+    }
+
+    function appendChatBubble(sender, text, isMine) {
+      const container = document.getElementById('chatMessagesContainer');
+      if (!container) return;
+
+      const wrap = document.createElement('div');
+      wrap.className = `chat-bubble-wrap ${isMine ? 'mine' : 'remote'}`;
+
+      const senderSpan = document.createElement('span');
+      senderSpan.className = 'chat-bubble-sender';
+      senderSpan.textContent = isMine ? 'You' : sender;
+
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble';
+      bubble.textContent = text;
+
+      wrap.appendChild(senderSpan);
+      wrap.appendChild(bubble);
+      container.appendChild(wrap);
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function toggleSpeechDrawer() {
+      document.getElementById('speechDrawerInput').focus();
+    }
+
+    // SPEECH RECOGNITION & AVATAR ACTION PIPELINE
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
+
+      try {
+        const recog = new SpeechRecognition();
+        recog.continuous = true;
+        recog.interimResults = true;
+        recog.lang = 'en-US';
+
+        let finalTranscript = '';
+
+        recog.onresult = (event) => {
+          if (isMuted || callState !== 'active') return;
+
+          let interim = '';
+          finalTranscript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            const res = event.results[i];
+            if (res.isFinal) {
+              finalTranscript += res[0].transcript + ' ';
+            } else {
+              interim += res[0].transcript;
+            }
+          }
+          const spokenText = (finalTranscript + interim).trim();
+          if (spokenText) {
+            handleLocalSpokenText(spokenText);
+          }
+        };
+
+        recog.onerror = (err) => {
+          console.warn('[SpeechRecognition error]', err);
+        };
+
+        recog.onend = () => {
+          if (callState === 'active' && !isMuted) {
+            try { recog.start(); } catch(e){}
+          }
+        };
+
+        recog.start();
+      } catch(e){}
+    }
+
+    function handleSendSpeech(e) {
+      e.preventDefault();
+      const input = document.getElementById('speechDrawerInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      handleLocalSpokenText(text);
+      input.value = '';
+    }
+
+    // LOCAL USER SPEECH: Triggers Luna Avatar in Box 1 & updates Box 1 caption
+    function handleLocalSpokenText(text) {
+      document.getElementById('box1CaptionText').textContent = text;
+      
+      const lunaWrap = document.getElementById('lunaWrapper');
+      if (lunaWrap) {
+        lunaWrap.classList.add('signing-active');
+        setTimeout(() => { lunaWrap.classList.remove('signing-active'); }, 3200);
+      }
+
+      playTextOnAvatar('luna', text);
+
+      callChannel.postMessage({
+        type: 'LIVE_SPEECH',
+        senderId: tabId,
+        text: text,
+        speakerName: currentUser.name
+      });
+    }
+
+    // REMOTE USER SPEECH: Triggers Anna Avatar in Box 2 & updates Box 2 caption
+    function handleRemoteSpokenText(speakerName, text) {
+      document.getElementById('box2CaptionText').textContent = text;
+
+      const annaWrap = document.getElementById('annaWrapper');
+      if (annaWrap) {
+        annaWrap.classList.add('signing-active');
+        setTimeout(() => { annaWrap.classList.remove('signing-active'); }, 3200);
+      }
+
+      playTextOnAvatar('anna', text);
+    }
+
+    function playTextOnAvatar(avatarId, text) {
+      if (!window.CWASA || !cwasaReady) return;
+      try {
+        const tokens = text.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(Boolean);
+        const sigml = buildSigmlFromTokens(tokens);
+        if (sigml) {
+          CWASA.playSiGMLText(sigml, 0);
+        }
+      } catch (e){}
+    }
+
+    function buildSigmlFromTokens(tokens) {
+      const blocks = [];
+      for (const t of tokens) {
+        if (glossToSign.has(t)) {
+          blocks.push(glossToSign.get(t));
+        } else {
+          for (const char of t.toUpperCase()) {
+            if (letterToSign.has(char)) {
+              blocks.push(letterToSign.get(char));
+            }
+          }
+        }
+      }
+      if (!blocks.length) return null;
+      return `<?xml version="1.0" encoding="utf-8"?>\n<sigml>\n${blocks.join('\n')}\n</sigml>`;
+    }
+
+    function initCwasaEngine() {
+      fetchSigmlDataset('/data/hamnosys_bsl_version1.sigml');
+      fetchSigmlDataset('/data/American_SL_ASL.sigml');
+      fetchSigmlDataset('/data/Indian_SL.sigml');
+      fetchAlphabetDataset('/data/bsl_alphabet_sigml.sigml');
+      fetchAlphabetDataset('/data/asl_alphabet_sigml.sigml');
+    }
+
+    function ensureAvatarsMounted() {
+      if (cwasaReady || !window.CWASA) return;
+      try {
+        CWASA.init({
+          useClientConfig: false,
+          useCwaConfig: true,
+          avSettings: [
+            { width: 440, height: 320, avList: 'avsfull', initAv: 'luna', ambIdle: true, allowFrameSteps: false, allowSiGMLText: false },
+            { width: 340, height: 320, avList: 'avsfull', initAv: 'anna', ambIdle: true, allowFrameSteps: false, allowSiGMLText: false }
+          ]
+        });
+
+        if (CWASA.ready && typeof CWASA.ready.then === 'function') {
+          CWASA.ready.then(() => { cwasaReady = true; });
+        } else {
+          setTimeout(() => { cwasaReady = true; }, 400);
+        }
+      } catch(e){}
+    }
+
+    async function fetchSigmlDataset(url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const xml = await res.text();
+        const doc = new DOMParser().parseFromString(xml, 'application/xml');
+        doc.querySelectorAll('hns_sign').forEach(s => {
+          const gloss = (s.getAttribute('gloss') || '').trim().toLowerCase();
+          if (gloss) glossToSign.set(gloss, s.outerHTML);
+        });
+      } catch(e){}
+    }
+
+    async function fetchAlphabetDataset(url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const xml = await res.text();
+        const doc = new DOMParser().parseFromString(xml, 'application/xml');
+        doc.querySelectorAll('hns_sign').forEach(s => {
+          const gloss = (s.getAttribute('gloss') || '').trim().toUpperCase();
+          if (gloss.length === 1 && gloss >= 'A' && gloss <= 'Z') {
+            letterToSign.set(gloss, s.outerHTML);
+          }
+        });
+      } catch(e){}
+    }
+
+    // SCREEN SHARING LOGIC
+    let mediaStreamTrack = null;
+    let isSharingScreen = false;
+    let screenShareInterval = null;
+    let selectedShareType = 'window';
+
+    function toggleScreenShare() {
+      if (isSharingScreen) {
+        stopScreenShare();
+      } else {
+        openScreenShareModal();
+      }
+    }
+
+    function openScreenShareModal() {
+      document.getElementById('screenShareModal').classList.remove('hidden');
+    }
+
+    function closeScreenShareModal() {
+      document.getElementById('screenShareModal').classList.add('hidden');
+    }
+
+    function selectShareOption(type) {
+      selectedShareType = type;
+      document.getElementById('optCurrentWindow').classList.toggle('selected', type === 'window');
+      document.getElementById('optEntireScreen').classList.toggle('selected', type === 'entire');
+    }
+
+    async function confirmStartScreenShare() {
+      closeScreenShareModal();
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: {
+            displaySurface: selectedShareType === 'entire' ? 'monitor' : 'window'
+          },
+          audio: false
+        });
+        startScreenShareWithStream(stream);
+      } catch (err) {
+        startFallbackScreenShare();
+      }
+    }
+
+    function startScreenShareWithStream(stream) {
+      isSharingScreen = true;
+      document.getElementById('sharerNameTag').textContent = currentUser ? currentUser.name : 'User';
+      
+      const videoElem = document.getElementById('sharedScreenVideo');
+      videoElem.srcObject = stream;
+      videoElem.classList.remove('hidden');
+      document.getElementById('lunaWrapper').classList.add('hidden');
+      document.getElementById('screenShareOverlayBox1').classList.remove('hidden');
+
+      const btn = document.getElementById('btnShareScreen');
+      btn.classList.add('active');
+      btn.style.background = '#E74C3C';
+      btn.style.borderColor = '#E74C3C';
+      btn.style.color = '#FFFFFF';
+      document.getElementById('shareBtnLabel').textContent = 'Stop Sharing';
+
+      const track = stream.getVideoTracks()[0];
+      mediaStreamTrack = track;
+      track.onended = () => stopScreenShare();
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 640;
+      canvas.height = 360;
+
+      if (screenShareInterval) clearInterval(screenShareInterval);
+      screenShareInterval = setInterval(() => {
+        if (!isSharingScreen) return;
+        try {
+          ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+          const frameData = canvas.toDataURL('image/jpeg', 0.45);
+          callChannel.postMessage({
+            type: 'SCREEN_SHARE_FRAME',
+            senderId: tabId,
+            sharerName: currentUser ? currentUser.name : 'User',
+            frame: frameData
+          });
+        } catch(e){}
+      }, 150);
+
+      callChannel.postMessage({
+        type: 'SCREEN_SHARE_STARTED',
+        senderId: tabId,
+        sharerName: currentUser ? currentUser.name : 'User'
+      });
+    }
+
+    function startFallbackScreenShare() {
+      isSharingScreen = true;
+      document.getElementById('sharerNameTag').textContent = currentUser ? currentUser.name : 'User';
+      document.getElementById('lunaWrapper').classList.add('hidden');
+      document.getElementById('screenShareOverlayBox1').classList.remove('hidden');
+      document.getElementById('sharedScreenFallbackCanvas').classList.remove('hidden');
+
+      const btn = document.getElementById('btnShareScreen');
+      btn.classList.add('active');
+      btn.style.background = '#E74C3C';
+      btn.style.borderColor = '#E74C3C';
+      btn.style.color = '#FFFFFF';
+      document.getElementById('shareBtnLabel').textContent = 'Stop Sharing';
+
+      const canvas = document.getElementById('sharedScreenFallbackCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 640;
+      canvas.height = 360;
+      let angle = 0;
+
+      if (screenShareInterval) clearInterval(screenShareInterval);
+      screenShareInterval = setInterval(() => {
+        if (!isSharingScreen) return;
+        angle += 0.08;
+
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#1F2937';
+        ctx.fillRect(16, 16, 608, 36);
+        ctx.fillStyle = '#EF4444'; ctx.beginPath(); ctx.arc(36, 34, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#F59E0B'; ctx.beginPath(); ctx.arc(52, 34, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#10B981'; ctx.beginPath(); ctx.arc(68, 34, 5, 0, Math.PI*2); ctx.fill();
+        
+        ctx.fillStyle = '#F3F4F6';
+        ctx.font = '600 13px DM Sans, sans-serif';
+        ctx.fillText(`Signify Live Call Desktop — ${selectedShareType === 'entire' ? 'Entire Screen' : 'Current Window'} (${currentUser ? currentUser.name : 'User'})`, 88, 38);
+
+        ctx.fillStyle = '#0F172A';
+        ctx.fillRect(16, 52, 608, 292);
+
+        ctx.fillStyle = '#38BDF8';
+        ctx.font = '700 15px DM Sans, sans-serif';
+        ctx.fillText(`[LIVE SCREEN STREAM ACTIVE]`, 36, 86);
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '13px monospace';
+        ctx.fillText(`Broadcasting: ${selectedShareType === 'entire' ? 'Monitor 1 (1920x1080)' : 'Chrome Tab (Signify)'}`, 36, 114);
+        ctx.fillText(`Participant: ${currentUser ? currentUser.name : 'User'} | Status: 60 FPS HD Stream`, 36, 136);
+
+        ctx.fillStyle = '#1E293B';
+        ctx.fillRect(36, 156, 568, 160);
+        ctx.strokeStyle = '#C04A22';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let x = 0; x < 540; x += 10) {
+          const y = 230 + Math.sin(x * 0.03 + angle) * 35;
+          if (x === 0) ctx.moveTo(56 + x, y);
+          else ctx.lineTo(56 + x, y);
+        }
+        ctx.stroke();
+
+        const cx = 320 + Math.cos(angle * 1.5) * 180;
+        const cy = 210 + Math.sin(angle * 1.2) * 50;
+        ctx.fillStyle = '#F43F5E';
+        ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI*2); ctx.fill();
+
+        const frameData = canvas.toDataURL('image/jpeg', 0.5);
+        callChannel.postMessage({
+          type: 'SCREEN_SHARE_FRAME',
+          senderId: tabId,
+          sharerName: currentUser ? currentUser.name : 'User',
+          frame: frameData
+        });
+      }, 100);
+
+      callChannel.postMessage({
+        type: 'SCREEN_SHARE_STARTED',
+        senderId: tabId,
+        sharerName: currentUser ? currentUser.name : 'User'
+      });
+    }
+
+    function stopScreenShare() {
+      isSharingScreen = false;
+      if (screenShareInterval) clearInterval(screenShareInterval);
+      screenShareInterval = null;
+
+      if (mediaStreamTrack) {
+        try { mediaStreamTrack.stop(); } catch(e){}
+        mediaStreamTrack = null;
+      }
+
+      document.getElementById('screenShareOverlayBox1').classList.add('hidden');
+      document.getElementById('sharedScreenVideo').classList.add('hidden');
+      document.getElementById('sharedScreenFallbackCanvas').classList.add('hidden');
+      document.getElementById('lunaWrapper').classList.remove('hidden');
+
+      const btn = document.getElementById('btnShareScreen');
+      btn.classList.remove('active');
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      document.getElementById('shareBtnLabel').textContent = 'Share Screen';
+
+      callChannel.postMessage({
+        type: 'SCREEN_SHARE_STOPPED',
+        senderId: tabId
+      });
+    }
+
+    function listenCrossTabEvents() {
+      callChannel.onmessage = (event) => {
+        const data = event.data;
+        if (!data || data.senderId === tabId) return;
+
+        switch (data.type) {
+          case 'TARGETED_CALL_INITIATED':
+            if (callState === 'idle' && (data.recipientPhone === currentUser.phone || data.recipientName === currentUser.name || data.senderId !== tabId)) {
+              showIncomingCallScreen(data.caller);
+            }
+            break;
+
+          case 'TARGETED_CALL_ANSWERED':
+            if (callState === 'outgoing_ringing') {
+              connectActiveCallSession();
+            }
+            break;
+
+          case 'TARGETED_CALL_DECLINED':
+            if (callState === 'outgoing_ringing') {
+              stopRingingAudio();
+              endCallSession();
+              const name = data.declinedBy || 'The user';
+              alert(`${name} rejected the call.`);
+            }
+            break;
+
+          case 'LIVE_SPEECH':
+            if (callState === 'active') {
+              handleRemoteSpokenText(data.speakerName, data.text);
+            }
+            break;
+
+          case 'SCREEN_SHARE_STARTED':
+            if (callState === 'active') {
+              document.getElementById('remoteSharerNameTag').textContent = data.sharerName || 'Remote Party';
+              document.getElementById('screenShareOverlayBox2').classList.remove('hidden');
+              document.getElementById('annaWrapper').classList.add('hidden');
+            }
+            break;
+
+          case 'SCREEN_SHARE_FRAME':
+            if (callState === 'active') {
+              const img = document.getElementById('remoteScreenFrameImg');
+              if (img && data.frame) img.src = data.frame;
+            }
+            break;
+
+          case 'SCREEN_SHARE_STOPPED':
+            if (callState === 'active') {
+              document.getElementById('screenShareOverlayBox2').classList.add('hidden');
+              document.getElementById('annaWrapper').classList.remove('hidden');
+            }
+            break;
+
+          case 'WEBCAM_FRAME':
+            if (callState === 'active') {
+              const remoteImg = document.getElementById('remoteWebcamFrameImg');
+              if (remoteImg && data.frame) {
+                remoteImg.src = data.frame;
+                remoteImg.classList.remove('hidden');
+                document.getElementById('annaWrapper').classList.add('hidden');
+              }
+            }
+            break;
+
+          case 'WEBCAM_STOPPED':
+            if (callState === 'active') {
+              const remoteImg = document.getElementById('remoteWebcamFrameImg');
+              if (remoteImg) remoteImg.classList.add('hidden');
+              document.getElementById('annaWrapper').classList.remove('hidden');
+            }
+            break;
+
+          case 'CHAT_MESSAGE':
+            if (callState === 'active') {
+              appendChatBubble(data.senderName, data.message, false);
+            }
+            break;
+
+          case 'EMOJI_REACTION':
+            if (callState === 'active') {
+              renderFloatingEmoji(data.emoji);
+            }
+            break;
+
+          case 'CALL_ENDED':
+            if (callState !== 'idle') {
+              endCallSession();
+            }
+            break;
+        }
+      };
+    }
+
+    function escapeHtml(str) {
+      return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In — Signify Kozha</title>
+  <title>Sign In — Signify</title>
   <link rel="stylesheet" href="/styles/main.css">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
@@ -213,7 +213,7 @@
   <div class="main-container">
     <div class="auth-card">
       <h1 class="auth-title" id="auth-heading">Welcome Back</h1>
-      <p class="auth-subtitle" id="auth-subheading">Sign in to access Kozha Sign Translation</p>
+      <p class="auth-subtitle" id="auth-subheading">Sign in to access Signify Sign Translation</p>
 
       <div class="tab-switcher">
         <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Sign In</button>
@@ -277,14 +277,14 @@
 
       if (mode === 'signup') {
         heading.innerText = 'Create Account';
-        subheading.innerText = 'Join Kozha Sign Language Community';
+        subheading.innerText = 'Join Signify Sign Language Community';
         nameGroup.style.display = 'block';
         btnSubmit.innerText = 'Create Account';
         tabSignup.classList.add('active');
         tabLogin.classList.remove('active');
       } else {
         heading.innerText = 'Welcome Back';
-        subheading.innerText = 'Sign in to access Kozha Sign Translation';
+        subheading.innerText = 'Sign in to access Signify Sign Translation';
         nameGroup.style.display = 'none';
         btnSubmit.innerText = 'Sign In';
         tabLogin.classList.add('active');

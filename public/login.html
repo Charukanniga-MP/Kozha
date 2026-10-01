@@ -3,355 +3,669 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In — Signify Kozha</title>
-  <link rel="stylesheet" href="/styles/main.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <title>Sign In — Signify</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --bg-color: #f4f1ea;
-      --card-bg: #ffffff;
-      --accent: #c2410c;
-      --accent-hover: #9a3412;
-      --text-dark: #1c1917;
-      --text-muted: #78716c;
-      --border-color: #e7e5e4;
+      --bg-color: #FAF7F2;
+      --card-bg: #FFFFFF;
+      --accent: #C04A22;
+      --accent-hover: #A83E1B;
+      --text-dark: #1C1917;
+      --text-muted: #78716C;
+      --border-color: #E7E5E4;
+      --input-bg: #F4F1EC;
     }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-dark);
+      font-family: 'DM Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
     }
-    header {
+
+    /* Top Navigation Header */
+    .kz-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 40px;
-      border-bottom: 1px solid var(--border-color);
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
+      padding: 20px 48px;
+      background: transparent;
     }
-    .logo {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--accent);
+    .kz-header__logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1C1917;
       text-decoration: none;
       letter-spacing: -0.5px;
     }
-    .main-container {
+    .kz-header__logo span {
+      color: var(--accent);
+    }
+    .kz-header__nav {
+      display: flex;
+      list-style: none;
+      gap: 32px;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+    }
+    .kz-header__link {
+      text-decoration: none;
+      color: #57534E;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .kz-header__link:hover {
+      color: #1C1917;
+    }
+    .kz-header__link.is-active {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Page Main Section Grid */
+    .login-hero-container {
+      max-width: 1240px;
+      width: 90%;
+      margin: 10px auto 40px auto;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 60px;
+      align-items: center;
       flex: 1;
+    }
+
+    /* Left Hero Content */
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: #F4EADF;
+      border: 1px solid #E5D5C6;
+      border-radius: 20px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .hero-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 56px;
+      line-height: 1.1;
+      font-weight: 700;
+      margin: 0 0 20px 0;
+      color: #1C1917;
+      letter-spacing: -1.5px;
+    }
+    .hero-title em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .hero-desc {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #57534E;
+      margin: 0 0 32px 0;
+      max-width: 500px;
+    }
+
+    /* Feature List */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #292524;
+    }
+    .feature-icon-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #F5EBE1;
+      color: var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
+      font-size: 18px;
+      flex-shrink: 0;
     }
-    .auth-card {
+
+    /* Right Login Card */
+    .login-card {
       background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 24px;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07);
+      border-radius: 28px;
+      padding: 40px 36px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.04);
       width: 100%;
       max-width: 440px;
-      padding: 36px;
-      box-sizing: border-box;
+      margin: 0 auto;
     }
-    .auth-title {
-      font-size: 1.8rem;
-      font-weight: 800;
-      margin: 0 0 8px 0;
-      letter-spacing: -0.5px;
+
+    .card-logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #1C1917;
       text-align: center;
+      margin-bottom: 12px;
     }
-    .auth-subtitle {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      margin: 0 0 24px 0;
+    .card-logo span { color: var(--accent); }
+
+    .card-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 34px;
+      font-weight: 400;
       text-align: center;
+      margin: 0 0 4px 0;
+      color: #1C1917;
     }
-    .tab-switcher {
-      display: flex;
-      background: #f5f5f4;
-      padding: 4px;
-      border-radius: 12px;
-      margin-bottom: 24px;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      background: transparent;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .tab-btn.active {
-      background: #ffffff;
-      color: var(--text-dark);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .btn-google {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      background: #ffffff;
-      color: var(--text-dark);
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-bottom: 20px;
-    }
-    .btn-google:hover {
-      background: #fafaf9;
-      border-color: #d6d3d1;
-    }
-    .divider {
-      display: flex;
-      align-items: center;
+    .card-sub {
       text-align: center;
-      margin-bottom: 20px;
       color: var(--text-muted);
-      font-size: 0.85rem;
+      font-size: 14px;
+      margin: 0 0 28px 0;
     }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .divider span {
-      padding: 0 10px;
-    }
+
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
+      text-align: left;
     }
     .form-group label {
       display: block;
+      font-size: 13px;
       font-weight: 600;
-      font-size: 0.88rem;
-      margin-bottom: 6px;
+      color: #44403C;
+      margin-bottom: 8px;
     }
-    .form-control {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      font-size: 0.95rem;
-      box-sizing: border-box;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-    .form-control:focus {
-      border-color: var(--accent);
-    }
-    .password-wrapper {
+
+    .input-wrapper {
       position: relative;
+      display: flex;
+      align-items: center;
     }
-    .toggle-pass {
+    .input-icon-left {
       position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
+      left: 14px;
+      color: #78716C;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .input-icon-right {
+      position: absolute;
+      right: 14px;
+      color: #78716C;
       background: none;
       border: none;
-      color: var(--text-muted);
       cursor: pointer;
-      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
     }
-    .btn-submit {
+
+    .form-control {
+      width: 100%;
+      padding: 13px 40px;
+      background: var(--input-bg);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #1C1917;
+      outline: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .form-control:focus {
+      background: #FFFFFF;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(192, 74, 34, 0.12);
+    }
+
+    .form-row-remember {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .remember-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #44403C;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .remember-checkbox {
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .link-forgot {
+      color: var(--accent);
+      text-decoration: underline;
+      font-weight: 600;
+    }
+    .link-forgot:hover {
+      color: var(--accent-hover);
+    }
+
+    .btn-login-submit {
       width: 100%;
       padding: 14px;
       background: var(--accent);
-      color: #ffffff;
+      color: white;
       border: none;
       border-radius: 12px;
-      font-size: 1rem;
+      font-size: 15px;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.2s ease;
-      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s, transform 0.1s;
     }
-    .btn-submit:hover {
+    .btn-login-submit:hover {
       background: var(--accent-hover);
     }
-    .alert-box {
-      display: none;
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      margin-bottom: 18px;
+
+    .divider-or {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 22px 0;
+      color: #A1A1AA;
+      font-size: 12px;
     }
-    .alert-error {
-      background: #fef2f2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
+    .divider-or::before, .divider-or::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #E7E5E4;
     }
-    .alert-success {
-      background: #f0fdf4;
-      color: #166534;
-      border: 1px solid #bbf7d0;
+
+    .btn-create-account {
+      width: 100%;
+      padding: 12px;
+      background: #FAF8F5;
+      border: 1.5px solid var(--accent);
+      color: var(--accent);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-create-account:hover {
+      background: rgba(192, 74, 34, 0.06);
+    }
+
+    .preset-section {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px dashed #E7E5E4;
+      text-align: center;
+    }
+    .preset-section-title {
+      font-size: 12px;
+      color: #78716C;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    .preset-btns-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .btn-preset-quick {
+      background: #FAF8F5;
+      border: 1px solid #D6D3D1;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #292524;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-preset-quick:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #FFF;
+    }
+
+    /* Register Modal Screen */
+    .register-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .register-card {
+      background: white;
+      border-radius: 24px;
+      padding: 32px;
+      width: 90%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    .btn-close-modal {
+      background: #FFFFFF;
+      border: 1.5px solid #1C1917;
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1C1917;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-close-modal:hover {
+      background: #1C1917;
+      color: white;
+      transform: scale(1.05);
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <a href="/app.html" class="logo">Signify</a>
-    <div class="kozha-nav-auth"></div>
+  <!-- Top Header Navigation -->
+  <header class="kz-header" aria-label="Main navigation">
+    <a href="/" class="kz-header__logo">Sign<span>ify</span></a>
+    <ul class="kz-header__nav">
+      <li><a href="/login.html" class="kz-header__link is-active" aria-current="page">Login</a></li>
+      <li><a href="/app.html" class="kz-header__link">Translate</a></li>
+      <li><a href="/call.html" class="kz-header__link">Live Call</a></li>
+      <li><a href="/credits" class="kz-header__link">About</a></li>
+    </ul>
   </header>
 
-  <div class="main-container">
-    <div class="auth-card">
-      <h1 class="auth-title" id="auth-heading">Welcome Back</h1>
-      <p class="auth-subtitle" id="auth-subheading">Sign in to access Kozha Sign Translation</p>
-
-      <div class="tab-switcher">
-        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Sign In</button>
-        <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+  <!-- Hero Grid Layout -->
+  <div class="login-hero-container">
+    
+    <!-- Left Hero Column -->
+    <div>
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot"></span> OPEN-SOURCE RESEARCH PROJECT
       </div>
 
-      <div id="alert-box" class="alert-box"></div>
+      <h1 class="hero-title">
+        Text and speech to<br>
+        <em>sign language.</em>
+      </h1>
 
-      <!-- Google Sign In Button -->
-      <button class="btn-google" id="btn-google-action" type="button" onclick="handleGoogleSignIn()">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-        </svg>
-        Continue with Google
-      </button>
+      <p class="hero-desc">
+        Signify translates typed text, recorded speech, and uploaded video into sign-language animations — entirely in your browser, free and open-source.
+      </p>
 
-      <div class="divider">
-        <span>or with email</span>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon-circle">🌐</div>
+          <span>3 sign languages</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-circle">🎙️</div>
+          <span>On-device speech recognition</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-circle">🎓</div>
+          <span>Free for educators, always</span>
+        </div>
       </div>
+    </div>
 
-      <form id="auth-form" onsubmit="handleFormSubmit(event)">
-        <div class="form-group" id="name-group" style="display: none;">
-          <label for="input-name">Full Name</label>
-          <input type="text" id="input-name" class="form-control" placeholder="e.g. Sarah Signer">
-        </div>
+    <!-- Right Login Card -->
+    <div>
+      <div class="login-card">
+        <div class="card-logo">Sign<span>ify</span></div>
+        <h2 class="card-title">Welcome back</h2>
+        <p class="card-sub">Login to continue to Signify</p>
 
-        <div class="form-group">
-          <label for="input-email">Email Address</label>
-          <input type="email" id="input-email" class="form-control" placeholder="name@example.com" required>
-        </div>
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <!-- Input 1: Email or Username -->
+          <div class="form-group">
+            <label for="loginIdentifier">Email or Username</label>
+            <div class="input-wrapper">
+              <span class="input-icon-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </span>
+              <input type="text" id="loginIdentifier" class="form-control" placeholder="Enter your email or username" required />
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="input-password">Password</label>
-          <div class="password-wrapper">
-            <input type="password" id="input-password" class="form-control" placeholder="••••••••" required>
-            <button type="button" class="toggle-pass" onclick="togglePassword()">Show</button>
+          <!-- Input 2: Password -->
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required />
+              <button type="button" class="input-icon-right" onclick="togglePasswordVisibility()" title="Toggle Password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Remember me & Forgot Password -->
+          <div class="form-row-remember">
+            <label class="remember-label">
+              <input type="checkbox" id="rememberMe" class="remember-checkbox" checked />
+              <span>Remember me</span>
+            </label>
+            <a href="#" class="link-forgot" onclick="alert('Demo reset link sent!')">Forgot password?</a>
+          </div>
+
+          <!-- Login Primary Button -->
+          <button type="submit" class="btn-login-submit">
+            <span>Login</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+
+        <div class="divider-or">or</div>
+
+        <!-- Create New Account Button -->
+        <button type="button" class="btn-create-account" onclick="openRegisterModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Create a new account</span>
+        </button>
+
+        <!-- Fast Test Logins (Charu vs Keerthi) -->
+        <div class="preset-section">
+          <div class="preset-section-title">Quick Test Login Profiles:</div>
+          <div class="preset-btns-row">
+            <button class="btn-preset-quick" onclick="loginPreset('Charu', 'charu@gmail.com', '6382472844')">👤 Charu (6382472844)</button>
+            <button class="btn-preset-quick" onclick="loginPreset('Keerthi', 'keerthi@gmail.com', '9834567290')">👤 Keerthi (9834567290)</button>
           </div>
         </div>
 
-        <button type="submit" class="btn-submit" id="btn-submit-text">Sign In</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- REGISTER NEW ACCOUNT MODAL -->
+  <div id="registerModal" class="register-modal-overlay hidden" onclick="handleOverlayClick(event)">
+    <div class="register-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0; font-family:'Instrument Serif', serif; font-size:30px; color:#1C1917;">Create New Account</h3>
+        <button class="btn-close-modal" type="button" onclick="closeRegisterModal()" title="Close Modal">✕</button>
+      </div>
+      <form onsubmit="handleRegisterSubmit(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="regName" class="form-control" style="padding-left:14px;" placeholder="e.g. Charu / Keerthi" required />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="regEmail" class="form-control" style="padding-left:14px;" placeholder="charu@gmail.com" required />
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="regPhone" class="form-control" style="padding-left:14px;" placeholder="e.g. 6382472844" required />
+        </div>
+        <button type="submit" class="btn-login-submit" style="margin-top:20px;">Register & Sign In ➔</button>
       </form>
     </div>
   </div>
 
   <script src="/auth.js"></script>
   <script>
-    let currentMode = 'login';
-
-    function switchTab(mode) {
-      currentMode = mode;
-      const heading = document.getElementById('auth-heading');
-      const subheading = document.getElementById('auth-subheading');
-      const nameGroup = document.getElementById('name-group');
-      const btnSubmit = document.getElementById('btn-submit-text');
-      const tabLogin = document.getElementById('tab-login');
-      const tabSignup = document.getElementById('tab-signup');
-      hideAlert();
-
-      if (mode === 'signup') {
-        heading.innerText = 'Create Account';
-        subheading.innerText = 'Join Kozha Sign Language Community';
-        nameGroup.style.display = 'block';
-        btnSubmit.innerText = 'Create Account';
-        tabSignup.classList.add('active');
-        tabLogin.classList.remove('active');
+    function togglePasswordVisibility() {
+      const input = document.getElementById('loginPassword');
+      if (input.type === 'password') {
+        input.type = 'text';
       } else {
-        heading.innerText = 'Welcome Back';
-        subheading.innerText = 'Sign in to access Kozha Sign Translation';
-        nameGroup.style.display = 'none';
-        btnSubmit.innerText = 'Sign In';
-        tabLogin.classList.add('active');
-        tabSignup.classList.remove('active');
+        input.type = 'password';
       }
     }
 
-    function togglePassword() {
-      const pass = document.getElementById('input-password');
-      const btn = document.querySelector('.toggle-pass');
-      if (pass.type === 'password') {
-        pass.type = 'text';
-        btn.innerText = 'Hide';
-      } else {
-        pass.type = 'password';
-        btn.innerText = 'Show';
+    function openRegisterModal() {
+      document.getElementById('registerModal').classList.remove('hidden');
+    }
+
+    function closeRegisterModal() {
+      document.getElementById('registerModal').classList.add('hidden');
+    }
+
+    function handleOverlayClick(event) {
+      if (event.target === document.getElementById('registerModal')) {
+        closeRegisterModal();
       }
     }
 
-    function showAlert(msg, isError = true) {
-      const box = document.getElementById('alert-box');
-      box.innerText = msg;
-      box.className = 'alert-box ' + (isError ? 'alert-error' : 'alert-success');
-      box.style.display = 'block';
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeRegisterModal();
+      }
+    });
+
+    function loginPreset(name, email, phone) {
+      const user = { name: name, email: email, phone: phone };
+      sessionStorage.setItem('signify_logged_user', JSON.stringify(user));
+      localStorage.setItem('signify_logged_user', JSON.stringify(user));
+
+      if (window.KozhaAuth) {
+        window.KozhaAuth.setSession("demo_token_" + Date.now(), user, true);
+      }
+
+      const redirect = new URLSearchParams(window.location.search).get('next') || '/call.html';
+      window.location.href = redirect;
     }
 
-    function hideAlert() {
-      document.getElementById('alert-box').style.display = 'none';
-    }
-
-    async function handleFormSubmit(e) {
+    function handleLoginSubmit(e) {
       e.preventDefault();
-      hideAlert();
-      const email = document.getElementById('input-email').value;
-      const password = document.getElementById('input-password').value;
-      const name = document.getElementById('input-name').value;
+      const identifier = document.getElementById('loginIdentifier').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
 
-      try {
-        if (currentMode === 'login') {
-          await KozhaAuth.login(email, password);
-          showAlert('Signed in successfully! Redirecting...', false);
-        } else {
-          await KozhaAuth.signup(email, password, name);
-          showAlert('Account created successfully! Redirecting...', false);
-        }
-        setTimeout(() => {
-          window.location.href = '/app.html';
-        }, 1000);
-      } catch (err) {
-        showAlert(err.message || 'Authentication failed');
+      if (!identifier) return;
+
+      let name = identifier.split('@')[0];
+      name = name.charAt(0).toUpperCase() + name.slice(1);
+      
+      let phone = '6382472844';
+      if (name.toLowerCase().includes('keerthi')) {
+        phone = '9834567290';
       }
+
+      const user = {
+        name: name,
+        email: identifier.includes('@') ? identifier : `${name.toLowerCase()}@gmail.com`,
+        phone: phone
+      };
+
+      sessionStorage.setItem('signify_logged_user', JSON.stringify(user));
+      localStorage.setItem('signify_logged_user', JSON.stringify(user));
+
+      if (window.KozhaAuth) {
+        window.KozhaAuth.setSession("demo_token_" + Date.now(), user, true);
+      }
+
+      const redirect = new URLSearchParams(window.location.search).get('next') || '/call.html';
+      window.location.href = redirect;
     }
 
-    async function handleGoogleSignIn() {
-      hideAlert();
-      try {
-        const mockEmail = prompt("Enter your Google Account email:", "user@gmail.com");
-        if (!mockEmail) return;
-        const mockName = mockEmail.split('@')[0].replace('.', ' ').toUpperCase();
-        await KozhaAuth.loginGooglePayload(mockEmail, mockName);
-        showAlert('Google Sign-In successful! Redirecting...', false);
-        setTimeout(() => {
-          window.location.href = '/app.html';
-        }, 1000);
-      } catch (err) {
-        showAlert(err.message || 'Google login failed');
+    function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+
+      if (!name || !email || !phone) return;
+
+      const user = { name: name, email: email, phone: phone };
+      sessionStorage.setItem('signify_logged_user', JSON.stringify(user));
+      localStorage.setItem('signify_logged_user', JSON.stringify(user));
+
+      if (window.KozhaAuth) {
+        window.KozhaAuth.setSession("demo_token_" + Date.now(), user, true);
       }
+
+      const redirect = new URLSearchParams(window.location.search).get('next') || '/call.html';
+      window.location.href = redirect;
     }
   </script>
 </body>

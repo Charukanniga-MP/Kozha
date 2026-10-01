@@ -1345,6 +1345,27 @@ def serve_credits():
     return FileResponse(PUBLIC_DIR / "credits.html")
 
 
+# Live Call page
+@app.get("/call", include_in_schema=False)
+@app.get("/call/", include_in_schema=False)
+def serve_call():
+    return FileResponse(PUBLIC_DIR / "call.html")
+
+
+# Notifications page
+@app.get("/notifications", include_in_schema=False)
+@app.get("/notifications/", include_in_schema=False)
+def serve_notifications():
+    return FileResponse(PUBLIC_DIR / "notifications.html")
+
+
+# Profile page
+@app.get("/profile", include_in_schema=False)
+@app.get("/profile/", include_in_schema=False)
+def serve_profile():
+    return FileResponse(PUBLIC_DIR / "profile.html")
+
+
 # Progress snapshot JSON with an explicit 15-minute cache window.
 # Leaving this to the static mount would emit no Cache-Control header,
 # pushing visitors to re-download the blob on every navigation. The
@@ -1442,6 +1463,8 @@ def api_auth_google(req: AuthGoogleRequest):
         raise HTTPException(status_code=400, detail=str(err))
 
 
+import user_db as _user_db
+
 @app.get("/api/auth/me")
 def api_auth_me(request: Request):
     auth_header = request.headers.get("authorization", "")
@@ -1452,6 +1475,44 @@ def api_auth_me(request: Request):
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return {"user": user}
+
+
+class UserDataUpdateRequest(BaseModel):
+    user_id: Optional[str] = None
+    profile: Optional[dict] = None
+    contacts: Optional[list] = None
+    callHistory: Optional[list] = None
+    notifications: Optional[list] = None
+    avatarSettings: Optional[dict] = None
+    preferences: Optional[dict] = None
+
+
+@app.get("/api/user/data")
+def api_get_user_data(request: Request, user_id: Optional[str] = None):
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header[7:].strip() if auth_header.lower().startswith("bearer ") else ""
+    user = _auth.get_user_by_token(token) if token else None
+
+    target_id = user_id or (user.get("email") if user else "Charu")
+    name = user.get("name", target_id) if user else target_id
+    email = user.get("email", target_id) if user else target_id
+
+    data = _user_db.get_user_data(target_id, email=email, name=name)
+    return {"data": data}
+
+
+@app.post("/api/user/data")
+def api_update_user_data(req: UserDataUpdateRequest, request: Request):
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header[7:].strip() if auth_header.lower().startswith("bearer ") else ""
+    user = _auth.get_user_by_token(token) if token else None
+
+    target_id = req.user_id or (user.get("email") if user else "Charu")
+    updates = req.dict(exclude_unset=True, exclude={"user_id"})
+    
+    updated_data = _user_db.update_user_data(target_id, updates)
+    return {"ok": True, "data": updated_data}
+
 
 
 # HTTP 404 handler: browser navigations get the designed 404.html (same
