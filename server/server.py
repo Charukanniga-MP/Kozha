@@ -1014,6 +1014,117 @@ def api_translate_batch(req: BatchTranslateRequest, request: Request):
             ctx["outcome"] = "missing_gloss"
         return {"results": results}
 
+class ChatPredictionRequest(BaseModel):
+    call_id: Optional[str] = "live_call"
+    speaker_id: Optional[str] = ""
+    speaker_name: Optional[str] = ""
+    latest_speech: Optional[str] = ""
+    current_input: Optional[str] = ""
+    conversation_context: Optional[List[Dict[str, str]]] = []
+    language: Optional[str] = "en"
+    sign_language: Optional[str] = "isl"
+
+@app.post("/api/ai/predict-chat")
+def api_ai_predict_chat(req: ChatPredictionRequest):
+    current_input = (req.current_input or "").strip()
+    latest_speech = (req.latest_speech or "").strip()
+    speaker_name = (req.speaker_name or "Remote Party").strip()
+    
+    predictions = []
+    
+    if current_input:
+        inp_lower = current_input.lower()
+        if inp_lower.startswith("yes"):
+            predictions = [
+                f"{current_input}, I will be there.",
+                f"{current_input}, I can join after class.",
+                f"{current_input}, I agree completely."
+            ]
+        elif inp_lower.startswith("no") or inp_lower.startswith("sorry"):
+            predictions = [
+                f"{current_input}, I won't be able to make it.",
+                f"{current_input}, I have another meeting.",
+                f"{current_input}, let me check my schedule first."
+            ]
+        elif inp_lower.startswith("can you") or inp_lower.startswith("could you"):
+            predictions = [
+                f"{current_input} send me the details?",
+                f"{current_input} repeat that in sign language?",
+                f"{current_input} call me back later?"
+            ]
+        elif inp_lower.startswith("what") or inp_lower.startswith("where") or inp_lower.startswith("when"):
+            predictions = [
+                f"{current_input} time does it start?",
+                f"{current_input} should we meet?",
+                f"{current_input} is the location?"
+            ]
+        elif inp_lower.startswith("i am") or inp_lower.startswith("i'm"):
+            predictions = [
+                f"{current_input} ready to start.",
+                f"{current_input} interested in joining.",
+                f"{current_input} currently in class."
+            ]
+        else:
+            predictions = [
+                f"{current_input} will be great!",
+                f"{current_input} sounds good to me.",
+                f"{current_input} let's coordinate soon."
+            ]
+    elif latest_speech:
+        speech_lower = latest_speech.lower()
+        if any(w in speech_lower for w in ["coming", "come", "join", "tomorrow", "today", "meet", "time"]):
+            predictions = [
+                "Yes, I will be there on time!",
+                "Yes, I can join after class.",
+                "Sorry, I won't be able to make it."
+            ]
+        elif any(w in speech_lower for w in ["how are", "how do", "doing", "hello", "hi", "hey"]):
+            predictions = [
+                "I am doing great, thank you! How about you?",
+                "Everything is going well!",
+                "Glad to connect with you on Signify!"
+            ]
+        elif any(w in speech_lower for w in ["hear", "see", "clear", "webcam", "audio"]):
+            predictions = [
+                "Yes, I can hear and see you clearly.",
+                "The video is clear, but audio is a bit quiet.",
+                "Everything looks great on my side!"
+            ]
+        elif any(w in speech_lower for w in ["document", "send", "link", "file", "photo"]):
+            predictions = [
+                "Sure, I will send it to you right away.",
+                "Let me attach the file in the chat.",
+                "I will share it with you after the call."
+            ]
+        elif speech_lower.endswith("?"):
+            predictions = [
+                "Yes, absolutely!",
+                "Let me double check and get back to you.",
+                "No, I don't think so."
+            ]
+        else:
+            predictions = [
+                f"That sounds great, {speaker_name}!",
+                "Thanks for sharing that.",
+                "Could you explain that in sign language?"
+            ]
+    else:
+        predictions = [
+            "Hello! Great to connect with you.",
+            "I can hear you clearly.",
+            "How can I help you today?"
+        ]
+        
+    return {
+        "status": "success",
+        "predictions": predictions[:3],
+        "context_used": {
+            "has_input": bool(current_input),
+            "has_speech": bool(latest_speech),
+            "speaker_name": speaker_name
+        }
+    }
+
 @app.post("/api/plan")
 def api_plan(req: TextRequest, request: Request):
     with _instrument_translation(request, req.language or "", req.sign_language or "", req.text) as ctx:
@@ -1477,6 +1588,27 @@ def api_auth_me(request: Request):
     return {"user": user}
 
 
+class AuthChangePasswordRequest(BaseModel):
+    user_id: Optional[str] = None
+    old_password: str
+    new_password: str
+
+
+@app.post("/api/auth/change-password")
+def api_auth_change_password(req: AuthChangePasswordRequest, request: Request):
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header[7:].strip() if auth_header.lower().startswith("bearer ") else ""
+    user = _auth.get_user_by_token(token) if token else None
+
+    email = user["email"] if user else (req.user_id or "charu@signify.ai")
+    try:
+        _auth.change_password(email, req.old_password, req.new_password)
+        return {"ok": True, "message": "Password changed successfully"}
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err))
+
+
+
 class UserDataUpdateRequest(BaseModel):
     user_id: Optional[str] = None
     profile: Optional[dict] = None
@@ -1485,6 +1617,9 @@ class UserDataUpdateRequest(BaseModel):
     notifications: Optional[list] = None
     avatarSettings: Optional[dict] = None
     preferences: Optional[dict] = None
+    accessibility: Optional[dict] = None
+    privacySettings: Optional[dict] = None
+    conversations: Optional[dict] = None
 
 
 @app.get("/api/user/data")

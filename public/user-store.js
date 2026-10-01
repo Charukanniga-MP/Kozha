@@ -189,6 +189,41 @@
           signLanguage: 'bsl',
           subtitles: true,
           theme: 'light'
+        },
+        conversations: {
+          'c_luna': [
+            {
+              id: 'm_luna_1',
+              senderId: 'c_luna',
+              senderName: 'Luna (Signify AI)',
+              receiverId: u.id,
+              type: 'text',
+              content: 'Hey! Feel free to send text, emojis, voice notes, photos, videos, PDFs, interactive polls, or live location here!',
+              timestamp: '10:40 AM'
+            }
+          ],
+          'usr_keerthi': [
+            {
+              id: 'm_keerthi_1',
+              senderId: 'usr_keerthi',
+              senderName: 'Keerthi',
+              receiverId: u.id,
+              type: 'text',
+              content: 'Hey Charu! Call me when you get a chance to test sign language translation.',
+              timestamp: '09:12 AM'
+            }
+          ],
+          'usr_priya': [
+            {
+              id: 'm_priya_1',
+              senderId: 'usr_priya',
+              senderName: 'Priya',
+              receiverId: u.id,
+              type: 'text',
+              content: 'Hi! Added you on Signify. Let me know if you want to connect.',
+              timestamp: 'Yesterday, 06:30 PM'
+            }
+          ]
         }
       };
     }

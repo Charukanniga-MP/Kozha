@@ -76,6 +76,102 @@
     ],
     "callHistory": [
       {
+        "id": "h_1790874450914",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790874328553",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790870910618",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790852170372",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790844184799",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790838524971",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790837880216",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790836978834",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790836969065",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790836946733",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790836904557",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790836404449",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
         "id": "h_1790834975938",
         "name": "Keerthi",
         "phone": "9834567290",
@@ -184,6 +280,94 @@
       }
     ],
     "callHistory": [
+      {
+        "id": "h_1790874449139",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790874330711",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790870912611",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790852168539",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790844182419",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790838529073",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790837009686",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790836995169",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790836909122",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790836405900",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790836391500",
+        "name": "Luna (Signify AI)",
+        "phone": "+1 (800) 555-LUNA",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
       {
         "id": "h_1790834977658",
         "name": "Charu",

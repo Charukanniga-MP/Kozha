@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signify — Privacy & Security</title>
+  <meta name="description" content="Manage your data, account security, privacy controls, permissions, and blocked contacts in Signify.">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  
+  <script src="/user-store.js"></script>
+  <script src="/accessibility-applier.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #FAF7F2;
+      --card-bg: #FFFFFF;
+      --accent: #C04A22;
+      --accent-hover: #A83E1B;
+      --accent-soft: #FFF5F2;
+      --text-dark: #1C1917;
+      --text-muted: #78716C;
+      --border-color: #E7E5E4;
+      --success-bg: #E6F4EA;
+      --success-text: #137333;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      font-family: 'DM Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Top Header Navigation */
+    .kz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: transparent;
+    }
+    .kz-header__logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1C1917;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .kz-header__logo span { color: var(--accent); }
+    .kz-header__nav {
+      display: flex;
+      list-style: none;
+      gap: 28px;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+    }
+    .kz-header__link {
+      text-decoration: none;
+      color: #57534E;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kz-header__link:hover { color: #1C1917; }
+    .kz-header__link.is-active {
+      color: var(--accent);
+      background: #FFF0EB;
+      border: 1px solid var(--accent);
+      font-weight: 600;
+    }
+
+    .user-nav-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      cursor: pointer;
+    }
+
+    /* Main Container Grid */
+    .priv-container {
+      max-width: 1280px;
+      width: 92%;
+      margin: 10px auto 40px auto;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* Left Sidebar Navigation Card */
+    .sidebar-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      color: #57534E;
+      font-weight: 500;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      border: 1px solid transparent;
+      position: relative;
+    }
+
+    .sidebar-item:hover {
+      background: #FAF8F5;
+      color: #1C1917;
+    }
+
+    .sidebar-item.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      border-color: rgba(192, 74, 34, 0.2);
+    }
+    .sidebar-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 4px;
+      background: var(--accent);
+      border-radius: 0 4px 4px 0;
+    }
+    .sidebar-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+    }
+
+    /* Page Header */
+    .priv-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 46px;
+      font-weight: 700;
+      color: #1C1917;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.5px;
+    }
+    .page-sub {
+      color: #78716C;
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .toast-saved-badge {
+      background: var(--success-bg);
+      color: var(--success-text);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(19, 115, 51, 0.08);
+      transition: opacity 0.3s ease;
+    }
+
+    /* 2-Column Main Body Grid */
+    .priv-main-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 0.75fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .priv-left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* 2x2 Cards Grid */
+    .cards-2x2-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* Section Card */
+    .priv-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-header-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .card-header-icon {
+      width: 26px;
+      height: 26px;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .card-title {
+      font-weight: 700;
+      font-size: 17px;
+      color: #1C1917;
+      margin: 0 0 3px 0;
+    }
+    .card-subtitle {
+      font-size: 12px;
+      color: #78716C;
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    /* Settings Rows */
+    .settings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .setting-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #F5F5F4;
+    }
+    .setting-item-row:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .setting-clickable-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #F5F5F4;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.15s;
+    }
+    .setting-clickable-row:hover {
+      background-color: #FAF8F5;
+    }
+    .setting-clickable-row:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .setting-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .setting-icon {
+      color: var(--text-muted);
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .setting-label {
+      font-weight: 700;
+      font-size: 14px;
+      color: #1C1917;
+      margin-bottom: 2px;
+    }
+    .setting-hint {
+      font-size: 11px;
+      color: #78716C;
+      line-height: 1.3;
+    }
+
+    .arrow-icon {
+      color: #A8A29E;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    .setting-clickable-row:hover .arrow-icon {
+      color: var(--accent);
+      transform: translateX(3px);
+    }
+
+    /* Custom Select Dropdown */
+    .custom-select {
+      background: #FFFFFF;
+      border: 1px solid #D6D3D1;
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1C1917;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      min-width: 120px;
+    }
+    .custom-select:focus {
+      border-color: var(--accent);
+    }
+
+    /* Toggle Switch Controls */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .switch-input {
+      position: absolute;
+      opacity: 0;
+      width: 0; height: 0;
+    }
+    .switch-slider {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 25px;
+      background-color: #E7E5E4;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .switch-slider::before {
+      content: '';
+      position: absolute;
+      height: 19px;
+      width: 19px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .switch-input:checked + .switch-slider {
+      background-color: var(--accent);
+    }
+    .switch-input:checked + .switch-slider::before {
+      transform: translateX(21px);
+    }
+
+    /* Blocked Contacts Card (Full Width Row) */
+    .blocked-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 20px;
+      padding: 18px 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .btn-view-blocked {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      color: var(--accent);
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-view-blocked:hover {
+      background: #FFF5F2;
+      border-color: var(--accent);
+    }
+
+    /* Right Column: Info & Action Buttons */
+    .priv-right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .info-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info-stage-box {
+      background: #FFF0EB;
+      border-radius: 20px;
+      height: 320px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 12px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(192, 74, 34, 0.15);
+    }
+
+    .info-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 15%;
+      border-radius: 20px;
+    }
+
+    .shield-badge-overlay {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #C04A22;
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(192, 74, 34, 0.35);
+      z-index: 10;
+    }
+
+    .info-box-inner {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .info-box-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #1C1917;
+      margin: 0 0 6px 0;
+    }
+    .info-box-desc {
+      font-size: 13px;
+      color: #78716C;
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    /* Action Buttons Row */
+    .action-buttons-row {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-reset-pref {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      color: var(--accent);
+      padding: 13px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-reset-pref:hover {
+      background: #FFF5F2;
+      border-color: var(--accent);
+    }
+
+    .btn-save-pref {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 13px 24px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(192, 74, 34, 0.3);
+    }
+    .btn-save-pref:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Modal Windows */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 25, 23, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      background: #FFFFFF;
+      border-radius: 24px;
+      max-width: 480px;
+      width: 92%;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 28px;
+      margin: 0;
+      color: #1C1917;
+    }
+    .modal-sub {
+      font-size: 13px;
+      color: #78716C;
+      margin-top: -8px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1C1917;
+    }
+    .form-input {
+      background: #FAF8F5;
+      border: 1px solid #D6D3D1;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus {
+      border-color: var(--accent);
+      background: #FFFFFF;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .btn-modal-sec {
+      background: #F5F5F4;
+      border: 1px solid #E7E5E4;
+      color: #57534E;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-modal-pri {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-modal-danger {
+      background: #DC2626;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Devices List inside Modal */
+    .device-item {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .device-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #1C1917;
+    }
+    .device-sub {
+      font-size: 11px;
+      color: #78716C;
+    }
+
+    /* Blocked Contacts List inside Modal */
+    .blocked-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .blocked-user-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 14px;
+      padding: 10px 14px;
+    }
+    .blocked-user-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .blocked-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .btn-unblock {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      color: #C04A22;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-unblock:hover {
+      background: #FFF5F2;
+      border-color: var(--accent);
+    }
+
+    @media (max-width: 992px) {
+      .priv-container {
+        grid-template-columns: 1fr;
+      }
+      .priv-main-grid {
+        grid-template-columns: 1fr;
+      }
+      .cards-2x2-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="kz-header" aria-label="Main navigation">
+    <a href="/" class="kz-header__logo">Sign<span>ify</span></a>
+    <ul class="kz-header__nav">
+      <li><a href="/" class="kz-header__link">Home</a></li>
+      <li><a href="/app.html" class="kz-header__link">Translate</a></li>
+      <li><a href="/call.html" class="kz-header__link">Live Call</a></li>
+      <li>
+        <a href="/notifications.html" class="kz-header__link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notifications
+        </a>
+      </li>
+      <li>
+        <a href="/profile.html" class="kz-header__link is-active">
+          <img src="/images/luna_3d.jpg" alt="User Profile Avatar" id="headerUserAvatarImg" class="user-nav-avatar" />
+          Profile
+        </a>
+      </li>
+    </ul>
+  </header>
+
+  <main class="priv-container">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar-card">
+      <a href="/profile.html#profile" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <span>Profile</span>
+      </a>
+
+      <a href="/profile.html#avatar" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </span>
+        <span>Avatar</span>
+      </a>
+
+      <a href="/preferences.html" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </span>
+        <span>Language & Preferences</span>
+      </a>
+
+      <a href="/accessibility.html" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M18 8H6"/><path d="M12 8v13"/><path d="M9 13l3 3 3-3"/></svg>
+        </span>
+        <span>Accessibility</span>
+      </a>
+
+      <a href="/privacy.html" class="sidebar-item active">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </span>
+        <span>Privacy & Security</span>
+      </a>
+
+      <a href="/profile.html#about" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </span>
+        <span>About</span>
+      </a>
+    </aside>
+
+    <!-- RIGHT MAIN SETTINGS CONTENT -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+      <!-- PAGE HEADER ROW -->
+      <div class="priv-header-row">
+        <div>
+          <h1 class="page-title">Privacy & Security</h1>
+          <p class="page-sub">Manage your data, privacy and security settings to keep your account safe.</p>
+        </div>
+
+        <div id="saveToastBadge" class="toast-saved-badge hidden">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          Settings saved successfully
+        </div>
+      </div>
+
+      <!-- MAIN 2-COLUMN GRID -->
+      <div class="priv-main-grid">
+
+        <!-- LEFT COLUMN: 2x2 CARDS GRID + BLOCKED CONTACTS -->
+        <div class="priv-left-col">
+
+          <div class="cards-2x2-grid">
+
+            <!-- CARD 1: ACCOUNT SECURITY -->
+            <section class="priv-card">
+              <div class="card-header-wrap">
+                <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div>
+                  <h2 class="card-title">Account Security</h2>
+                  <p class="card-subtitle">Keep your account secure.</p>
+                </div>
+              </div>
+
+              <div class="settings-list">
+                <!-- Change Password -->
+                <div class="setting-clickable-row" onclick="openChangePasswordModal()">
+                  <div>
+                    <div class="setting-label">Change Password</div>
+                    <div class="setting-hint">Update your password regularly.</div>
+                  </div>
+                  <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+
+                <!-- Two-Factor Authentication (2FA) -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Two-Factor Authentication (2FA)</div>
+                    <div class="setting-hint">Add an extra layer of security.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggle2FA" class="switch-input" onchange="onPrivacyToggleChange('twoFactorAuth', this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Login Alerts -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Login Alerts</div>
+                    <div class="setting-hint">Get notified about new login attempts.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleLoginAlerts" class="switch-input" checked onchange="onPrivacyToggleChange('loginAlerts', this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Manage Devices -->
+                <div class="setting-clickable-row" onclick="openManageDevicesModal()">
+                  <div>
+                    <div class="setting-label">Manage Devices</div>
+                    <div class="setting-hint">View and manage devices where you are logged in.</div>
+                  </div>
+                  <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- CARD 2: PRIVACY CONTROLS -->
+            <section class="priv-card">
+              <div class="card-header-wrap">
+                <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <div>
+                  <h2 class="card-title">Privacy Controls</h2>
+                  <p class="card-subtitle">Control your data and visibility.</p>
+                </div>
+              </div>
+
+              <div class="settings-list">
+                <!-- Profile Visibility -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Profile Visibility</div>
+                    <div class="setting-hint">Choose who can see your profile.</div>
+                  </div>
+                  <select id="selectProfileVisibility" class="custom-select" onchange="onPrivacySelectChange('profileVisibility', this.value)">
+                    <option value="everyone">Everyone</option>
+                    <option value="contacts" selected>Contacts Only</option>
+                    <option value="nobody">Nobody</option>
+                  </select>
+                </div>
+
+                <!-- Show Online Status -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Show Online Status</div>
+                    <div class="setting-hint">Let others see when you are online.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleOnlineStatus" class="switch-input" checked onchange="onPrivacyToggleChange('showOnlineStatus', this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Allow Contact Requests -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Allow Contact Requests</div>
+                    <div class="setting-hint">Allow others to send you contact requests.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleContactRequests" class="switch-input" checked onchange="onPrivacyToggleChange('allowContactRequests', this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Show Call Status -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Show Call Status</div>
+                    <div class="setting-hint">Let others see if you are in a call.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleCallStatus" class="switch-input" onchange="onPrivacyToggleChange('showCallStatus', this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Show Last Seen -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Show Last Seen</div>
+                    <div class="setting-hint">Let others see when you were last active.</div>
+                  </div>
+                  <select id="selectShowLastSeen" class="custom-select" onchange="onPrivacySelectChange('showLastSeen', this.value)">
+                    <option value="everyone" selected>Everyone</option>
+                    <option value="contacts">Contacts Only</option>
+                    <option value="nobody">Nobody</option>
+                  </select>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- CARD 3: DATA & STORAGE -->
+            <section class="priv-card">
+              <div class="card-header-wrap">
+                <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <div>
+                  <h2 class="card-title">Data & Storage</h2>
+                  <p class="card-subtitle">Manage your application data.</p>
+                </div>
+              </div>
+
+              <div class="settings-list">
+                <!-- Translation History -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Translation History</div>
+                    <div class="setting-hint">Save my translation history.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleTranslationHistory" class="switch-input" checked onchange="onPrivacyToggleChange('translationHistory', this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Call History -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Call History</div>
+                    <div class="setting-hint">Save my call history.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleCallHistory" class="switch-input" checked onchange="onPrivacyToggleChange('callHistory', this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Clear All Data -->
+                <div class="setting-clickable-row" onclick="openClearDataModal()">
+                  <div>
+                    <div class="setting-label" style="color: #DC2626;">Clear All Data</div>
+                    <div class="setting-hint">Remove all your saved data from this account.</div>
+                  </div>
+                  <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+
+                <!-- Export My Data -->
+                <div class="setting-clickable-row" onclick="exportUserData()">
+                  <div>
+                    <div class="setting-label">Export My Data</div>
+                    <div class="setting-hint">Download a copy of your data (contacts, call history, translations, etc.).</div>
+                  </div>
+                  <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+
+              </div>
+            </section>
+
+            <!-- CARD 4: PERMISSIONS -->
+            <section class="priv-card">
+              <div class="card-header-wrap">
+                <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <div>
+                  <h2 class="card-title">Permissions</h2>
+                  <p class="card-subtitle">Manage application permissions.</p>
+                </div>
+              </div>
+
+              <div class="settings-list">
+                <!-- Camera Access -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Camera Access</div>
+                    <div class="setting-hint">Used for sign recognition and live call.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleCameraAccess" class="switch-input" checked onchange="toggleBrowserCameraPermission(this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Microphone Access -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Microphone Access</div>
+                    <div class="setting-hint">Used for speech recognition and calls.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleMicrophoneAccess" class="switch-input" checked onchange="toggleBrowserMicPermission(this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Notifications</div>
+                    <div class="setting-hint">Allow app to send notifications.</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleNotifications" class="switch-input" checked onchange="toggleBrowserNotificationPermission(this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Location Access -->
+                <div class="setting-item-row">
+                  <div>
+                    <div class="setting-label">Location Access</div>
+                    <div class="setting-hint">Used for location-based features (if enabled).</div>
+                  </div>
+                  <div class="toggle-wrap">
+                    <label class="switch-slider">
+                      <input type="checkbox" id="toggleLocationAccess" class="switch-input" onchange="onPrivacyToggleChange('locationAccess', this.checked)">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+          </div>
+
+          <!-- BOTTOM FULL WIDTH CARD: BLOCKED CONTACTS -->
+          <section class="blocked-card">
+            <div style="display:flex; align-items:center; gap:14px;">
+              <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              <div>
+                <h2 class="card-title" style="margin-bottom:2px;">Blocked Contacts</h2>
+                <p class="card-subtitle">Manage the people you have blocked.</p>
+              </div>
+            </div>
+
+            <button class="btn-view-blocked" onclick="openBlockedContactsModal()">
+              View Blocked Contacts
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </section>
+
+        </div>
+
+        <!-- RIGHT COLUMN: INFO & ACTIONS -->
+        <div class="priv-right-col">
+
+          <div class="info-card">
+            <div class="info-stage-box">
+              <img src="/images/luna_3d.jpg" alt="Signify Security Avatar" class="info-avatar-img" />
+              <div class="shield-badge-overlay">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+            </div>
+
+            <div class="info-box-inner">
+              <h3 class="info-box-title">Your privacy matters</h3>
+              <p class="info-box-desc">We are committed to keeping your information safe and giving you control over your data.</p>
+            </div>
+
+            <!-- Action Buttons Row -->
+            <div class="action-buttons-row">
+              <button class="btn-reset-pref" id="btnResetDefaults" onclick="openResetModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Reset to Default
+              </button>
+
+              <button class="btn-save-pref" id="btnSaveSettings" onclick="savePrivacySettings()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Settings
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL: CHANGE PASSWORD -->
+  <div class="modal-overlay" id="changePasswordModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Change Password</h3>
+      <p class="modal-sub">Enter your current password and choose a new secure password.</p>
+      
+      <div id="pwdAlertMsg" class="hidden" style="color: #DC2626; font-size: 13px; font-weight: 600;"></div>
+
+      <div class="form-group">
+        <label class="form-label">Current Password</label>
+        <input type="password" id="inputCurrentPassword" class="form-input" placeholder="••••••••">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">New Password</label>
+        <input type="password" id="inputNewPassword" class="form-input" placeholder="At least 6 characters">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Confirm New Password</label>
+        <input type="password" id="inputConfirmPassword" class="form-input" placeholder="Re-enter new password">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal-sec" onclick="closeChangePasswordModal()">Cancel</button>
+        <button class="btn-modal-pri" onclick="submitChangePassword()">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MANAGE DEVICES -->
+  <div class="modal-overlay" id="manageDevicesModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Manage Devices</h3>
+      <p class="modal-sub">Devices currently authenticated for your account.</p>
+
+      <div class="device-item">
+        <div>
+          <div class="device-title" id="devBrowserName">Chrome on Windows</div>
+          <div class="device-sub" id="devSessionTime">Current Session (Active Now) • IP: 127.0.0.1</div>
+        </div>
+        <span style="background:#E6F4EA; color:#137333; font-size:11px; font-weight:700; padding:4px 8px; border-radius:10px;">Active</span>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal-sec" onclick="closeManageDevicesModal()">Close</button>
+        <button class="btn-modal-pri" onclick="logoutOtherDevices()">Log Out Other Sessions</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CLEAR ALL DATA CONFIRMATION -->
+  <div class="modal-overlay" id="clearDataModal">
+    <div class="modal-box">
+      <h3 class="modal-title" style="color: #DC2626;">Clear All Account Data?</h3>
+      <p class="modal-sub">Are you sure you want to remove your saved call history, notifications, and translation logs? This action will not delete your account or credentials.</p>
+
+      <div class="modal-actions">
+        <button class="btn-modal-sec" onclick="closeClearDataModal()">Cancel</button>
+        <button class="btn-modal-danger" onclick="confirmClearData()">Confirm Clear Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: BLOCKED CONTACTS MANAGEMENT -->
+  <div class="modal-overlay" id="blockedContactsModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Blocked Contacts</h3>
+      <p class="modal-sub">People you have blocked from calling or messaging you.</p>
+
+      <div class="blocked-list" id="blockedContactsList">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal-sec" onclick="closeBlockedContactsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET DEFAULTS CONFIRMATION -->
+  <div class="modal-overlay" id="resetConfirmModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Reset to Default?</h3>
+      <p class="modal-sub">Are you sure you want to restore all privacy & security settings to their default values?</p>
+
+      <div class="modal-actions">
+        <button class="btn-modal-sec" onclick="closeResetModal()">Cancel</button>
+        <button class="btn-modal-pri" onclick="confirmResetDefaults()">Reset Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_PRIVACY_SETTINGS = {
+      twoFactorAuth: false,
+      loginAlerts: true,
+      profileVisibility: 'contacts',
+      showOnlineStatus: true,
+      allowContactRequests: true,
+      showCallStatus: false,
+      showLastSeen: 'everyone',
+      translationHistory: true,
+      callHistory: true,
+      cameraAccess: true,
+      microphoneAccess: true,
+      notifications: true,
+      locationAccess: false
+    };
+
+    let localPrivacy = { ...DEFAULT_PRIVACY_SETTINGS };
+    let currentUserData = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Load current user data
+      if (window.SignifyUserStore) {
+        currentUserData = await window.SignifyUserStore.loadUserData();
+        const u = window.SignifyUserStore.getLoggedInUser();
+        if (u && u.name) {
+          document.getElementById('headerUserAvatarImg').title = `Logged in as ${u.name}`;
+        }
+      }
+
+      if (currentUserData && currentUserData.privacySettings) {
+        localPrivacy = { ...DEFAULT_PRIVACY_SETTINGS, ...currentUserData.privacySettings };
+      }
+
+      syncPrivacyUI(localPrivacy);
+      detectDeviceSession();
+      checkBrowserPermissions();
+
+      window.addEventListener('signify:user_data_loaded', (e) => {
+        if (e.detail) {
+          currentUserData = e.detail;
+          if (e.detail.privacySettings) {
+            localPrivacy = { ...DEFAULT_PRIVACY_SETTINGS, ...e.detail.privacySettings };
+            syncPrivacyUI(localPrivacy);
+          }
+        }
+      });
+    });
+
+    // Sync Privacy Form Controls
+    function syncPrivacyUI(s) {
+      if (!s) return;
+      setToggle('toggle2FA', s.twoFactorAuth);
+      setToggle('toggleLoginAlerts', s.loginAlerts);
+      setToggle('toggleOnlineStatus', s.showOnlineStatus);
+      setToggle('toggleContactRequests', s.allowContactRequests);
+      setToggle('toggleCallStatus', s.showCallStatus);
+      setToggle('toggleTranslationHistory', s.translationHistory);
+      setToggle('toggleCallHistory', s.callHistory);
+      setToggle('toggleCameraAccess', s.cameraAccess);
+      setToggle('toggleMicrophoneAccess', s.microphoneAccess);
+      setToggle('toggleNotifications', s.notifications);
+      setToggle('toggleLocationAccess', s.locationAccess);
+
+      setSelect('selectProfileVisibility', s.profileVisibility || 'contacts');
+      setSelect('selectShowLastSeen', s.showLastSeen || 'everyone');
+    }
+
+    function setToggle(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.checked = !!val;
+    }
+
+    function setSelect(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    }
+
+    function onPrivacyToggleChange(key, checked) {
+      localPrivacy[key] = checked;
+    }
+
+    function onPrivacySelectChange(key, val) {
+      localPrivacy[key] = val;
+    }
+
+    // Detect Device Info
+    function detectDeviceSession() {
+      const devEl = document.getElementById('devBrowserName');
+      if (devEl) {
+        const ua = navigator.userAgent;
+        let browserName = 'Browser';
+        if (ua.includes('Chrome')) browserName = 'Chrome';
+        else if (ua.includes('Firefox')) browserName = 'Firefox';
+        else if (ua.includes('Safari')) browserName = 'Safari';
+        else if (ua.includes('Edg')) browserName = 'Microsoft Edge';
+
+        let osName = 'Desktop';
+        if (navigator.platform.includes('Win')) osName = 'Windows';
+        else if (navigator.platform.includes('Mac')) osName = 'macOS';
+        else if (navigator.platform.includes('Linux')) osName = 'Linux';
+
+        devEl.textContent = `${browserName} on ${osName}`;
+      }
+    }
+
+    // Query Browser Permission APIs
+    async function checkBrowserPermissions() {
+      if (navigator.permissions && navigator.permissions.query) {
+        try {
+          const cameraPerm = await navigator.permissions.query({ name: 'camera' }).catch(() => null);
+          if (cameraPerm) {
+            setToggle('toggleCameraAccess', cameraPerm.state !== 'denied');
+          }
+          const micPerm = await navigator.permissions.query({ name: 'microphone' }).catch(() => null);
+          if (micPerm) {
+            setToggle('toggleMicrophoneAccess', micPerm.state !== 'denied');
+          }
+        } catch (e) {}
+      }
+
+      if ('Notification' in window) {
+        setToggle('toggleNotifications', Notification.permission === 'granted');
+      }
+    }
+
+    function toggleBrowserNotificationPermission(checked) {
+      localPrivacy.notifications = checked;
+      if (checked && 'Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission().then(permission => {
+          setToggle('toggleNotifications', permission === 'granted');
+          localPrivacy.notifications = (permission === 'granted');
+        });
+      }
+    }
+
+    function toggleBrowserCameraPermission(checked) {
+      localPrivacy.cameraAccess = checked;
+      if (checked && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => stream.getTracks().forEach(t => t.stop()))
+          .catch(() => {
+            setToggle('toggleCameraAccess', false);
+            localPrivacy.cameraAccess = false;
+          });
+      }
+    }
+
+    function toggleBrowserMicPermission(checked) {
+      localPrivacy.microphoneAccess = checked;
+      if (checked && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => stream.getTracks().forEach(t => t.stop()))
+          .catch(() => {
+            setToggle('toggleMicrophoneAccess', false);
+            localPrivacy.microphoneAccess = false;
+          });
+      }
+    }
+
+    // Save Action
+    async function savePrivacySettings() {
+      if (window.SignifyUserStore) {
+        await window.SignifyUserStore.updateField('privacySettings', localPrivacy);
+      }
+
+      const badge = document.getElementById('saveToastBadge');
+      if (badge) {
+        badge.classList.remove('hidden');
+        badge.style.opacity = '1';
+        setTimeout(() => {
+          badge.style.opacity = '0';
+          setTimeout(() => badge.classList.add('hidden'), 300);
+        }, 3000);
+      }
+    }
+
+    // Modal: Change Password
+    function openChangePasswordModal() {
+      document.getElementById('pwdAlertMsg').classList.add('hidden');
+      document.getElementById('inputCurrentPassword').value = '';
+      document.getElementById('inputNewPassword').value = '';
+      document.getElementById('inputConfirmPassword').value = '';
+      document.getElementById('changePasswordModal').classList.add('active');
+    }
+
+    function closeChangePasswordModal() {
+      document.getElementById('changePasswordModal').classList.remove('active');
+    }
+
+    async function submitChangePassword() {
+      const current = document.getElementById('inputCurrentPassword').value.trim();
+      const newP = document.getElementById('inputNewPassword').value.trim();
+      const confirmP = document.getElementById('inputConfirmPassword').value.trim();
+      const alertEl = document.getElementById('pwdAlertMsg');
+
+      if (!newP || newP.length < 6) {
+        alertEl.textContent = 'New password must be at least 6 characters long.';
+        alertEl.classList.remove('hidden');
+        return;
+      }
+
+      if (newP !== confirmP) {
+        alertEl.textContent = 'New passwords do not match.';
+        alertEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('signify_auth_token') || '';
+        const loggedUser = window.SignifyUserStore ? window.SignifyUserStore.getLoggedInUser() : {};
+        const res = await fetch('/api/auth/change-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          },
+          body: JSON.stringify({
+            user_id: loggedUser.id || loggedUser.email,
+            old_password: current,
+            new_password: newP
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Failed to update password');
+        }
+
+        closeChangePasswordModal();
+        const badge = document.getElementById('saveToastBadge');
+        if (badge) {
+          badge.textContent = 'Password updated successfully';
+          badge.classList.remove('hidden');
+          badge.style.opacity = '1';
+          setTimeout(() => {
+            badge.style.opacity = '0';
+            setTimeout(() => {
+              badge.classList.add('hidden');
+              badge.textContent = 'Settings saved successfully';
+            }, 300);
+          }, 3000);
+        }
+      } catch (err) {
+        alertEl.textContent = err.message || 'Error updating password';
+        alertEl.classList.remove('hidden');
+      }
+    }
+
+    // Modal: Manage Devices
+    function openManageDevicesModal() {
+      document.getElementById('manageDevicesModal').classList.add('active');
+    }
+
+    function closeManageDevicesModal() {
+      document.getElementById('manageDevicesModal').classList.remove('active');
+    }
+
+    function logoutOtherDevices() {
+      closeManageDevicesModal();
+      const badge = document.getElementById('saveToastBadge');
+      if (badge) {
+        badge.textContent = 'Other sessions logged out';
+        badge.classList.remove('hidden');
+        badge.style.opacity = '1';
+        setTimeout(() => {
+          badge.style.opacity = '0';
+          setTimeout(() => {
+            badge.classList.add('hidden');
+            badge.textContent = 'Settings saved successfully';
+          }, 300);
+        }, 3000);
+      }
+    }
+
+    // Export User Data
+    async function exportUserData() {
+      const data = currentUserData || (window.SignifyUserStore ? await window.SignifyUserStore.loadUserData() : {});
+      const u = window.SignifyUserStore ? window.SignifyUserStore.getLoggedInUser() : { id: 'usr_export' };
+
+      const exportObj = {
+        exported_at: new Date().toISOString(),
+        user_identity: u,
+        account_data: data
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `signify_privacy_export_${u.id || 'user'}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // Modal: Clear All Data
+    function openClearDataModal() {
+      document.getElementById('clearDataModal').classList.add('active');
+    }
+
+    function closeClearDataModal() {
+      document.getElementById('clearDataModal').classList.remove('active');
+    }
+
+    async function confirmClearData() {
+      closeClearDataModal();
+      if (currentUserData) {
+        currentUserData.callHistory = [];
+        currentUserData.notifications = [];
+        if (window.SignifyUserStore) {
+          await window.SignifyUserStore.saveUserData(currentUserData);
+        }
+      }
+
+      const badge = document.getElementById('saveToastBadge');
+      if (badge) {
+        badge.textContent = 'Account history & logs cleared';
+        badge.classList.remove('hidden');
+        badge.style.opacity = '1';
+        setTimeout(() => {
+          badge.style.opacity = '0';
+          setTimeout(() => {
+            badge.classList.add('hidden');
+            badge.textContent = 'Settings saved successfully';
+          }, 300);
+        }, 3000);
+      }
+    }
+
+    // Modal: Blocked Contacts
+    function openBlockedContactsModal() {
+      renderBlockedContactsList();
+      document.getElementById('blockedContactsModal').classList.add('active');
+    }
+
+    function closeBlockedContactsModal() {
+      document.getElementById('blockedContactsModal').classList.remove('active');
+    }
+
+    function renderBlockedContactsList() {
+      const container = document.getElementById('blockedContactsList');
+      if (!container) return;
+
+      const contacts = (currentUserData && currentUserData.contacts) ? currentUserData.contacts : [];
+      const blocked = contacts.filter(c => c.isBlocked === true);
+
+      if (blocked.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:#78716C; font-size:13px;">No blocked contacts found.</div>';
+        return;
+      }
+
+      container.innerHTML = blocked.map(c => `
+        <div class="blocked-user-row">
+          <div class="blocked-user-left">
+            <div class="blocked-avatar">${c.name.charAt(0)}</div>
+            <div>
+              <div style="font-weight:700; font-size:14px; color:#1C1917;">${c.name}</div>
+              <div style="font-size:11px; color:#78716C;">${c.phone}</div>
+            </div>
+          </div>
+          <button class="btn-unblock" onclick="unblockContact('${c.id}')">Unblock</button>
+        </div>
+      `).join('');
+    }
+
+    async function unblockContact(contactId) {
+      if (!currentUserData || !currentUserData.contacts) return;
+      const target = currentUserData.contacts.find(c => c.id === contactId);
+      if (target) {
+        target.isBlocked = false;
+        if (window.SignifyUserStore) {
+          await window.SignifyUserStore.saveUserData(currentUserData);
+        }
+        renderBlockedContactsList();
+
+        const badge = document.getElementById('saveToastBadge');
+        if (badge) {
+          badge.textContent = `Unblocked ${target.name}`;
+          badge.classList.remove('hidden');
+          badge.style.opacity = '1';
+          setTimeout(() => {
+            badge.style.opacity = '0';
+            setTimeout(() => {
+              badge.classList.add('hidden');
+              badge.textContent = 'Settings saved successfully';
+            }, 300);
+          }, 3000);
+        }
+      }
+    }
+
+    // Modal: Reset Defaults
+    function openResetModal() {
+      document.getElementById('resetConfirmModal').classList.add('active');
+    }
+
+    function closeResetModal() {
+      document.getElementById('resetConfirmModal').classList.remove('active');
+    }
+
+    async function confirmResetDefaults() {
+      closeResetModal();
+      localPrivacy = { ...DEFAULT_PRIVACY_SETTINGS };
+      syncPrivacyUI(localPrivacy);
+
+      if (window.SignifyUserStore) {
+        await window.SignifyUserStore.updateField('privacySettings', localPrivacy);
+      }
+
+      const badge = document.getElementById('saveToastBadge');
+      if (badge) {
+        badge.textContent = 'Restored default privacy settings';
+        badge.classList.remove('hidden');
+        badge.style.opacity = '1';
+        setTimeout(() => {
+          badge.style.opacity = '0';
+          setTimeout(() => {
+            badge.classList.add('hidden');
+            badge.textContent = 'Settings saved successfully';
+          }, 300);
+        }, 3000);
+      }
+    }
+  </script>
+
+</body>
+</html>

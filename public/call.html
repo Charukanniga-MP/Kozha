@@ -23,6 +23,7 @@
   <script defer src="/cwa/allcsa.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script defer src="/sigml-validator.js"></script>
   <script src="/user-store.js"></script>
+  <script defer src="/sign-avatar-engine.js"></script>
 
   <style>
     :root {
@@ -38,6 +39,46 @@
     }
 
     * { box-sizing: border-box; }
+
+    .CWASAAvatar canvas {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border-radius: 20px;
+    }
+
+    .box-status-overlay {
+      position: absolute;
+      bottom: 64px;
+      left: 20px;
+      background: rgba(28, 25, 23, 0.88);
+      backdrop-filter: blur(10px);
+      color: #FFFFFF;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+      transition: all 0.25s ease;
+    }
+    .box-status-overlay.signing {
+      background: rgba(192, 74, 34, 0.95);
+      color: #FFFFFF;
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+    .box-status-overlay.listening {
+      background: rgba(46, 204, 113, 0.9);
+      color: #FFFFFF;
+    }
+    .box-status-overlay.error {
+      background: rgba(231, 76, 60, 0.92);
+      color: #FFFFFF;
+    }
 
     body {
       background-color: var(--bg-color);
@@ -204,12 +245,17 @@
       border-radius: 50%;
     }
 
-    /* Video Workspace Grid Layout */
+    /* Video Workspace Grid Layout (Equal 1fr 1fr 280px side-by-side) */
     .video-call-grid {
       display: grid;
-      grid-template-columns: 1.25fr 0.85fr 260px;
+      grid-template-columns: 1fr 1fr 280px;
       gap: 20px;
       margin-bottom: 32px;
+    }
+    @media (max-width: 992px) {
+      .video-call-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Box 1: Local Video Box (Luna Avatar) */
@@ -793,6 +839,52 @@
       cursor: pointer;
     }
 
+    /* Live Call Chat Predictor Pills Bar */
+    .predictor-pills-bar {
+      background: #FFF5F2;
+      border: 1px solid #FDBA74;
+      border-radius: 12px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.25s ease;
+    }
+    .predictor-header-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #C04A22;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .predictor-pills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .predictor-pill-btn {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      color: #1C1917;
+      padding: 5px 11px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .predictor-pill-btn:hover {
+      background: #C04A22;
+      color: #FFFFFF;
+      border-color: #C04A22;
+      transform: translateY(-1px);
+    }
+
     /* Ringing Screen Overlays */
     .call-overlay {
       position: fixed;
@@ -1214,8 +1306,20 @@
           <p class="call-sub">Connect with anyone using real-time sign language translation.</p>
         </div>
 
-        <div class="badge-connected">
-          <span class="dot-connected"></span> Connected
+        <div style="display:flex; align-items:center; gap:16px;">
+          <!-- Sign Language Selector -->
+          <div style="display:flex; align-items:center; gap:8px; background:#FAF8F5; border:1px solid #E7E5E4; padding:6px 14px; border-radius:20px;">
+            <span style="font-size:13px; font-weight:600; color:#57534E;">Sign Language:</span>
+            <select id="callSignLangSelect" onchange="changeCallSignLanguage(this.value)" style="background:transparent; border:none; font-weight:700; font-size:14px; color:#1C1917; outline:none; cursor:pointer;">
+              <option value="isl">🇮🇳 ISL (Indian Sign Language)</option>
+              <option value="bsl">🇬🇧 BSL (British Sign Language)</option>
+              <option value="asl">🇺🇸 ASL (American Sign Language)</option>
+            </select>
+          </div>
+
+          <div class="badge-connected">
+            <span class="dot-connected"></span> Connected
+          </div>
         </div>
       </div>
 
@@ -1239,10 +1343,13 @@
             <!-- Real Webcam Camera Video Stream for Local Party -->
             <video id="webcamVideoLocal" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:8; border-radius:20px;" class="hidden"></video>
 
-            <!-- CWASA WebGL Mount -->
-            <div class="CWASAAvatar SToCA" id="lunaAvatarMount" style="width:100%!important; height:100%!important; position:absolute; inset:0; z-index:2; opacity:0.1;"></div>
+            <!-- Real-Time Status Badge Overlay -->
+            <div id="box1StatusBadge" class="box-status-overlay listening">🎙 Listening</div>
+
+            <!-- CWASA WebGL Mount for Avatar 0 (Luna) -->
+            <div class="CWASAAvatar av0 SToCA" id="lunaAvatarMount" style="width:100%!important; height:100%!important; position:absolute; inset:0; z-index:4;"></div>
             
-            <!-- Full Body 3D Luna Avatar Character (Top to Bottom) -->
+            <!-- Fallback/Preloader 3D Luna Avatar Character -->
             <div class="avatar-3d-wrapper" id="lunaWrapper">
               <img src="/images/luna_3d.jpg" alt="Luna 3D Avatar" class="avatar-3d-img" id="lunaImg" />
               <div class="signing-hand-overlay" id="lunaSignOverlay">
@@ -1286,10 +1393,13 @@
             <!-- Remote Webcam Feed Display -->
             <img id="remoteWebcamFrameImg" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:8; border-radius:20px;" class="hidden" alt="Remote Camera Feed" />
 
-            <!-- CWASA WebGL Mount -->
-            <div class="CWASAAvatar SToCA" id="annaAvatarMount" style="width:100%!important; height:100%!important; position:absolute; inset:0; z-index:2; opacity:0.1;"></div>
+            <!-- Real-Time Status Badge Overlay -->
+            <div id="box2StatusBadge" class="box-status-overlay">🤟 Ready</div>
 
-            <!-- Full Body 3D Anna Avatar Character (Top to Bottom) -->
+            <!-- CWASA WebGL Mount for Avatar 1 (Anna) -->
+            <div class="CWASAAvatar av1 SToCA" id="annaAvatarMount" style="width:100%!important; height:100%!important; position:absolute; inset:0; z-index:4;"></div>
+
+            <!-- Fallback/Preloader 3D Anna Avatar Character -->
             <div class="avatar-3d-wrapper" id="annaWrapper">
               <img src="/images/anna_3d.jpg" alt="Anna 3D Avatar" class="avatar-3d-img" id="annaImg" />
               <div class="signing-hand-overlay" id="annaSignOverlay">
@@ -1315,32 +1425,51 @@
           </div>
         </div>
 
-        <!-- BOX 3: PARTICIPANTS (2) PANEL -->
+        <!-- BOX 3: PARTICIPANTS PANEL -->
         <div class="participants-panel">
-          <h3 class="participants-title">Participants (2)</h3>
-          
-          <div class="participant-list">
-            <div class="participant-item">
-              <div class="part-info">
-                <div class="part-avatar" id="part1Initial">C</div>
-                <div>
-                  <div class="part-name" id="part1Name">Charu</div>
-                  <div class="part-status">Online</div>
-                </div>
+          <div>
+            <h3 class="participants-title" id="participantCountTitle">Participants (2)</h3>
+            
+            <div class="participant-list" id="participantListContainer">
+              <!-- Populated dynamically per active call session -->
+            </div>
+          </div>
+
+          <!-- Type Input Row inside Participants Panel -->
+          <div class="participant-input-section" style="margin-top: auto; padding-top: 18px;">
+            
+            <!-- AI Chat Predictor Pills Bar -->
+            <div id="liveCallPredictorBar" class="predictor-pills-bar hidden">
+              <div class="predictor-header-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>AI Suggested Responses:</span>
               </div>
-              <div class="part-mic-icon">🎤</div>
+              <div id="predictorPillsContainer" class="predictor-pills-list"></div>
             </div>
 
-            <div class="participant-item">
-              <div class="part-info">
-                <div class="part-avatar" id="part2Initial">K</div>
-                <div>
-                  <div class="part-name" id="part2Name">Keerthi</div>
-                  <div class="part-status">Online</div>
-                </div>
-              </div>
-              <div class="part-mic-icon">🎤</div>
+            <div style="font-size: 12px; font-weight: 700; color: #57534E; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>Type Text to Translate / Sign</span>
             </div>
+            <form onsubmit="handleParticipantsInputSubmit(event)" style="display: flex; gap: 8px;">
+              <input 
+                type="text" 
+                id="participantTextInput" 
+                placeholder="Type a message or sign text..." 
+                style="flex: 1; padding: 10px 14px; border: 1px solid #D6D3D1; border-radius: 12px; font-size: 13.5px; background: #FFFFFF; color: #1C1917; outline: none; transition: border-color 0.2s;"
+                onfocus="this.style.borderColor='#C04A22'"
+                onblur="this.style.borderColor='#D6D3D1'"
+              />
+              <button 
+                type="submit" 
+                style="background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(192, 74, 34, 0.3); transition: all 0.2s;"
+                onmouseover="this.style.background='var(--accent-hover)'"
+                onmouseout="this.style.background='var(--accent)'"
+              >
+                <span>Send</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </form>
           </div>
         </div>
 
@@ -1427,6 +1556,15 @@
           <span class="chat-bubble-sender">System</span>
           <div class="chat-bubble">Call connected. You can now chat in real time with end-to-end translation.</div>
         </div>
+      </div>
+
+      <!-- AI Chat Predictor Bar for Drawer -->
+      <div id="liveChatDrawerPredictorBar" class="predictor-pills-bar hidden" style="margin: 8px 16px 0 16px;">
+        <div class="predictor-header-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span>AI Suggestions:</span>
+        </div>
+        <div id="drawerPredictorPillsContainer" class="predictor-pills-list"></div>
       </div>
 
       <form class="chat-input-row" onsubmit="sendChatMessage(event)">
@@ -1902,12 +2040,60 @@
     let ringingInterval = null;
 
     let cwasaReady = false;
-    const glossToSign = new Map();
-    const letterToSign = new Map();
 
     window.addEventListener('DOMContentLoaded', async () => {
       await loadAccountData();
-      initCwasaEngine();
+
+      const prefLang = (currentUser.preferences && currentUser.preferences.signLanguage) || 'isl';
+      const langSel = document.getElementById('callSignLangSelect');
+      if (langSel) langSel.value = prefLang;
+
+      if (window.SignAvatarEngine) {
+        window.SignAvatarEngine.init(prefLang);
+
+        window.SignAvatarEngine.addStateListener((avIndex, state, info) => {
+          const badge = document.getElementById(avIndex === 0 ? 'box1StatusBadge' : 'box2StatusBadge');
+          const caption = document.getElementById(avIndex === 0 ? 'box1CaptionText' : 'box2CaptionText');
+          const wrapper = document.getElementById(avIndex === 0 ? 'lunaWrapper' : 'annaWrapper');
+
+          if (badge) {
+            badge.className = 'box-status-overlay';
+            if (state === 'IDLE') {
+              badge.textContent = avIndex === 0 ? '🎙 Listening' : '🤟 Ready';
+              badge.classList.add('listening');
+            } else if (state === 'PROCESSING') {
+              badge.textContent = '⚙ Processing...';
+              badge.classList.add('signing');
+            } else if (state === 'SIGNING') {
+              const langTag = (info.lang || (window.SignAvatarEngine.langManager ? window.SignAvatarEngine.langManager.currentLang : 'ISL')).toUpperCase();
+              badge.textContent = `🤟 Signing in ${langTag}`;
+              badge.classList.add('signing');
+            } else if (state === 'ERROR') {
+              badge.textContent = '⚠️ Sign Unavailable';
+              badge.classList.add('error');
+            }
+          }
+
+          if (caption) {
+            if (state === 'SIGNING') {
+              caption.textContent = `"${info.text}"`;
+            } else if (state === 'ERROR') {
+              caption.textContent = info.message || 'Sign animation unavailable for this phrase.';
+            } else if (state === 'IDLE' && (!caption.textContent || caption.textContent.startsWith('"'))) {
+              caption.textContent = avIndex === 0 ? 'Listening... Speak to translate' : 'Waiting for speech...';
+            }
+          }
+
+          if (wrapper) {
+            if (state === 'SIGNING') {
+              wrapper.classList.add('signing-active');
+            } else {
+              wrapper.classList.remove('signing-active');
+            }
+          }
+        });
+      }
+
       initSpeechRecognition();
       listenCrossTabEvents();
     });
@@ -1927,6 +2113,73 @@
       window.open('/call.html', '_blank');
     }
 
+    // UNIFIED CALL VIEW UI STATE CONTROLLER
+    function updateCallViewUI() {
+      const setupView = document.getElementById('setupView');
+      const outgoingScreen = document.getElementById('outgoingCallScreen');
+      const incomingScreen = document.getElementById('incomingCallScreen');
+      const activeScreen = document.getElementById('activeCallScreen');
+
+      if (setupView) setupView.classList.add('hidden');
+      if (outgoingScreen) outgoingScreen.classList.add('hidden');
+      if (incomingScreen) incomingScreen.classList.add('hidden');
+      if (activeScreen) activeScreen.classList.add('hidden');
+
+      if (callState === 'idle') {
+        if (setupView) setupView.classList.remove('hidden');
+      } else if (callState === 'outgoing_ringing') {
+        if (outgoingScreen) outgoingScreen.classList.remove('hidden');
+      } else if (callState === 'incoming_ringing') {
+        if (incomingScreen) incomingScreen.classList.remove('hidden');
+      } else if (callState === 'active') {
+        if (activeScreen) activeScreen.classList.remove('hidden');
+      }
+    }
+
+    // DYNAMIC PARTICIPANTS PANEL RENDERER
+    function renderParticipantsPanel() {
+      const container = document.getElementById('participantListContainer');
+      const countTitle = document.getElementById('participantCountTitle');
+      if (!container) return;
+
+      const participants = [
+        {
+          name: currentUser ? currentUser.name : 'Local User',
+          phone: currentUser ? currentUser.phone : '',
+          isLocal: true
+        }
+      ];
+
+      if (activeCallRemote) {
+        participants.push({
+          name: activeCallRemote.name || 'Remote Party',
+          phone: activeCallRemote.phone || '',
+          isLocal: false
+        });
+      }
+
+      if (countTitle) {
+        countTitle.textContent = `Participants (${participants.length})`;
+      }
+
+      container.innerHTML = '';
+      participants.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'participant-item';
+        item.innerHTML = `
+          <div class="part-info">
+            <div class="part-avatar">${escapeHtml(getInitials(p.name))}</div>
+            <div>
+              <div class="part-name">${escapeHtml(p.name)} ${p.isLocal ? '(You)' : ''}</div>
+              <div class="part-status">● Online</div>
+            </div>
+          </div>
+          <div class="part-mic-icon">${(p.isLocal && isMuted) ? '🔇' : '🎤'}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
     // CALL SIGNALING
     function startOutgoingCall(contactId) {
       const contact = contacts.find(c => c.id === contactId);
@@ -1941,9 +2194,7 @@
       document.getElementById('outRingContactPhone').textContent = contact.phone;
       document.getElementById('outRingTargetLabel').textContent = contact.name;
 
-      document.getElementById('setupView').classList.add('hidden');
-      document.getElementById('outgoingCallScreen').classList.remove('hidden');
-
+      updateCallViewUI();
       startRingingAudio();
 
       callChannel.postMessage({
@@ -1964,10 +2215,7 @@
       document.getElementById('inRingCallerPhone').textContent = caller.phone;
       document.getElementById('inRingCallingText').textContent = `${caller.name} is calling you...`;
 
-      document.getElementById('setupView').classList.add('hidden');
-      document.getElementById('outgoingCallScreen').classList.add('hidden');
-      document.getElementById('incomingCallScreen').classList.remove('hidden');
-
+      updateCallViewUI();
       startRingingAudio();
     }
 
@@ -2002,27 +2250,212 @@
       });
     }
 
+    // LIVE CALL CHAT PREDICTOR ENGINE
+    const LiveCallChatPredictor = {
+      activeSession: false,
+      currentRequestId: 0,
+      typingTimer: null,
+      latestSpeechContext: null,
+      recentConversation: [],
+
+      activateSession(remotePartyName, remotePartyId) {
+        this.activeSession = true;
+        this.currentRequestId = 0;
+        this.latestSpeechContext = null;
+        this.recentConversation = [];
+
+        if (currentUser && currentUser.preferences && currentUser.preferences.smartSuggestions === false) {
+          this.hideUI();
+          return;
+        }
+
+        this.bindInputListeners();
+        this.fetchPredictions('', remotePartyName || 'Remote Party');
+      },
+
+      deactivateSession() {
+        this.activeSession = false;
+        this.currentRequestId++;
+        if (this.typingTimer) clearTimeout(this.typingTimer);
+        this.typingTimer = null;
+        this.latestSpeechContext = null;
+        this.recentConversation = [];
+        this.hideUI();
+      },
+
+      bindInputListeners() {
+        const input1 = document.getElementById('participantTextInput');
+        const input2 = document.getElementById('chatMessageInput');
+
+        if (input1 && !input1._hasPredictorListener) {
+          input1._hasPredictorListener = true;
+          input1.addEventListener('input', (e) => {
+            if (!this.activeSession) return;
+            this.onUserTyping(e.target.value);
+          });
+        }
+
+        if (input2 && !input2._hasPredictorListener) {
+          input2._hasPredictorListener = true;
+          input2.addEventListener('input', (e) => {
+            if (!this.activeSession) return;
+            this.onUserTyping(e.target.value);
+          });
+        }
+      },
+
+      onIncomingSpeechOrMessage(speakerName, speakerId, text) {
+        if (!this.activeSession || !text || !text.trim()) return;
+
+        if (currentUser && currentUser.preferences && currentUser.preferences.smartSuggestions === false) {
+          return;
+        }
+
+        this.latestSpeechContext = {
+          speakerName: speakerName || 'Remote Party',
+          speakerId: speakerId || '',
+          text: text.trim(),
+          timestamp: Date.now()
+        };
+
+        this.recentConversation.push({ sender: speakerName, text: text });
+        if (this.recentConversation.length > 5) this.recentConversation.shift();
+
+        const activeInput = this.getActiveInputValue();
+        this.fetchPredictions(activeInput, speakerName);
+      },
+
+      onUserTyping(value) {
+        if (!this.activeSession) return;
+        if (this.typingTimer) clearTimeout(this.typingTimer);
+
+        this.typingTimer = setTimeout(() => {
+          const spkName = this.latestSpeechContext ? this.latestSpeechContext.speakerName : 'Remote Party';
+          this.fetchPredictions(value, spkName);
+        }, 250);
+      },
+
+      getActiveInputValue() {
+        const input1 = document.getElementById('participantTextInput');
+        const input2 = document.getElementById('chatMessageInput');
+        if (input1 && input1.value.trim()) return input1.value.trim();
+        if (input2 && input2.value.trim()) return input2.value.trim();
+        return '';
+      },
+
+      async fetchPredictions(currentInput, speakerName) {
+        if (!this.activeSession) {
+          this.hideUI();
+          return;
+        }
+
+        const requestId = ++this.currentRequestId;
+
+        try {
+          const response = await fetch('/api/ai/predict-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              call_id: 'live_call',
+              speaker_id: this.latestSpeechContext ? this.latestSpeechContext.speakerId : '',
+              speaker_name: speakerName || 'Remote Party',
+              latest_speech: this.latestSpeechContext ? this.latestSpeechContext.text : '',
+              current_input: currentInput || '',
+              conversation_context: this.recentConversation,
+              language: (currentUser && currentUser.preferences && currentUser.preferences.language) || 'en',
+              sign_language: (currentUser && currentUser.preferences && currentUser.preferences.signLanguage) || 'isl'
+            })
+          });
+
+          if (!response.ok) throw new Error('Prediction failed');
+          const data = await response.json();
+
+          if (requestId !== this.currentRequestId || !this.activeSession) return;
+
+          if (data.predictions && data.predictions.length > 0) {
+            this.renderPills(data.predictions);
+          } else {
+            this.hideUI();
+          }
+        } catch (err) {
+          if (requestId === this.currentRequestId) {
+            this.hideUI();
+          }
+        }
+      },
+
+      renderPills(predictions) {
+        if (!this.activeSession) return;
+
+        const bar1 = document.getElementById('liveCallPredictorBar');
+        const container1 = document.getElementById('predictorPillsContainer');
+
+        const bar2 = document.getElementById('liveChatDrawerPredictorBar');
+        const container2 = document.getElementById('drawerPredictorPillsContainer');
+
+        const populate = (container) => {
+          if (!container) return;
+          container.innerHTML = '';
+          predictions.forEach(text => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'predictor-pill-btn';
+            btn.textContent = text;
+            btn.onclick = () => this.onPillClicked(text);
+            container.appendChild(btn);
+          });
+        };
+
+        populate(container1);
+        populate(container2);
+
+        if (bar1) bar1.classList.remove('hidden');
+        if (bar2) bar2.classList.remove('hidden');
+      },
+
+      hideUI() {
+        const bar1 = document.getElementById('liveCallPredictorBar');
+        const bar2 = document.getElementById('liveChatDrawerPredictorBar');
+        if (bar1) bar1.classList.add('hidden');
+        if (bar2) bar2.classList.add('hidden');
+      },
+
+      onPillClicked(text) {
+        const input1 = document.getElementById('participantTextInput');
+        const input2 = document.getElementById('chatMessageInput');
+
+        if (input1) {
+          input1.value = text;
+          input1.focus();
+        }
+        if (input2) {
+          input2.value = text;
+          input2.focus();
+        }
+      }
+    };
+
     function connectActiveCallSession() {
       stopRingingAudio();
       callState = 'active';
 
       // Box 1 = Luna (Local User), Box 2 = Anna (Remote User)
-      document.getElementById('box1NameLabel').textContent = currentUser.name;
-      document.getElementById('box2NameLabel').textContent = activeCallRemote ? activeCallRemote.name : 'Remote Party';
+      const localName = currentUser ? currentUser.name : 'Local User';
+      const remoteName = activeCallRemote ? activeCallRemote.name : 'Remote Party';
 
-      document.getElementById('part1Initial').textContent = getInitials(currentUser.name);
-      document.getElementById('part1Name').textContent = currentUser.name;
+      document.getElementById('box1NameLabel').textContent = localName;
+      document.getElementById('box2NameLabel').textContent = remoteName;
 
-      document.getElementById('part2Initial').textContent = activeCallRemote ? getInitials(activeCallRemote.name) : 'R';
-      document.getElementById('part2Name').textContent = activeCallRemote ? activeCallRemote.name : 'Remote Party';
-
-      document.getElementById('setupView').classList.add('hidden');
-      document.getElementById('outgoingCallScreen').classList.add('hidden');
-      document.getElementById('incomingCallScreen').classList.add('hidden');
-      document.getElementById('activeCallScreen').classList.remove('hidden');
+      renderParticipantsPanel();
+      updateCallViewUI();
 
       startCallTimer();
-      ensureAvatarsMounted();
+      if (window.SignAvatarEngine) {
+        window.SignAvatarEngine.initCwasa();
+      }
+
+      // Activate Live Call Chat Predictor ONLY when connected
+      LiveCallChatPredictor.activateSession(remoteName, activeCallRemote ? activeCallRemote.id : '');
     }
 
     function endCallSession() {
@@ -2033,10 +2466,10 @@
       const prevRemote = activeCallRemote;
       activeCallRemote = null;
 
-      document.getElementById('outgoingCallScreen').classList.add('hidden');
-      document.getElementById('incomingCallScreen').classList.add('hidden');
-      document.getElementById('activeCallScreen').classList.add('hidden');
-      document.getElementById('setupView').classList.remove('hidden');
+      // Deactivate & clean up Live Call Chat Predictor immediately
+      LiveCallChatPredictor.deactivateSession();
+
+      updateCallViewUI();
 
       callChannel.postMessage({
         type: 'CALL_ENDED',
@@ -2124,6 +2557,8 @@
         if (label) label.textContent = 'Mute';
         if (caption) caption.textContent = 'Listening... Speak to translate';
       }
+
+      renderParticipantsPanel();
     }
 
     let localVideoStream = null;
@@ -2349,121 +2784,80 @@
       input.value = '';
     }
 
-    // LOCAL USER SPEECH: Triggers Luna Avatar in Box 1 & updates Box 1 caption
+    function handleParticipantsInputSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('participantTextInput');
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      handleLocalSpokenText(text);
+      if (typeof appendChatBubble === 'function') {
+        appendChatBubble(currentUser ? currentUser.name : 'You', text, true);
+      }
+      input.value = '';
+    }
+
+    // LOCAL USER SPEECH: Triggers Luna Avatar in Box 1 (avIndex 0) & updates Box 1 caption
     function handleLocalSpokenText(text) {
-      document.getElementById('box1CaptionText').textContent = text;
-      
-      const lunaWrap = document.getElementById('lunaWrapper');
-      if (lunaWrap) {
-        lunaWrap.classList.add('signing-active');
-        setTimeout(() => { lunaWrap.classList.remove('signing-active'); }, 3200);
+      if (!text || !text.trim()) return;
+
+      const caption1 = document.getElementById('box1CaptionText');
+      if (caption1) caption1.textContent = `"${text}"`;
+
+      if (window.SignAvatarEngine) {
+        window.SignAvatarEngine.speak(0, text);
       }
 
-      playTextOnAvatar('luna', text);
+      if (window.LiveCallChatPredictor) {
+        LiveCallChatPredictor.onIncomingSpeechOrMessage(currentUser ? currentUser.name : 'You', currentUser ? currentUser.id : '', text);
+      }
 
       callChannel.postMessage({
         type: 'LIVE_SPEECH',
         senderId: tabId,
         text: text,
-        speakerName: currentUser.name
+        speakerName: currentUser ? currentUser.name : 'You'
       });
     }
 
-    // REMOTE USER SPEECH: Triggers Anna Avatar in Box 2 & updates Box 2 caption
+    // REMOTE USER SPEECH: Triggers Anna Avatar in Box 2 (avIndex 1) & updates Box 2 caption
     function handleRemoteSpokenText(speakerName, text) {
-      document.getElementById('box2CaptionText').textContent = text;
+      if (!text || !text.trim()) return;
 
-      const annaWrap = document.getElementById('annaWrapper');
-      if (annaWrap) {
-        annaWrap.classList.add('signing-active');
-        setTimeout(() => { annaWrap.classList.remove('signing-active'); }, 3200);
+      const caption2 = document.getElementById('box2CaptionText');
+      if (caption2) caption2.textContent = `"${text}"`;
+
+      if (window.SignAvatarEngine) {
+        window.SignAvatarEngine.speak(1, text);
       }
 
-      playTextOnAvatar('anna', text);
+      if (window.LiveCallChatPredictor) {
+        LiveCallChatPredictor.onIncomingSpeechOrMessage(speakerName || 'Remote Party', '', text);
+      }
     }
 
-    function playTextOnAvatar(avatarId, text) {
-      if (!window.CWASA || !cwasaReady) return;
-      try {
-        const tokens = text.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(Boolean);
-        const sigml = buildSigmlFromTokens(tokens);
-        if (sigml) {
-          CWASA.playSiGMLText(sigml, 0);
-        }
-      } catch (e){}
-    }
+    // DYNAMIC SIGN LANGUAGE SWITCHER
+    async function changeCallSignLanguage(langCode) {
+      const selectElem = document.getElementById('callSignLangSelect');
+      if (selectElem) selectElem.value = langCode;
 
-    function buildSigmlFromTokens(tokens) {
-      const blocks = [];
-      for (const t of tokens) {
-        if (glossToSign.has(t)) {
-          blocks.push(glossToSign.get(t));
-        } else {
-          for (const char of t.toUpperCase()) {
-            if (letterToSign.has(char)) {
-              blocks.push(letterToSign.get(char));
-            }
-          }
+      if (window.SignAvatarEngine) {
+        await window.SignAvatarEngine.langManager.setLanguage(langCode);
+      }
+
+      if (currentUser && currentUser.preferences) {
+        currentUser.preferences.signLanguage = langCode;
+        if (window.SignifyUserStore) {
+          SignifyUserStore.updateField('preferences', currentUser.preferences);
         }
       }
-      if (!blocks.length) return null;
-      return `<?xml version="1.0" encoding="utf-8"?>\n<sigml>\n${blocks.join('\n')}\n</sigml>`;
-    }
 
-    function initCwasaEngine() {
-      fetchSigmlDataset('/data/hamnosys_bsl_version1.sigml');
-      fetchSigmlDataset('/data/American_SL_ASL.sigml');
-      fetchSigmlDataset('/data/Indian_SL.sigml');
-      fetchAlphabetDataset('/data/bsl_alphabet_sigml.sigml');
-      fetchAlphabetDataset('/data/asl_alphabet_sigml.sigml');
-    }
-
-    function ensureAvatarsMounted() {
-      if (cwasaReady || !window.CWASA) return;
-      try {
-        CWASA.init({
-          useClientConfig: false,
-          useCwaConfig: true,
-          avSettings: [
-            { width: 440, height: 320, avList: 'avsfull', initAv: 'luna', ambIdle: true, allowFrameSteps: false, allowSiGMLText: false },
-            { width: 340, height: 320, avList: 'avsfull', initAv: 'anna', ambIdle: true, allowFrameSteps: false, allowSiGMLText: false }
-          ]
-        });
-
-        if (CWASA.ready && typeof CWASA.ready.then === 'function') {
-          CWASA.ready.then(() => { cwasaReady = true; });
-        } else {
-          setTimeout(() => { cwasaReady = true; }, 400);
-        }
-      } catch(e){}
-    }
-
-    async function fetchSigmlDataset(url) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const xml = await res.text();
-        const doc = new DOMParser().parseFromString(xml, 'application/xml');
-        doc.querySelectorAll('hns_sign').forEach(s => {
-          const gloss = (s.getAttribute('gloss') || '').trim().toLowerCase();
-          if (gloss) glossToSign.set(gloss, s.outerHTML);
-        });
-      } catch(e){}
-    }
-
-    async function fetchAlphabetDataset(url) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const xml = await res.text();
-        const doc = new DOMParser().parseFromString(xml, 'application/xml');
-        doc.querySelectorAll('hns_sign').forEach(s => {
-          const gloss = (s.getAttribute('gloss') || '').trim().toUpperCase();
-          if (gloss.length === 1 && gloss >= 'A' && gloss <= 'Z') {
-            letterToSign.set(gloss, s.outerHTML);
-          }
-        });
-      } catch(e){}
+      callChannel.postMessage({
+        type: 'SIGN_LANG_CHANGED',
+        senderId: tabId,
+        langCode: langCode
+      });
     }
 
     // SCREEN SHARING LOGIC
@@ -2701,6 +3095,16 @@
             }
             break;
 
+          case 'SIGN_LANG_CHANGED':
+            if (data.langCode) {
+              const sel = document.getElementById('callSignLangSelect');
+              if (sel) sel.value = data.langCode;
+              if (window.SignAvatarEngine) {
+                window.SignAvatarEngine.langManager.setLanguage(data.langCode);
+              }
+            }
+            break;
+
           case 'SCREEN_SHARE_STARTED':
             if (callState === 'active') {
               document.getElementById('remoteSharerNameTag').textContent = data.sharerName || 'Remote Party';
@@ -2745,6 +3149,9 @@
           case 'CHAT_MESSAGE':
             if (callState === 'active') {
               appendChatBubble(data.senderName, data.message, false);
+              if (window.LiveCallChatPredictor) {
+                LiveCallChatPredictor.onIncomingSpeechOrMessage(data.senderName || 'Remote Party', data.senderId || '', data.message || '');
+              }
             }
             break;
 

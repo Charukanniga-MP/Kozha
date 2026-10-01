@@ -12,6 +12,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <script src="/user-store.js"></script>
 
   <style>
@@ -198,57 +202,59 @@
     }
 
     .notif-item-card {
-      background: #FAF8F5;
-      border: 1px solid #F5F5F4;
-      border-radius: 16px;
-      padding: 14px 18px;
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 20px;
+      padding: 18px 22px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
     }
+
     .notif-item-card:hover {
-      background: #FFFFFF;
-      border-color: #E7E5E4;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+      border-color: #D6D3D1;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
     }
+
     .notif-item-card.selected {
-      background: #FFF5F2;
       border-color: var(--accent);
-      box-shadow: 0 4px 16px rgba(192, 74, 34, 0.12);
+      background: var(--accent-soft);
+      box-shadow: 0 6px 20px rgba(192, 74, 34, 0.08);
     }
 
     .notif-left-info {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
     }
 
-    /* Icon Avatars */
     .icon-avatar-wrap {
       position: relative;
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       flex-shrink: 0;
     }
     .icon-avatar-img {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       object-fit: cover;
     }
     .icon-circle-badge {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
+      background: var(--accent);
+      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-size: 18px;
+      font-size: 20px;
     }
 
     .badge-icon-overlay {
@@ -271,32 +277,34 @@
       font-weight: 700;
       font-size: 15px;
       color: #1C1917;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
+
     .notif-sub-text {
       font-size: 13px;
       color: #78716C;
+      line-height: 1.35;
     }
 
     .notif-right-meta {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-size: 12px;
       color: #78716C;
-      white-space: nowrap;
+      flex-shrink: 0;
     }
+
     .unread-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       background: var(--accent);
-      display: inline-block;
     }
 
-    /* Right Column: Notification Detail Panel */
+    /* Right Column: Notification Details Panel */
     .notif-detail-panel {
-      background: linear-gradient(135deg, #FFF9F5 0%, #F5ECE4 100%);
+      background: #FAF8F5;
       border: 1px solid #F0E6DF;
       border-radius: 24px;
       padding: 24px;
@@ -429,6 +437,27 @@
     .btn-act-filled:hover {
       background: var(--accent-hover);
       transform: translateY(-1px);
+    }
+
+    .btn-act-outline {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      color: #1C1917;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-act-outline:hover {
+      background: #FFF5F2;
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     /* Rich Messaging Modal & Attachment System */
@@ -615,6 +644,9 @@
       font-size: 15px;
       margin-bottom: 12px;
       color: #1C1917;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .poll-option-btn {
       width: 100%;
@@ -645,7 +677,7 @@
       pointer-events: none;
     }
 
-    /* Live Location Card Component */
+    /* Location Card Component */
     .location-card {
       background: #FFFFFF;
       border: 1px solid #E7E5E4;
@@ -656,16 +688,17 @@
       box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
     .location-map-graphic {
-      height: 110px;
-      background: linear-gradient(135deg, #3B82F6, #10B981);
+      height: 120px;
+      background: #E5E3DF;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
-      font-size: 32px;
       margin-bottom: 10px;
       position: relative;
+      overflow: hidden;
+      border: 1px solid #D6D3D1;
     }
 
     /* Attachment & Input Controls Bar */
@@ -693,7 +726,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
       cursor: pointer;
       transition: all 0.2s;
       color: #57534E;
@@ -732,14 +764,21 @@
       font-weight: 700;
       font-size: 14px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
       height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .btn-send-msg:hover {
+    .btn-send-msg:hover:not(:disabled) {
       background: var(--accent-hover);
     }
+    .btn-send-msg:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
-    /* Popup Menus for Attachments & Emojis */
+    /* Popup Grid Menu for Professional Attachments */
     .attachment-popup-grid {
       position: absolute;
       bottom: 80px;
@@ -761,7 +800,7 @@
       flex-direction: column;
       align-items: center;
       gap: 6px;
-      padding: 10px;
+      padding: 12px 10px;
       border-radius: 14px;
       background: #FAF8F5;
       border: 1px solid #E7E5E4;
@@ -773,83 +812,131 @@
       border-color: var(--accent);
       transform: translateY(-2px);
     }
-    .attach-item-icon {
-      font-size: 22px;
+    .attach-item-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
     }
     .attach-item-label {
       font-size: 11px;
       font-weight: 700;
-      color: #57534E;
+      color: #1C1917;
     }
 
-    .emoji-picker-box {
-      position: absolute;
-      bottom: 80px;
-      left: 70px;
-      background: #FFFFFF;
-      border: 1px solid #E7E5E4;
-      border-radius: 20px;
-      padding: 12px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      z-index: 100;
+    /* Voice Note Recording Banners */
+    .voice-rec-banner {
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      border-radius: 16px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #991B1B;
+      font-weight: 700;
+      font-size: 13px;
     }
-    .emoji-btn-item {
-      background: transparent;
+    .btn-stop-rec {
+      background: #DC2626;
+      color: white;
       border: none;
-      font-size: 24px;
-      cursor: pointer;
-      padding: 6px;
+      padding: 6px 14px;
       border-radius: 10px;
-      transition: transform 0.15s;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
     }
-    .emoji-btn-item:hover {
-      transform: scale(1.3);
+
+    .voice-preview-banner {
+      background: #FFF5F2;
+      border: 1px solid rgba(192,74,34,0.3);
+      border-radius: 16px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .media-preview-banner {
       background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 16px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
-    .btn-act-outline:hover {
-      background: #FFE8E0;
-      border-color: var(--accent);
+
+    /* Live Location Banner */
+    .live-loc-banner {
+      background: #EFF6FF;
+      border: 1px solid #93C5FD;
+      border-radius: 14px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #1E40AF;
+      font-weight: 600;
+    }
+
+    /* Leaflet Map Preview Modal */
+    .map-preview-box {
+      width: 100%;
+      height: 240px;
+      border-radius: 16px;
+      border: 1px solid #E7E5E4;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+
+    @media (max-width: 992px) {
+      .notif-container { padding: 0 10px; }
+      .notif-main-card { padding: 24px 20px; }
+      .notif-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Header Navigation -->
+  <!-- Top Navigation Header -->
   <header class="kz-header" aria-label="Main navigation">
     <a href="/" class="kz-header__logo">Sign<span>ify</span></a>
-    
     <ul class="kz-header__nav">
       <li><a href="/" class="kz-header__link">Home</a></li>
       <li><a href="/app.html" class="kz-header__link">Translate</a></li>
       <li><a href="/call.html" class="kz-header__link">Live Call</a></li>
+      <li><a href="/notifications.html" class="kz-header__link is-active">Notifications</a></li>
       <li>
-        <a href="/notifications.html" class="kz-header__link is-active" aria-current="page">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          Notifications
+        <a href="/profile.html" class="kz-header__link">
+          <img src="/images/luna_3d.jpg" alt="User Profile Avatar" id="headerUserAvatarImg" class="user-nav-avatar" />
+          Profile
         </a>
-      </li>
-      <li><a href="/profile.html" class="kz-header__link">Profile</a></li>
-      <li>
-        <img src="/images/luna_3d.jpg" alt="User Profile Avatar" class="user-nav-avatar" title="Logged in as Charu" onclick="window.location.href='/profile.html'" />
       </li>
     </ul>
   </header>
 
   <main class="notif-container">
-    
     <div class="notif-main-card">
-      
+
       <!-- Header Row -->
       <div class="notif-header-row">
         <div>
           <h1 class="page-title">Notifications</h1>
-          <p class="page-sub">Stay updated with your calls, messages and important activities.</p>
+          <p class="page-sub">Stay updated with your sign language live calls, contacts, and activity.</p>
         </div>
 
-        <button class="btn-mark-read" onclick="markAllAsRead()">
+        <button type="button" class="btn-mark-read" onclick="markAllAsRead()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
           Mark all as read
         </button>
@@ -857,56 +944,40 @@
 
       <!-- Filter Pills Row -->
       <div class="filter-pills-row">
-        <button class="pill-btn active" id="pillAll" onclick="filterNotifications('all')">All</button>
-
-        <button class="pill-btn" id="pillCalls" onclick="filterNotifications('calls')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          Calls (<span id="cntCalls">4</span>)
-        </button>
-
-        <button class="pill-btn" id="pillContacts" onclick="filterNotifications('contacts')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-          Contacts (<span id="cntContacts">2</span>)
-        </button>
-
-        <button class="pill-btn" id="pillTranslations" onclick="filterNotifications('translations')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6"/><path d="M4 14e1 0 1 1 0-2"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
-          Translations (<span id="cntTranslations">3</span>)
-        </button>
-
-        <button class="pill-btn" id="pillSystem" onclick="filterNotifications('system')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          System (<span id="cntSystem">2</span>)
-        </button>
+        <button class="pill-btn active" id="pillAll" onclick="filterNotifications('all')">All Notifications</button>
+        <button class="pill-btn" id="pillCalls" onclick="filterNotifications('calls')">Calls (<span id="cntCalls">0</span>)</button>
+        <button class="pill-btn" id="pillContacts" onclick="filterNotifications('contacts')">Contacts (<span id="cntContacts">0</span>)</button>
+        <button class="pill-btn" id="pillTranslations" onclick="filterNotifications('translations')">Translations (<span id="cntTranslations">0</span>)</button>
+        <button class="pill-btn" id="pillSystem" onclick="filterNotifications('system')">System (<span id="cntSystem">0</span>)</button>
       </div>
 
-      <!-- 2-COLUMN GRID -->
+      <!-- 2-Column Grid Layout -->
       <div class="notif-grid">
-        
-        <!-- LEFT COLUMN: NOTIFICATION CARDS -->
-        <div id="notifListContainer" class="notif-list-col"></div>
 
-        <!-- RIGHT COLUMN: NOTIFICATION DETAIL PANEL -->
-        <div id="notifDetailPanel" class="notif-detail-panel">
-          <button class="detail-close-btn" onclick="closeDetailPanel()" title="Close Details">✕</button>
+        <!-- Left Column: Notifications Cards List -->
+        <div class="notif-list-col" id="notifListContainer">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Right Column: Selected Notification Detail Panel -->
+        <div class="notif-detail-panel hidden" id="notifDetailPanel">
+          <button type="button" class="detail-close-btn" onclick="closeDetailPanel()">✕</button>
 
           <div class="detail-header-wrap">
             <div class="detail-avatar-box" id="detAvatarBox">
-              <img src="/images/luna_3d.jpg" alt="Luna" id="detAvatarImg" />
-              <div class="detail-badge-overlay" id="detBadgeOverlay">🔀</div>
+              <!-- Rendered dynamically -->
             </div>
-
             <div>
               <div class="detail-timestamp" id="detTimestamp">Today, 10:45 AM</div>
-              <h3 class="detail-title" id="detTitle">Missed call from Luna (Signify AI)</h3>
+              <h3 class="detail-title" id="detTitle">Missed call from Luna</h3>
               <p class="detail-sub" id="detSub">You missed a sign language call.</p>
             </div>
           </div>
 
-          <!-- Metadata Properties Box -->
+          <!-- Metadata Box -->
           <div class="detail-meta-box">
             <div class="meta-row">
-              <div class="meta-icon">🕒</div>
+              <svg class="meta-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               <div>
                 <div class="meta-label">Time</div>
                 <div class="meta-value" id="detMetaTime">10:45 AM, 17 Sep 2026</div>
@@ -914,7 +985,7 @@
             </div>
 
             <div class="meta-row">
-              <div class="meta-icon">📞</div>
+              <svg class="meta-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               <div>
                 <div class="meta-label">Call type</div>
                 <div class="meta-value" id="detMetaType">Missed Call</div>
@@ -922,7 +993,7 @@
             </div>
 
             <div class="meta-row">
-              <div class="meta-icon">👤</div>
+              <svg class="meta-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               <div>
                 <div class="meta-label">From</div>
                 <div class="meta-value" id="detMetaFrom">Luna (Signify AI)</div>
@@ -937,7 +1008,7 @@
               Call Back
             </button>
 
-            <button class="btn-act-outline" onclick="openRichMessagingModal()">
+            <button class="btn-act-outline" onclick="handleDetailMessageClick()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               Message
             </button>
@@ -970,55 +1041,68 @@
           <button type="button" onclick="closeRichMessagingModal()" style="background:transparent; border:none; font-size:22px; cursor:pointer; color:#78716C;">✕</button>
         </div>
 
-        <!-- Message History Container -->
-        <div id="richMsgContainer" class="rich-msg-body">
-          <!-- Default welcome bubble -->
-          <div class="msg-wrap remote">
-            <span class="msg-sender-name" id="richMsgSenderName">Luna (Signify AI)</span>
-            <div class="msg-bubble">
-              Hey! Feel free to send text, emojis, voice notes, photos, videos, PDFs, interactive polls, or live location here!
-            </div>
-          </div>
+        <!-- Live Location Banner (If Active) -->
+        <div id="liveLocActiveBanner" class="live-loc-banner hidden">
+          <span>🟢 Sharing Live Location with <strong id="liveLocRecipientName">Contact</strong></span>
+          <button type="button" onclick="stopLiveLocationSharing()" style="background:#DC2626; color:white; border:none; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">Stop Sharing</button>
         </div>
 
-        <!-- Attachment Popup Grid Menu -->
+        <!-- Message History Container -->
+        <div id="richMsgContainer" class="rich-msg-body">
+          <!-- Dynamically loaded conversation -->
+        </div>
+
+        <!-- Attachment Popup Grid Menu (Vector SVG Icons) -->
         <div id="attachmentPopup" class="attachment-popup-grid hidden">
+          
           <label class="attach-grid-item" for="fileInputImage">
-            <span class="attach-item-icon">🖼️</span>
+            <div class="attach-item-badge">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
             <span class="attach-item-label">Photos</span>
           </label>
           <input type="file" id="fileInputImage" accept="image/*" class="hidden" onchange="handleImageAttachment(event)" />
 
           <label class="attach-grid-item" for="fileInputVideo">
-            <span class="attach-item-icon">📹</span>
+            <div class="attach-item-badge">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            </div>
             <span class="attach-item-label">Videos</span>
           </label>
           <input type="file" id="fileInputVideo" accept="video/*" class="hidden" onchange="handleVideoAttachment(event)" />
 
           <label class="attach-grid-item" for="fileInputAudio">
-            <span class="attach-item-icon">🎵</span>
+            <div class="attach-item-badge">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
             <span class="attach-item-label">Audio</span>
           </label>
           <input type="file" id="fileInputAudio" accept="audio/*" class="hidden" onchange="handleAudioAttachment(event)" />
 
           <label class="attach-grid-item" for="fileInputDoc">
-            <span class="attach-item-icon">📄</span>
+            <div class="attach-item-badge">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
             <span class="attach-item-label">PDF / Doc</span>
           </label>
-          <input type="file" id="fileInputDoc" accept=".pdf,.doc,.docx" class="hidden" onchange="handleDocAttachment(event)" />
+          <input type="file" id="fileInputDoc" accept=".pdf,.doc,.docx,.txt" class="hidden" onchange="handleDocAttachment(event)" />
 
           <div class="attach-grid-item" onclick="openPollCreatorModal()">
-            <span class="attach-item-icon">📊</span>
+            <div class="attach-item-badge">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+            </div>
             <span class="attach-item-label">Poll</span>
           </div>
 
-          <div class="attach-grid-item" onclick="shareLiveLocationCard()">
-            <span class="attach-item-icon">📍</span>
+          <div class="attach-grid-item" onclick="openLocationPickerModal()">
+            <div class="attach-item-badge">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
             <span class="attach-item-label">Location</span>
           </div>
         </div>
 
-        <!-- Emoji Picker Box -->
+        <!-- Emoji Picker Popup -->
         <div id="emojiPickerPopup" class="emoji-picker-box hidden">
           <button type="button" class="emoji-btn-item" onclick="insertEmoji('😍')">😍</button>
           <button type="button" class="emoji-btn-item" onclick="insertEmoji('🤟')">🤟</button>
@@ -1032,14 +1116,59 @@
           <button type="button" class="emoji-btn-item" onclick="insertEmoji('😊')">😊</button>
         </div>
 
-        <!-- Footer Controls -->
+        <!-- Footer Composer Controls -->
         <form class="rich-msg-footer" onsubmit="handleSendRichTextMessage(event)">
-          <div class="rich-input-row">
-            <button type="button" class="btn-icon-attach" onclick="toggleAttachmentMenu()" title="Attach File / Poll / Location">📎</button>
-            <button type="button" class="btn-icon-attach" onclick="toggleEmojiPicker()" title="Emoji Picker">😀</button>
-            <button type="button" class="btn-icon-attach" onclick="sendVoiceMessageNote()" title="Voice Note">🎙️</button>
-            <input type="text" id="richMsgInput" class="rich-msg-textarea" placeholder="Type a message or share content..." />
-            <button type="submit" class="btn-send-msg">Send ➔</button>
+
+          <!-- Voice Recording Live Banner -->
+          <div id="voiceRecordingBanner" class="voice-rec-banner hidden">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="color:#DC2626; animation: blink 1s infinite;">🔴</span>
+              <span id="recTimerText">Recording 00:03</span>
+            </div>
+            <button type="button" class="btn-stop-rec" onclick="stopVoiceRecording()">Stop Recording</button>
+          </div>
+
+          <!-- Voice Note Preview Banner -->
+          <div id="voicePreviewBanner" class="voice-preview-banner hidden">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <button type="button" id="btnPlayPreviewAudio" onclick="togglePreviewAudioPlay()" style="background:var(--accent); color:white; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer;">▶</button>
+              <span id="previewDurationText" style="font-weight:700; font-size:13px; color:#1C1917;">Voice Note (00:05)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button type="button" onclick="cancelVoicePreview()" style="background:#F5F5F4; border:1px solid #E7E5E4; color:#57534E; padding:6px 12px; border-radius:10px; font-weight:700; font-size:12px; cursor:pointer;">Delete</button>
+              <button type="button" onclick="sendRecordedVoiceNote()" style="background:var(--accent); color:white; border:none; padding:6px 14px; border-radius:10px; font-weight:700; font-size:12px; cursor:pointer;">Send Voice Note</button>
+            </div>
+          </div>
+
+          <!-- File Attachment Pending Banner -->
+          <div id="mediaPendingBanner" class="media-preview-banner hidden">
+            <span id="mediaPendingName" style="font-weight:700; font-size:13px; color:#1C1917;">Selected File</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button type="button" onclick="cancelPendingMedia()" style="background:#F5F5F4; border:1px solid #E7E5E4; color:#57534E; padding:6px 12px; border-radius:10px; font-weight:700; font-size:12px; cursor:pointer;">Cancel</button>
+              <button type="button" onclick="sendPendingMediaAttachment()" style="background:var(--accent); color:white; border:none; padding:6px 14px; border-radius:10px; font-weight:700; font-size:12px; cursor:pointer;">Send File</button>
+            </div>
+          </div>
+
+          <!-- Main Input Row -->
+          <div class="rich-input-row" id="mainComposerInputRow">
+            <button type="button" class="btn-icon-attach" onclick="toggleAttachmentMenu()" title="Attach File / Poll / Location">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            
+            <button type="button" class="btn-icon-attach" onclick="toggleEmojiPicker()" title="Emoji Picker">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </button>
+            
+            <button type="button" class="btn-icon-attach" id="btnMicRecord" onclick="toggleVoiceRecording()" title="Record Voice Note">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            
+            <input type="text" id="richMsgInput" class="rich-msg-textarea" placeholder="Type a message or share content..." oninput="updateSendButtonState()" />
+            
+            <button type="submit" id="btnSubmitMessage" class="btn-send-msg" disabled>
+              Send
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
           </div>
         </form>
 
@@ -1075,11 +1204,76 @@
       </div>
     </div>
 
+    <!-- LOCATION PICKER PREVIEW MODAL -->
+    <div id="locationPickerModal" class="rich-msg-modal-overlay hidden">
+      <div style="background:#FFF; border-radius:24px; width:440px; padding:24px; border:1px solid #E7E5E4; box-shadow:0 20px 50px rgba(0,0,0,0.2);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <h3 style="font-family:'Instrument Serif', serif; font-size:26px; margin:0;">Share Location</h3>
+          <button type="button" onclick="closeLocationPickerModal()" style="background:transparent; border:none; font-size:18px; cursor:pointer;">✕</button>
+        </div>
+
+        <p style="font-size:13px; color:#78716C; margin:0 0 14px 0;">Your current location will be shared with this contact.</p>
+
+        <!-- Leaflet Map Container -->
+        <div id="mapPickerContainer" class="map-preview-box"></div>
+        
+        <div style="background:#FAF8F5; border:1px solid #E7E5E4; border-radius:12px; padding:10px 14px; margin-bottom:16px; font-size:12px; color:#1C1917; font-weight:600;" id="locReadoutText">
+          Fetching current GPS coordinates...
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <button type="button" onclick="sendCurrentLocationPoint()" style="background:#FAF8F5; border:1px solid #E7E5E4; color:#1C1917; padding:10px; border-radius:12px; font-weight:700; font-size:12px; cursor:pointer;">Send Current Pin</button>
+          <button type="button" onclick="startSharingLiveLocation()" style="background:var(--accent); color:white; border:none; padding:10px; border-radius:12px; font-weight:700; font-size:12px; cursor:pointer;">Share Live Location</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL MAP VIEWER MODAL -->
+    <div id="mapViewerModal" class="rich-msg-modal-overlay hidden">
+      <div style="background:#FFF; border-radius:24px; width:520px; padding:24px; border:1px solid #E7E5E4; box-shadow:0 20px 50px rgba(0,0,0,0.2);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <h3 style="font-family:'Instrument Serif', serif; font-size:26px; margin:0;" id="viewerMapTitle">Location Details</h3>
+          <button type="button" onclick="closeMapViewerModal()" style="background:transparent; border:none; font-size:18px; cursor:pointer;">✕</button>
+        </div>
+
+        <div id="mapViewerContainer" class="map-preview-box" style="height:300px;"></div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px;">
+          <span style="font-size:12px; color:#78716C; font-weight:600;" id="viewerCoordsText">12.9716° N, 77.5946° E</span>
+          <a id="linkOpenExternalMaps" href="#" target="_blank" style="background:var(--accent); color:white; padding:8px 16px; border-radius:12px; font-weight:700; font-size:12px; text-decoration:none;">Open in Maps ➔</a>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <script>
     let activeFilter = 'all';
     let selectedNotifId = 'n1';
+    let activeParticipantId = 'c_luna';
+    let currentUserData = null;
+
+    // Real Voice Recording State
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecordingVoice = false;
+    let voiceTimerInterval = null;
+    let recordingSeconds = 0;
+    let recordedAudioBlob = null;
+    let recordedAudioUrl = null;
+    let previewAudioElement = null;
+
+    // Pending Media File Attachment State
+    let pendingFileBlob = null;
+    let pendingFileType = null;
+    let pendingFileName = '';
+
+    // Geolocation & Leaflet Maps State
+    let currentGeoLat = 12.9716;
+    let currentGeoLng = 77.5946;
+    let pickerMapObj = null;
+    let viewerMapObj = null;
+    let watchLocationId = null;
 
     const notificationsDataset = [
       {
@@ -1092,6 +1286,7 @@
         unread: true,
         typeLabel: 'Missed Call',
         fromLabel: 'Luna (Signify AI)',
+        contactId: 'c_luna',
         avatarImg: '/images/luna_3d.jpg',
         badgeIcon: '🔀',
         badgeBg: '#DC2626'
@@ -1106,6 +1301,7 @@
         unread: true,
         typeLabel: 'Incoming Call',
         fromLabel: 'Keerthi (9834567290)',
+        contactId: 'usr_keerthi',
         avatarBg: '#2ECC71',
         iconChar: '📞'
       },
@@ -1119,6 +1315,7 @@
         unread: true,
         typeLabel: 'Contact Request',
         fromLabel: 'Priya (9876543210)',
+        contactId: 'usr_priya',
         avatarBg: '#3B82F6',
         iconChar: '👤'
       },
@@ -1132,6 +1329,7 @@
         unread: false,
         typeLabel: 'Favourite Update',
         fromLabel: 'Alex Rivers',
+        contactId: 'usr_alex',
         avatarBg: '#F59E0B',
         iconChar: '⭐'
       },
@@ -1145,6 +1343,7 @@
         unread: true,
         typeLabel: 'BSL Translation',
         fromLabel: 'Signify Translation Engine',
+        contactId: 'c_luna',
         avatarBg: '#8B5CF6',
         iconChar: '🆎'
       },
@@ -1158,6 +1357,7 @@
         unread: false,
         typeLabel: 'Contact Save',
         fromLabel: 'Keerthi',
+        contactId: 'usr_keerthi',
         avatarBg: '#10B981',
         iconChar: '✓'
       },
@@ -1171,6 +1371,7 @@
         unread: false,
         typeLabel: 'System Update',
         fromLabel: 'Signify Core System',
+        contactId: 'c_luna',
         avatarBg: '#9CA3AF',
         iconChar: '⚙️'
       },
@@ -1184,22 +1385,26 @@
         unread: false,
         typeLabel: 'Security Action',
         fromLabel: 'Ravi Kumar (9876012345)',
+        contactId: 'usr_ravi',
         avatarBg: '#FCA5A5',
         iconChar: '🚫'
       }
     ];
 
     window.addEventListener('DOMContentLoaded', async () => {
-      await loadDynamicAccountNotifications();
+      await loadDynamicAccountData();
       renderNotificationsList();
       selectNotification('n1');
     });
 
-    async function loadDynamicAccountNotifications() {
-      const u = SignifyUserStore.getLoggedInUser();
-      const userNavAvatar = document.querySelector('.user-nav-avatar');
-      if (userNavAvatar) {
-        userNavAvatar.title = `Logged in as ${u.name}`;
+    async function loadDynamicAccountData() {
+      if (window.SignifyUserStore) {
+        currentUserData = await window.SignifyUserStore.loadUserData();
+        const u = window.SignifyUserStore.getLoggedInUser();
+        const userNavAvatar = document.getElementById('headerUserAvatarImg');
+        if (userNavAvatar) {
+          userNavAvatar.title = `Logged in as ${u.name}`;
+        }
       }
     }
 
@@ -1212,7 +1417,7 @@
         return n.category === activeFilter;
       });
 
-      // Update counters
+      // Counters
       document.getElementById('cntCalls').textContent = notificationsDataset.filter(n => n.category === 'calls').length;
       document.getElementById('cntContacts').textContent = notificationsDataset.filter(n => n.category === 'contacts').length;
       document.getElementById('cntTranslations').textContent = notificationsDataset.filter(n => n.category === 'translations').length;
@@ -1264,10 +1469,9 @@
       const n = notificationsDataset.find(item => item.id === id);
       if (!n) return;
 
-      n.unread = false; // mark selected as read
+      n.unread = false;
       renderNotificationsList();
 
-      // Update Details Panel
       const panel = document.getElementById('notifDetailPanel');
       panel.classList.remove('hidden');
 
@@ -1295,11 +1499,9 @@
     function filterNotifications(category) {
       activeFilter = category;
       document.querySelectorAll('.filter-pills-row .pill-btn').forEach(btn => btn.classList.remove('active'));
-      
       const cap = category.charAt(0).toUpperCase() + category.slice(1);
       const activeBtn = document.getElementById('pill' + cap);
       if (activeBtn) activeBtn.classList.add('active');
-
       renderNotificationsList();
     }
 
@@ -1316,35 +1518,248 @@
       window.location.href = '/call.html';
     }
 
-    // RICH MESSAGING SYSTEM & ATTACHMENT HANDLERS
-    let pollIdCounter = 1;
-
-    function openRichMessagingModal() {
+    function handleDetailMessageClick() {
       const n = notificationsDataset.find(item => item.id === selectedNotifId) || notificationsDataset[0];
-      
+      const targetId = n.contactId || 'c_luna';
+      const targetName = n.fromLabel || 'Contact';
+      const targetAvatar = n.avatarImg || '/images/luna_3d.jpg';
+      openChatWithParticipant(targetId, targetName, targetAvatar);
+    }
+
+    // DYNAMIC CHAT & ACCOUNT-ISOLATED MESSAGING ENGINE
+    async function openChatWithParticipant(contactId, contactName, avatarImg) {
+      activeParticipantId = contactId || 'c_luna';
+
+      if (!currentUserData) {
+        currentUserData = await SignifyUserStore.loadUserData();
+      }
+
       const modal = document.getElementById('richMessageModal');
       modal.classList.remove('hidden');
 
-      const contactName = n ? n.fromLabel : 'Signify User';
-      document.getElementById('richMsgContactName').textContent = contactName;
-      document.getElementById('richMsgSenderName').textContent = contactName;
-
-      const avatarImg = document.getElementById('richMsgContactAvatar');
-      if (n && n.avatarImg) {
-        avatarImg.src = n.avatarImg;
-        avatarImg.style.display = 'block';
-      } else {
-        avatarImg.src = '/images/luna_3d.jpg';
-      }
+      document.getElementById('richMsgContactName').textContent = contactName || 'Signify User';
+      const avatarEl = document.getElementById('richMsgContactAvatar');
+      if (avatarEl) avatarEl.src = avatarImg || '/images/luna_3d.jpg';
 
       document.getElementById('attachmentPopup').classList.add('hidden');
       document.getElementById('emojiPickerPopup').classList.add('hidden');
+
+      loadParticipantConversation(activeParticipantId);
     }
 
     function closeRichMessagingModal() {
       document.getElementById('richMessageModal').classList.add('hidden');
+      cancelVoicePreview();
+      cancelPendingMedia();
     }
 
+    function loadParticipantConversation(pId) {
+      const container = document.getElementById('richMsgContainer');
+      container.innerHTML = '';
+
+      if (!currentUserData.conversations) {
+        currentUserData.conversations = {};
+      }
+
+      const thread = currentUserData.conversations[pId] || [];
+
+      if (thread.length === 0) {
+        // Initial welcome message
+        thread.push({
+          id: 'init_' + Date.now(),
+          senderId: pId,
+          receiverId: currentUserData.user_id,
+          type: 'text',
+          content: `Hey! Feel free to send text, emojis, voice notes, photos, videos, PDFs, interactive polls, or live location here!`,
+          timestamp: 'Just now'
+        });
+        currentUserData.conversations[pId] = thread;
+        SignifyUserStore.saveUserData(currentUserData);
+      }
+
+      const u = SignifyUserStore.getLoggedInUser();
+
+      thread.forEach(msg => {
+        const isMine = (msg.senderId === u.id || msg.senderId === 'You');
+        renderMessageBubble(msg, isMine);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function renderMessageBubble(msg, isMine) {
+      const container = document.getElementById('richMsgContainer');
+      const wrap = document.createElement('div');
+      wrap.className = `msg-wrap ${isMine ? 'mine' : 'remote'}`;
+
+      const sender = document.createElement('span');
+      sender.className = 'msg-sender-name';
+      sender.textContent = isMine ? 'You' : (msg.senderName || document.getElementById('richMsgContactName').textContent);
+
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bubble';
+
+      if (msg.type === 'text') {
+        bubble.textContent = msg.content;
+      } else if (msg.type === 'image') {
+        bubble.innerHTML = `<div style="font-weight:700; margin-bottom:4px;">🖼️ Photo Attachment</div><img src="${msg.attachmentUrl}" class="media-preview-img" alt="Attached photo" onclick="window.open(this.src)" />`;
+      } else if (msg.type === 'video') {
+        bubble.innerHTML = `<div style="font-weight:700; margin-bottom:4px;">📹 Video Attachment</div><video src="${msg.attachmentUrl}" controls class="media-preview-video"></video>`;
+      } else if (msg.type === 'audio') {
+        bubble.innerHTML = `
+          <div style="font-weight:700; margin-bottom:4px;">🎙️ Voice Note (${msg.duration || '00:05'})</div>
+          <audio src="${msg.attachmentUrl}" controls style="width:100%; margin-top:4px;"></audio>
+        `;
+      } else if (msg.type === 'document') {
+        bubble.innerHTML = `
+          <div class="doc-card-pill">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:13px;">${escapeHtml(msg.fileName || 'Document')}</div>
+              <div style="font-size:11px; color:#78716C;">${msg.fileSize || '120 KB'}</div>
+            </div>
+            <a href="${msg.attachmentUrl}" download="${escapeHtml(msg.fileName || 'document')}" style="color:var(--accent); font-weight:700; font-size:12px; text-decoration:none;">Download</a>
+          </div>
+        `;
+      } else if (msg.type === 'location' || msg.type === 'live_location') {
+        const lat = msg.lat || currentGeoLat;
+        const lng = msg.lng || currentGeoLng;
+        bubble.innerHTML = `
+          <div class="location-card">
+            <div class="location-map-graphic">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div style="font-weight:700; font-size:14px; margin-bottom:2px;">${msg.type === 'live_location' ? '🟢 Live Location Shared' : '📍 Current Location'}</div>
+            <div style="font-size:11px; color:#78716C; margin-bottom:10px;">${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E</div>
+            <button type="button" onclick="openMapViewerModal(${lat}, ${lng})" style="width:100%; background:#FAF8F5; border:1px solid #E7E5E4; border-radius:10px; padding:8px; font-weight:700; font-size:12px; color:var(--accent); cursor:pointer;">View on Map ➔</button>
+          </div>
+        `;
+      } else if (msg.type === 'html') {
+        bubble.innerHTML = msg.content;
+      }
+
+      wrap.appendChild(sender);
+      wrap.appendChild(bubble);
+      container.appendChild(wrap);
+    }
+
+    // REAL VOICE RECORDING HANDLERS (MediaRecorder)
+    async function toggleVoiceRecording() {
+      if (!isRecordingVoice) {
+        startVoiceRecording();
+      } else {
+        stopVoiceRecording();
+      }
+    }
+
+    async function startVoiceRecording() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Microphone recording is not supported in this browser.');
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          recordedAudioUrl = URL.createObjectURL(recordedAudioBlob);
+          
+          const durationStr = formatTimerText(recordingSeconds);
+          document.getElementById('previewDurationText').textContent = `Voice Note (${durationStr})`;
+          
+          document.getElementById('voiceRecordingBanner').classList.add('hidden');
+          document.getElementById('voicePreviewBanner').classList.remove('hidden');
+        };
+
+        mediaRecorder.start();
+        isRecordingVoice = true;
+        recordingSeconds = 0;
+
+        document.getElementById('mainComposerInputRow').classList.add('hidden');
+        document.getElementById('voiceRecordingBanner').classList.remove('hidden');
+        document.getElementById('recTimerText').textContent = 'Recording 00:00';
+
+        voiceTimerInterval = setInterval(() => {
+          recordingSeconds++;
+          document.getElementById('recTimerText').textContent = 'Recording ' + formatTimerText(recordingSeconds);
+        }, 1000);
+
+      } catch (err) {
+        alert('Microphone permission is required to record a voice note. Please enable access in browser settings.');
+      }
+    }
+
+    function stopVoiceRecording() {
+      if (mediaRecorder && isRecordingVoice) {
+        isRecordingVoice = false;
+        clearInterval(voiceTimerInterval);
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      }
+    }
+
+    function cancelVoicePreview() {
+      if (previewAudioElement) {
+        previewAudioElement.pause();
+        previewAudioElement = null;
+      }
+      document.getElementById('voicePreviewBanner').classList.add('hidden');
+      document.getElementById('mainComposerInputRow').classList.remove('hidden');
+      recordedAudioBlob = null;
+      recordedAudioUrl = null;
+    }
+
+    function togglePreviewAudioPlay() {
+      if (!recordedAudioUrl) return;
+      if (!previewAudioElement) {
+        previewAudioElement = new Audio(recordedAudioUrl);
+        previewAudioElement.onended = () => {
+          document.getElementById('btnPlayPreviewAudio').textContent = '▶';
+        };
+      }
+
+      if (previewAudioElement.paused) {
+        previewAudioElement.play();
+        document.getElementById('btnPlayPreviewAudio').textContent = '⏸';
+      } else {
+        previewAudioElement.pause();
+        document.getElementById('btnPlayPreviewAudio').textContent = '▶';
+      }
+    }
+
+    function sendRecordedVoiceNote() {
+      if (!recordedAudioUrl) return;
+      const durationStr = formatTimerText(recordingSeconds || 5);
+      
+      const u = SignifyUserStore.getLoggedInUser();
+      const msg = {
+        id: 'msg_' + Date.now(),
+        senderId: u.id,
+        receiverId: activeParticipantId,
+        type: 'audio',
+        attachmentUrl: recordedAudioUrl,
+        duration: durationStr,
+        timestamp: 'Just now'
+      };
+
+      saveAndRenderMessage(msg);
+      cancelVoicePreview();
+    }
+
+    function formatTimerText(totalSeconds) {
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // ATTACHMENT POPUP & FILE PICKERS
     function toggleAttachmentMenu() {
       document.getElementById('emojiPickerPopup').classList.add('hidden');
       document.getElementById('attachmentPopup').classList.toggle('hidden');
@@ -1357,9 +1772,22 @@
 
     function insertEmoji(emoji) {
       const input = document.getElementById('richMsgInput');
-      input.value += emoji;
+      const start = input.selectionStart || input.value.length;
+      const end = input.selectionEnd || input.value.length;
+
+      input.value = input.value.substring(0, start) + emoji + input.value.substring(end);
+      input.selectionStart = input.selectionEnd = start + emoji.length;
       input.focus();
+      updateSendButtonState();
       document.getElementById('emojiPickerPopup').classList.add('hidden');
+    }
+
+    function updateSendButtonState() {
+      const input = document.getElementById('richMsgInput');
+      const btn = document.getElementById('btnSubmitMessage');
+      if (btn) {
+        btn.disabled = !(input.value.trim().length > 0 || pendingFileBlob);
+      }
     }
 
     function handleSendRichTextMessage(e) {
@@ -1368,27 +1796,32 @@
       const text = input.value.trim();
       if (!text) return;
 
-      appendUserBubble(text, 'text');
-      input.value = '';
+      const u = SignifyUserStore.getLoggedInUser();
+      const msg = {
+        id: 'msg_' + Date.now(),
+        senderId: u.id,
+        receiverId: activeParticipantId,
+        type: 'text',
+        content: text,
+        timestamp: 'Just now'
+      };
 
-      // Auto-reply simulation
-      setTimeout(() => {
-        appendRemoteBubble('Received your message! I will reply shortly 👍', 'text');
-      }, 1000);
+      saveAndRenderMessage(msg);
+      input.value = '';
+      updateSendButtonState();
     }
 
-    // Media & File Attachments
+    // MEDIA ATTACHMENTS (Image, Video, Audio, Document)
     function handleImageAttachment(e) {
       document.getElementById('attachmentPopup').classList.add('hidden');
       const file = e.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const imgHtml = `<div style="font-weight:700; margin-bottom:4px;">🖼️ Shared Photo:</div><img src="${evt.target.result}" class="media-preview-img" alt="Attached photo" />`;
-        appendUserBubble(imgHtml, 'html');
-      };
-      reader.readAsDataURL(file);
+      pendingFileBlob = file;
+      pendingFileType = 'image';
+      pendingFileName = file.name;
+
+      showPendingMediaBanner(`Photo: ${file.name}`);
     }
 
     function handleVideoAttachment(e) {
@@ -1396,9 +1829,11 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      const url = URL.createObjectURL(file);
-      const videoHtml = `<div style="font-weight:700; margin-bottom:4px;">📹 Shared Video:</div><video src="${url}" controls class="media-preview-video"></video>`;
-      appendUserBubble(videoHtml, 'html');
+      pendingFileBlob = file;
+      pendingFileType = 'video';
+      pendingFileName = file.name;
+
+      showPendingMediaBanner(`Video: ${file.name}`);
     }
 
     function handleAudioAttachment(e) {
@@ -1406,9 +1841,11 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      const url = URL.createObjectURL(file);
-      const audioHtml = `<div style="font-weight:700; margin-bottom:4px;">🎵 Shared Audio:</div><audio src="${url}" controls style="width:100%; margin-top:4px;"></audio>`;
-      appendUserBubble(audioHtml, 'html');
+      pendingFileBlob = file;
+      pendingFileType = 'audio';
+      pendingFileName = file.name;
+
+      showPendingMediaBanner(`Audio File: ${file.name}`);
     }
 
     function handleDocAttachment(e) {
@@ -1416,36 +1853,176 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      const sizeKb = Math.round(file.size / 1024);
-      const docHtml = `
-        <div class="doc-card-pill">
-          <span style="font-size:24px;">📄</span>
-          <div style="flex:1;">
-            <div style="font-weight:700; font-size:13px;">${escapeHtml(file.name)}</div>
-            <div style="font-size:11px; color:#78716C;">${sizeKb} KB • PDF Document</div>
-          </div>
-          <a href="#" onclick="alert('Downloading ${escapeHtml(file.name)}'); return false;" style="color:var(--accent); font-weight:700; text-decoration:none; font-size:12px;">Download</a>
-        </div>
-      `;
-      appendUserBubble(docHtml, 'html');
+      pendingFileBlob = file;
+      pendingFileType = 'document';
+      pendingFileName = file.name;
+
+      showPendingMediaBanner(`Document: ${file.name}`);
     }
 
-    function sendVoiceMessageNote() {
-      const voiceHtml = `
-        <div style="font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:6px;">🎙️ Voice Note (0:14):</div>
-        <div class="audio-player-card">
-          <button type="button" onclick="const a=this.nextElementSibling; a.paused?a.play():a.pause();" style="background:var(--accent); color:white; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:14px;">▶</button>
-          <audio src="https://actions.google.com/sounds/v1/ambiences/rain_heavy.ogg"></audio>
-          <div style="flex:1; height:4px; background:rgba(0,0,0,0.15); border-radius:2px; position:relative; overflow:hidden;">
-            <div style="width:45%; height:100%; background:var(--accent);"></div>
-          </div>
-          <span style="font-size:11px; opacity:0.8;">0:14</span>
-        </div>
-      `;
-      appendUserBubble(voiceHtml, 'html');
+    function showPendingMediaBanner(nameText) {
+      document.getElementById('mediaPendingName').textContent = nameText;
+      document.getElementById('mediaPendingBanner').classList.remove('hidden');
+      updateSendButtonState();
     }
 
-    // Polls
+    function cancelPendingMedia() {
+      pendingFileBlob = null;
+      pendingFileType = null;
+      pendingFileName = '';
+      document.getElementById('mediaPendingBanner').classList.add('hidden');
+      updateSendButtonState();
+    }
+
+    function sendPendingMediaAttachment() {
+      if (!pendingFileBlob) return;
+
+      const url = URL.createObjectURL(pendingFileBlob);
+      const u = SignifyUserStore.getLoggedInUser();
+      const sizeKb = Math.round(pendingFileBlob.size / 1024);
+
+      const msg = {
+        id: 'msg_' + Date.now(),
+        senderId: u.id,
+        receiverId: activeParticipantId,
+        type: pendingFileType,
+        attachmentUrl: url,
+        fileName: pendingFileName,
+        fileSize: `${sizeKb} KB`,
+        timestamp: 'Just now'
+      };
+
+      saveAndRenderMessage(msg);
+      cancelPendingMedia();
+    }
+
+    // REAL GEOLOCATION & LEAFLET MAPS
+    function openLocationPickerModal() {
+      document.getElementById('attachmentPopup').classList.add('hidden');
+      document.getElementById('locationPickerModal').classList.remove('hidden');
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            currentGeoLat = pos.coords.latitude;
+            currentGeoLng = pos.coords.longitude;
+            renderPickerMap(currentGeoLat, currentGeoLng);
+          },
+          (err) => {
+            document.getElementById('locReadoutText').textContent = 'Location permission denied. Using standard map coordinates.';
+            renderPickerMap(currentGeoLat, currentGeoLng);
+          },
+          { enableHighAccuracy: true }
+        );
+      } else {
+        renderPickerMap(currentGeoLat, currentGeoLng);
+      }
+    }
+
+    function closeLocationPickerModal() {
+      document.getElementById('locationPickerModal').classList.add('hidden');
+    }
+
+    function renderPickerMap(lat, lng) {
+      document.getElementById('locReadoutText').textContent = `Coordinates: ${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E • High Accuracy GPS`;
+      
+      const container = document.getElementById('mapPickerContainer');
+      container.innerHTML = '<div id="pickerLeafletMap" style="width:100%; height:100%;"></div>';
+
+      setTimeout(() => {
+        try {
+          if (typeof L !== 'undefined') {
+            pickerMapObj = L.map('pickerLeafletMap').setView([lat, lng], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© OpenStreetMap'
+            }).addTo(pickerMapObj);
+
+            L.marker([lat, lng]).addTo(pickerMapObj).bindPopup('Your Current Location').openPopup();
+          }
+        } catch (e) {
+          container.innerHTML = `<div style="padding:40px; text-align:center; background:#E5E3DF; color:#1C1917; font-weight:700;">📍 Location Marker Pin<br><span style="font-size:12px; font-weight:normal;">${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E</span></div>`;
+        }
+      }, 150);
+    }
+
+    function sendCurrentLocationPoint() {
+      closeLocationPickerModal();
+      const u = SignifyUserStore.getLoggedInUser();
+      const msg = {
+        id: 'msg_' + Date.now(),
+        senderId: u.id,
+        receiverId: activeParticipantId,
+        type: 'location',
+        lat: currentGeoLat,
+        lng: currentGeoLng,
+        timestamp: 'Just now'
+      };
+      saveAndRenderMessage(msg);
+    }
+
+    function startSharingLiveLocation() {
+      closeLocationPickerModal();
+      const recipientName = document.getElementById('richMsgContactName').textContent;
+      document.getElementById('liveLocRecipientName').textContent = recipientName;
+      document.getElementById('liveLocActiveBanner').classList.remove('hidden');
+
+      if (navigator.geolocation) {
+        watchLocationId = navigator.geolocation.watchPosition((pos) => {
+          currentGeoLat = pos.coords.latitude;
+          currentGeoLng = pos.coords.longitude;
+        });
+      }
+
+      const u = SignifyUserStore.getLoggedInUser();
+      const msg = {
+        id: 'msg_' + Date.now(),
+        senderId: u.id,
+        receiverId: activeParticipantId,
+        type: 'live_location',
+        lat: currentGeoLat,
+        lng: currentGeoLng,
+        timestamp: 'Just now'
+      };
+      saveAndRenderMessage(msg);
+    }
+
+    function stopLiveLocationSharing() {
+      if (watchLocationId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchLocationId);
+        watchLocationId = null;
+      }
+      document.getElementById('liveLocActiveBanner').classList.add('hidden');
+    }
+
+    function openMapViewerModal(lat, lng) {
+      document.getElementById('mapViewerModal').classList.remove('hidden');
+      document.getElementById('viewerCoordsText').textContent = `${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E`;
+      document.getElementById('linkOpenExternalMaps').href = `https://www.google.com/maps?q=${lat},${lng}`;
+
+      const container = document.getElementById('mapViewerContainer');
+      container.innerHTML = '<div id="viewerLeafletMap" style="width:100%; height:100%;"></div>';
+
+      setTimeout(() => {
+        try {
+          if (typeof L !== 'undefined') {
+            viewerMapObj = L.map('viewerLeafletMap').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© OpenStreetMap'
+            }).addTo(viewerMapObj);
+
+            L.marker([lat, lng]).addTo(viewerMapObj).bindPopup('Shared Location Pin').openPopup();
+          }
+        } catch (e) {
+          container.innerHTML = `<div style="padding:60px; text-align:center; background:#E5E3DF; color:#1C1917; font-weight:700;">📍 Shared Location Pin<br><span style="font-size:12px; font-weight:normal;">${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E</span></div>`;
+        }
+      }, 150);
+    }
+
+    function closeMapViewerModal() {
+      document.getElementById('mapViewerModal').classList.add('hidden');
+    }
+
+    // POLL CREATOR
     function openPollCreatorModal() {
       document.getElementById('attachmentPopup').classList.add('hidden');
       document.getElementById('pollCreatorModal').classList.remove('hidden');
@@ -1460,31 +2037,41 @@
       const q = document.getElementById('pollQuestionInput').value.trim();
       const o1 = document.getElementById('pollOpt1').value.trim();
       const o2 = document.getElementById('pollOpt2').value.trim();
-
       if (!q || !o1 || !o2) return;
 
       closePollCreatorModal();
-      pollIdCounter++;
-      const currentPollId = 'poll_' + pollIdCounter;
+      const pollId = 'poll_' + Date.now();
 
-      const pollHtml = `
-        <div class="poll-card" id="${currentPollId}">
-          <div class="poll-question">📊 ${escapeHtml(q)}</div>
-          <button type="button" class="poll-option-btn" onclick="voteOnPoll('${currentPollId}', 0)">
+      const pollContent = `
+        <div class="poll-card" id="${pollId}">
+          <div class="poll-question">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+            ${escapeHtml(q)}
+          </div>
+          <button type="button" class="poll-option-btn" onclick="voteOnPoll('${pollId}', 0)">
             <div class="poll-progress-fill" style="width: 0%;"></div>
             <span style="position:relative; z-index:2;">${escapeHtml(o1)}</span>
             <span style="position:relative; z-index:2; font-size:11px; color:#78716C;" class="poll-count">0 votes (0%)</span>
           </button>
-          <button type="button" class="poll-option-btn" onclick="voteOnPoll('${currentPollId}', 1)">
+          <button type="button" class="poll-option-btn" onclick="voteOnPoll('${pollId}', 1)">
             <div class="poll-progress-fill" style="width: 0%;"></div>
             <span style="position:relative; z-index:2;">${escapeHtml(o2)}</span>
             <span style="position:relative; z-index:2; font-size:11px; color:#78716C;" class="poll-count">0 votes (0%)</span>
           </button>
         </div>
       `;
-      appendUserBubble(pollHtml, 'html');
 
-      // Reset form
+      const u = SignifyUserStore.getLoggedInUser();
+      const msg = {
+        id: 'msg_' + Date.now(),
+        senderId: u.id,
+        receiverId: activeParticipantId,
+        type: 'html',
+        content: pollContent,
+        timestamp: 'Just now'
+      };
+
+      saveAndRenderMessage(msg);
       document.getElementById('pollQuestionInput').value = '';
       document.getElementById('pollOpt1').value = '';
       document.getElementById('pollOpt2').value = '';
@@ -1509,67 +2096,18 @@
       });
     }
 
-    // Live Location Card
-    function shareLiveLocationCard() {
-      document.getElementById('attachmentPopup').classList.add('hidden');
-
-      const locHtml = `
-        <div class="location-card">
-          <div class="location-map-graphic">
-            <span>📍</span>
-          </div>
-          <div style="font-weight:700; font-size:14px; margin-bottom:2px;">Live Location Shared</div>
-          <div style="font-size:12px; color:#78716C; margin-bottom:10px;">12.9716° N, 77.5946° E • Updated live</div>
-          <button type="button" onclick="alert('Opening live location map pin...')" style="width:100%; background:#FAF8F5; border:1px solid #E7E5E4; border-radius:10px; padding:8px; font-weight:700; font-size:12px; color:var(--accent); cursor:pointer;">View on Map ➔</button>
-        </div>
-      `;
-      appendUserBubble(locHtml, 'html');
-    }
-
-    function appendUserBubble(content, mode) {
-      const container = document.getElementById('richMsgContainer');
-      const wrap = document.createElement('div');
-      wrap.className = 'msg-wrap mine';
-
-      const sender = document.createElement('span');
-      sender.className = 'msg-sender-name';
-      sender.textContent = 'You';
-
-      const bubble = document.createElement('div');
-      bubble.className = 'msg-bubble';
-      if (mode === 'html') {
-        bubble.innerHTML = content;
-      } else {
-        bubble.textContent = content;
+    // PERSISTENCE HELPER
+    function saveAndRenderMessage(msg) {
+      if (!currentUserData.conversations) currentUserData.conversations = {};
+      if (!currentUserData.conversations[activeParticipantId]) {
+        currentUserData.conversations[activeParticipantId] = [];
       }
 
-      wrap.appendChild(sender);
-      wrap.appendChild(bubble);
-      container.appendChild(wrap);
-      container.scrollTop = container.scrollHeight;
-    }
+      currentUserData.conversations[activeParticipantId].push(msg);
+      SignifyUserStore.saveUserData(currentUserData);
 
-    function appendRemoteBubble(content, mode) {
-      const n = notificationsDataset.find(item => item.id === selectedNotifId) || notificationsDataset[0];
+      renderMessageBubble(msg, true);
       const container = document.getElementById('richMsgContainer');
-      const wrap = document.createElement('div');
-      wrap.className = 'msg-wrap remote';
-
-      const sender = document.createElement('span');
-      sender.className = 'msg-sender-name';
-      sender.textContent = n ? n.fromLabel : 'Contact';
-
-      const bubble = document.createElement('div');
-      bubble.className = 'msg-bubble';
-      if (mode === 'html') {
-        bubble.innerHTML = content;
-      } else {
-        bubble.textContent = content;
-      }
-
-      wrap.appendChild(sender);
-      wrap.appendChild(bubble);
-      container.appendChild(wrap);
       container.scrollTop = container.scrollHeight;
     }
 

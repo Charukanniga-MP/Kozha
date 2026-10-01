@@ -206,3 +206,36 @@ def get_user_by_token(token: str) -> dict | None:
         "role": user.get("role", "signer"),
         "auth_provider": user.get("auth_provider", "local"),
     }
+
+
+def change_password(email: str, old_pass: str, new_pass: str) -> bool:
+    """Safely update user password using PBKDF2-HMAC-SHA256."""
+    email_clean = email.strip().lower()
+    if len(new_pass) < 6:
+        raise ValueError("New password must be at least 6 characters long")
+
+    user = _users_db.get(email_clean)
+    if not user:
+        hashed, salt = hash_password(new_pass)
+        _users_db[email_clean] = {
+            "email": email_clean,
+            "name": email_clean.split("@")[0].title(),
+            "password_hash": hashed,
+            "salt": salt,
+            "auth_provider": "local",
+            "created_at": time.time(),
+            "role": "signer",
+        }
+        _save_users()
+        return True
+
+    if user.get("password_hash") and user.get("salt"):
+        if not verify_password(old_pass, user["password_hash"], user["salt"]):
+            raise ValueError("Current password is incorrect")
+
+    hashed, salt = hash_password(new_pass)
+    user["password_hash"] = hashed
+    user["salt"] = salt
+    _save_users()
+    return True
+

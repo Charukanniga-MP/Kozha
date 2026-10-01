@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signify — Language & Preferences</title>
+  <meta name="description" content="Customize how Signify communicates and translates sign language for you. Choose preferred sign language, input language, speech speed, and captions.">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/cwa/cwasa.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script defer src="/cwa/allcsa.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="/sigml-validator.js"></script>
+  <script src="/user-store.js"></script>
+  <script defer src="/sign-avatar-engine.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #FAF7F2;
+      --card-bg: #FFFFFF;
+      --accent: #C04A22;
+      --accent-hover: #A83E1B;
+      --accent-soft: #FFF5F2;
+      --text-dark: #1C1917;
+      --text-muted: #78716C;
+      --border-color: #E7E5E4;
+      --success-bg: #E6F4EA;
+      --success-text: #137333;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      font-family: 'DM Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Top Navigation Header */
+    .kz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: transparent;
+    }
+    .kz-header__logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1C1917;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .kz-header__logo span { color: var(--accent); }
+    .kz-header__nav {
+      display: flex;
+      list-style: none;
+      gap: 28px;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+    }
+    .kz-header__link {
+      text-decoration: none;
+      color: #57534E;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kz-header__link:hover { color: #1C1917; }
+    .kz-header__link.is-active {
+      color: var(--accent);
+      background: #FFF0EB;
+      border: 1px solid var(--accent);
+      font-weight: 600;
+    }
+
+    .user-nav-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      cursor: pointer;
+    }
+
+    /* Outer Main Workspace Layout */
+    .pref-container {
+      max-width: 1280px;
+      width: 92%;
+      margin: 10px auto 40px auto;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* Left Sidebar Navigation Card */
+    .sidebar-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      color: #57534E;
+      font-weight: 500;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      border: 1px solid transparent;
+      position: relative;
+    }
+
+    .sidebar-item:hover {
+      background: #FAF8F5;
+      color: #1C1917;
+    }
+
+    .sidebar-item.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      border-color: rgba(192, 74, 34, 0.2);
+    }
+    .sidebar-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 4px;
+      background: var(--accent);
+      border-radius: 0 4px 4px 0;
+    }
+    .sidebar-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+    }
+
+    /* Right Section Title Row */
+    .pref-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 46px;
+      font-weight: 700;
+      color: #1C1917;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.5px;
+    }
+    .page-sub {
+      color: #78716C;
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .toast-saved-badge {
+      background: var(--success-bg);
+      color: var(--success-text);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(19, 115, 51, 0.08);
+      transition: opacity 0.3s ease;
+    }
+
+    /* 2-Column Main Body Grid (Left Cards & Right Preview) */
+    .pref-main-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 0.75fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .pref-left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Standard Card Container */
+    .pref-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+    }
+
+    .card-header-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .card-header-icon {
+      width: 28px;
+      height: 28px;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .card-title {
+      font-weight: 700;
+      font-size: 18px;
+      color: #1C1917;
+      margin: 0 0 4px 0;
+    }
+    .card-subtitle {
+      font-size: 13px;
+      color: #78716C;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    /* 3-Column Sign Language Selection Grid */
+    .sign-lang-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .sign-lang-card {
+      background: #FAF8F5;
+      border: 2px solid #E7E5E4;
+      border-radius: 18px;
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sign-lang-card:hover {
+      border-color: #D6D3D1;
+      transform: translateY(-2px);
+    }
+
+    .sign-lang-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 6px 18px rgba(192, 74, 34, 0.12);
+    }
+
+    .card-radio-mark {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #D6D3D1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .sign-lang-card.selected .card-radio-mark {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .lang-icon-wrapper {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(192, 74, 34, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      font-size: 26px;
+      color: var(--accent);
+    }
+
+    .lang-code-heading {
+      font-weight: 800;
+      font-size: 17px;
+      color: #1C1917;
+      margin-bottom: 2px;
+    }
+    .lang-full-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #57534E;
+      margin-bottom: 8px;
+    }
+    .lang-card-desc {
+      font-size: 12px;
+      color: #78716C;
+      line-height: 1.35;
+    }
+
+    /* Input Language Select Row */
+    .input-lang-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .custom-select {
+      background: #FFFFFF;
+      border: 1px solid #D6D3D1;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1C1917;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      min-width: 160px;
+    }
+    .custom-select:focus {
+      border-color: var(--accent);
+    }
+
+    /* Speech & Translation Rows */
+    .settings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .setting-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #F5F5F4;
+    }
+    .setting-item-row:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .setting-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .setting-icon {
+      color: var(--text-muted);
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .setting-label {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1C1917;
+      margin-bottom: 2px;
+    }
+    .setting-hint {
+      font-size: 12px;
+      color: #78716C;
+    }
+
+    /* Toggle Switch Styles */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toggle-status-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #57534E;
+      min-width: 26px;
+    }
+
+    .switch-input {
+      position: absolute;
+      opacity: 0;
+      width: 0; height: 0;
+    }
+    .switch-slider {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+      background-color: #E7E5E4;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .switch-slider::before {
+      content: '';
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .switch-input:checked + .switch-slider {
+      background-color: var(--accent);
+    }
+    .switch-input:checked + .switch-slider::before {
+      transform: translateX(22px);
+    }
+
+    /* Speed Slider Controls */
+    .slider-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 260px;
+    }
+    .range-input {
+      accent-color: var(--accent);
+      width: 100%;
+      cursor: pointer;
+    }
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #78716C;
+      font-weight: 500;
+    }
+
+    /* Right Column: Preview & Actions */
+    .pref-right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .preview-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+
+    .preview-stage-box {
+      background: #FFF0EB;
+      border-radius: 20px;
+      height: 280px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 16px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(192, 74, 34, 0.15);
+    }
+
+    .preview-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 15%;
+      border-radius: 20px;
+    }
+
+    /* CWASA WebGL Canvas Mount inside preview */
+    .preview-stage-box .CWASAAvatar {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+    }
+
+    .preview-play-bar {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 16px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .btn-play-preview {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-play-preview:hover {
+      transform: scale(1.08);
+      background: var(--accent-hover);
+    }
+    .preview-play-text {
+      font-weight: 700;
+      font-size: 13px;
+      color: #1C1917;
+    }
+    .preview-progress-track {
+      height: 4px;
+      background: #E7E5E4;
+      border-radius: 2px;
+      flex: 1;
+      overflow: hidden;
+    }
+    .preview-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    /* Action Buttons Row */
+    .action-buttons-row {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-reset-pref {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      color: #C04A22;
+      padding: 14px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-reset-pref:hover {
+      background: #FFF5F2;
+      border-color: var(--accent);
+    }
+
+    .btn-save-pref {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 14px 24px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(192, 74, 34, 0.3);
+    }
+    .btn-save-pref:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 992px) {
+      .pref-container {
+        grid-template-columns: 1fr;
+      }
+      .pref-main-grid {
+        grid-template-columns: 1fr;
+      }
+      .sign-lang-cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="kz-header" aria-label="Main navigation">
+    <a href="/" class="kz-header__logo">Sign<span>ify</span></a>
+    <ul class="kz-header__nav">
+      <li><a href="/" class="kz-header__link">Home</a></li>
+      <li><a href="/app.html" class="kz-header__link">Translate</a></li>
+      <li><a href="/call.html" class="kz-header__link">Live Call</a></li>
+      <li>
+        <a href="/notifications.html" class="kz-header__link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notifications
+        </a>
+      </li>
+      <li>
+        <a href="/profile.html" class="kz-header__link is-active">
+          <img src="/images/luna_3d.jpg" alt="User Profile Avatar" id="headerUserAvatarImg" class="user-nav-avatar" />
+          Profile
+        </a>
+      </li>
+    </ul>
+  </header>
+
+  <main class="pref-container">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar-card">
+      <a href="/profile.html#profile" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <span>Profile</span>
+      </a>
+
+      <a href="/profile.html#avatar" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </span>
+        <span>Avatar</span>
+      </a>
+
+      <a href="/preferences.html" class="sidebar-item active">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </span>
+        <span>Language & Preferences</span>
+      </a>
+
+      <a href="/accessibility.html" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M18 8H6"/><path d="M12 8v13"/><path d="M9 13l3 3 3-3"/></svg>
+        </span>
+        <span>Accessibility</span>
+      </a>
+
+      <a href="/privacy.html" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </span>
+        <span>Privacy & Security</span>
+      </a>
+
+      <a href="/about.html" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </span>
+        <span>About</span>
+      </a>
+    </aside>
+
+    <!-- RIGHT MAIN SETTINGS CONTENT -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+      <!-- HEADER ROW -->
+      <div class="pref-header-row">
+        <div>
+          <h1 class="page-title">Language & Preferences</h1>
+          <p class="page-sub">Choose how Signify communicates and translates for you.</p>
+        </div>
+
+        <div id="saveToastBadge" class="toast-saved-badge hidden">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          Preferences saved
+        </div>
+      </div>
+
+      <!-- MAIN 2-COLUMN GRID -->
+      <div class="pref-main-grid">
+
+        <!-- LEFT COLUMN: SETTINGS CARDS -->
+        <div class="pref-left-col">
+
+          <!-- CARD 1: PREFERRED SIGN LANGUAGE -->
+          <section class="pref-card">
+            <div class="card-header-wrap">
+              <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v9"/><path d="M18 8a2 2 0 0 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.8-6.7-2.8l-4.7-4.7a2 2 0 0 1 2.8-2.8l3.6 3.6"/></svg>
+              <div>
+                <h2 class="card-title">Preferred Sign Language</h2>
+                <p class="card-subtitle">Select the sign language you want your avatar to use for translations and live calls.</p>
+              </div>
+            </div>
+
+            <div class="sign-lang-cards-grid">
+              
+              <!-- ISL CARD -->
+              <div class="sign-lang-card selected" id="cardLangISL" onclick="selectSignLang('isl')">
+                <div class="card-radio-mark" id="radioISL">✓</div>
+                <div class="lang-icon-wrapper">🤟</div>
+                <div class="lang-code-heading">ISL</div>
+                <div class="lang-full-name">Indian Sign Language</div>
+                <div class="lang-card-desc">Widely used in India. Supports common conversation, education and everyday communication.</div>
+              </div>
+
+              <!-- ASL CARD -->
+              <div class="sign-lang-card" id="cardLangASL" onclick="selectSignLang('asl')">
+                <div class="card-radio-mark" id="radioASL"></div>
+                <div class="lang-icon-wrapper">🤘</div>
+                <div class="lang-code-heading">ASL</div>
+                <div class="lang-full-name">American Sign Language</div>
+                <div class="lang-card-desc">Commonly used in the United States and Canada. Includes a rich vocabulary for daily communication.</div>
+              </div>
+
+              <!-- BSL CARD -->
+              <div class="sign-lang-card" id="cardLangBSL" onclick="selectSignLang('bsl')">
+                <div class="card-radio-mark" id="radioBSL"></div>
+                <div class="lang-icon-wrapper">👐</div>
+                <div class="lang-code-heading">BSL</div>
+                <div class="lang-full-name">British Sign Language</div>
+                <div class="lang-card-desc">Used in the United Kingdom. Supports everyday conversation and professional communication.</div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- CARD 2: INPUT LANGUAGE -->
+          <section class="pref-card">
+            <div class="input-lang-row">
+              <div style="display:flex; align-items:flex-start; gap:12px;">
+                <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h6"/></svg>
+                <div>
+                  <h2 class="card-title">Input Language</h2>
+                  <p class="card-subtitle">Select the language you speak or type in. It will be translated to sign language.</p>
+                </div>
+              </div>
+
+              <select id="selectInputLang" class="custom-select" onchange="markPreferencesDirty()">
+                <option value="en">English</option>
+                <option value="hi">Hindi (हिंदी)</option>
+                <option value="ta">Tamil (தமிழ்)</option>
+                <option value="de">German (Deutsch)</option>
+                <option value="fr">French (Français)</option>
+                <option value="es">Spanish (Español)</option>
+              </select>
+            </div>
+          </section>
+
+          <!-- CARD 3: SPEECH & TRANSLATION SETTINGS -->
+          <section class="pref-card">
+            <div class="card-header-wrap">
+              <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <div>
+                <h2 class="card-title">Speech & Translation</h2>
+                <p class="card-subtitle">Customize how speech, captions and sign animations work.</p>
+              </div>
+            </div>
+
+            <div class="settings-list">
+              
+              <!-- SETTING 1: SPEECH RECOGNITION -->
+              <div class="setting-item-row">
+                <div class="setting-left">
+                  <svg class="setting-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+                  <div>
+                    <div class="setting-label">Speech Recognition</div>
+                    <div class="setting-hint">Convert your speech to text for translation.</div>
+                  </div>
+                </div>
+
+                <div class="toggle-wrap">
+                  <label class="switch-slider-wrap">
+                    <input type="checkbox" id="toggleSpeechRec" class="switch-input" checked onchange="updateToggleText('toggleSpeechRec', 'statusSpeechRec')" />
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span id="statusSpeechRec" class="toggle-status-text">On</span>
+                </div>
+              </div>
+
+              <!-- SETTING 2: AUTO-PLAY SIGN ANIMATION -->
+              <div class="setting-item-row">
+                <div class="setting-left">
+                  <svg class="setting-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <div>
+                    <div class="setting-label">Auto-play Sign Animation</div>
+                    <div class="setting-hint">Automatically play the sign animation after translation.</div>
+                  </div>
+                </div>
+
+                <div class="toggle-wrap">
+                  <label class="switch-slider-wrap">
+                    <input type="checkbox" id="toggleAutoPlay" class="switch-input" checked onchange="updateToggleText('toggleAutoPlay', 'statusAutoPlay')" />
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span id="statusAutoPlay" class="toggle-status-text">On</span>
+                </div>
+              </div>
+
+              <!-- SETTING 3: SPEECH SPEED SLIDER -->
+              <div class="setting-item-row">
+                <div class="setting-left">
+                  <svg class="setting-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <div>
+                    <div class="setting-label">Speech Speed</div>
+                    <div class="setting-hint">Adjust the speed of the avatar's sign animation and speech output.</div>
+                  </div>
+                </div>
+
+                <div class="slider-wrap">
+                  <input type="range" id="sliderSpeed" class="range-input" min="0.5" max="1.5" step="0.25" value="1.0" oninput="markPreferencesDirty()" />
+                  <div class="slider-labels">
+                    <span>Slower</span>
+                    <span>Normal</span>
+                    <span>Faster</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SETTING 4: CAPTION LANGUAGE -->
+              <div class="setting-item-row">
+                <div class="setting-left">
+                  <svg class="setting-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h4"/><path d="M15 15h2"/><path d="M7 11h10"/></svg>
+                  <div>
+                    <div class="setting-label">Caption Language</div>
+                    <div class="setting-hint">Select the language for captions shown on screen.</div>
+                  </div>
+                </div>
+
+                <select id="selectCaptionLang" class="custom-select" onchange="markPreferencesDirty()">
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
+                  <option value="ta">Tamil</option>
+                  <option value="de">German</option>
+                  <option value="fr">French</option>
+                </select>
+              <!-- SETTING 5: SMART REPLY & LIVE CALL SUGGESTIONS -->
+              <div class="setting-item-row">
+                <div class="setting-left">
+                  <svg class="setting-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6"/><path d="M9 10h6"/></svg>
+                  <div>
+                    <div class="setting-label">Live Call Smart Suggestions</div>
+                    <div class="setting-hint">Display AI-powered smart replies and response predictions during Live Calls.</div>
+                  </div>
+                </div>
+
+                <div class="toggle-wrap">
+                  <label class="switch-slider-wrap">
+                    <input type="checkbox" id="toggleSmartSuggestions" class="switch-input" checked onchange="updateToggleText('toggleSmartSuggestions', 'statusSmartSuggestions')" />
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span id="statusSmartSuggestions" class="toggle-status-text">On</span>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
+
+        <!-- RIGHT COLUMN: LANGUAGE PREVIEW & ACTIONS -->
+        <div class="pref-right-col">
+
+          <!-- PREVIEW CARD -->
+          <div class="preview-card">
+            <div class="card-header-wrap" style="margin-bottom: 8px;">
+              <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <div>
+                <h2 class="card-title">Language Preview</h2>
+                <p class="card-subtitle" id="previewSubText">Your avatar will use ISL signs for translations and Live Calls.</p>
+              </div>
+            </div>
+
+            <!-- Avatar 3D Stage -->
+            <div class="preview-stage-box" id="previewAvatarStage">
+              <!-- CWASA WebGL Mount -->
+              <div class="CWASAAvatar av0 SToCA" id="previewCwasaMount" style="width:100%!important; height:100%!important; position:absolute; inset:0; z-index:5;"></div>
+
+              <!-- 3D Avatar Image Character Stage -->
+              <img src="/images/luna_3d.jpg" alt="Selected 3D Avatar Character" id="previewAvatarImg" class="preview-avatar-img" />
+            </div>
+
+            <!-- Play Preview Control Bar -->
+            <div class="preview-play-bar">
+              <button type="button" class="btn-play-preview" onclick="playAvatarPreviewAnimation()" title="Play Sign Animation">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+              
+              <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                <span class="preview-play-text" id="previewPlayLabel">Example: "Hello" (ISL)</span>
+                <div class="preview-progress-track">
+                  <div class="preview-progress-fill" id="previewProgressFill"></div>
+                </div>
+              </div>
+            </div>
+
+            <p style="font-size:12px; color:#78716C; margin-top:14px; margin-bottom:0; text-align:center;">This is a preview of how your avatar will perform signs in the selected language.</p>
+          </div>
+
+          <!-- BOTTOM ACTION BUTTONS -->
+          <div class="action-buttons-row">
+            <button type="button" class="btn-reset-pref" onclick="confirmResetDefaults()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6"/><path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              Reset to Default
+            </button>
+
+            <button type="button" class="btn-save-pref" onclick="saveUserPreferences()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Save Preferences
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let currentUser = null;
+    let selectedSignLang = 'isl';
+    let isDirty = false;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadUserPreferences();
+    });
+
+    async function loadUserPreferences() {
+      currentUser = SignifyUserStore.getLoggedInUser();
+      
+      // Update top nav avatar image
+      const headerImg = document.getElementById('headerUserAvatarImg');
+      if (headerImg) {
+        headerImg.src = (currentUser.name && currentUser.name.toLowerCase().includes('keerthi')) ? '/images/anna_3d.jpg' : '/images/luna_3d.jpg';
+      }
+
+      const userData = await SignifyUserStore.loadUserData();
+      const prefs = userData.preferences || {};
+      const avSettings = userData.avatarSettings || {};
+
+      // Update active selected sign language
+      selectedSignLang = prefs.signLanguage || 'isl';
+      updateSignLangCardUI(selectedSignLang);
+
+      // Input Language
+      const inputSelect = document.getElementById('selectInputLang');
+      if (inputSelect) inputSelect.value = prefs.inputLanguage || 'en';
+
+      // Speech Recognition Toggle
+      const toggleSpeech = document.getElementById('toggleSpeechRec');
+      if (toggleSpeech) {
+        toggleSpeech.checked = prefs.speechRecognition !== false;
+        updateToggleText('toggleSpeechRec', 'statusSpeechRec');
+      }
+
+      // Auto-play Toggle
+      const toggleAuto = document.getElementById('toggleAutoPlay');
+      if (toggleAuto) {
+        toggleAuto.checked = prefs.autoPlay !== false;
+        updateToggleText('toggleAutoPlay', 'statusAutoPlay');
+      }
+
+      // Speech Speed Slider
+      const speedSlider = document.getElementById('sliderSpeed');
+      if (speedSlider) speedSlider.value = prefs.speechSpeed || 1.0;
+
+      // Smart Suggestions Toggle
+      const toggleSmart = document.getElementById('toggleSmartSuggestions');
+      if (toggleSmart) {
+        toggleSmart.checked = prefs.smartSuggestions !== false;
+        updateToggleText('toggleSmartSuggestions', 'statusSmartSuggestions');
+      }
+
+      // Caption Language
+      const captionSelect = document.getElementById('selectCaptionLang');
+      if (captionSelect) captionSelect.value = prefs.captionLanguage || 'en';
+
+      // Preview Avatar Image
+      const previewImg = document.getElementById('previewAvatarImg');
+      if (previewImg) {
+        const charAvatar = avSettings.selectedAvatar === 'anna' ? '/images/anna_3d.jpg' : '/images/luna_3d.jpg';
+        previewImg.src = charAvatar;
+      }
+
+      // Initialize Sign Avatar Engine
+      if (window.SignAvatarEngine) {
+        await window.SignAvatarEngine.init(selectedSignLang);
+      }
+    }
+
+    function selectSignLang(code) {
+      selectedSignLang = code;
+      updateSignLangCardUI(code);
+      markPreferencesDirty();
+
+      if (window.SignAvatarEngine) {
+        window.SignAvatarEngine.langManager.setLanguage(code);
+      }
+    }
+
+    function updateSignLangCardUI(code) {
+      const cards = ['isl', 'asl', 'bsl'];
+      cards.forEach(c => {
+        const cardElem = document.getElementById('cardLang' + c.toUpperCase());
+        const radioElem = document.getElementById('radio' + c.toUpperCase());
+        if (cardElem) {
+          if (c === code) {
+            cardElem.classList.add('selected');
+            if (radioElem) radioElem.textContent = '✓';
+          } else {
+            cardElem.classList.remove('selected');
+            if (radioElem) radioElem.textContent = '';
+          }
+        }
+      });
+
+      const langName = code.toUpperCase();
+      const previewSubText = document.getElementById('previewSubText');
+      if (previewSubText) {
+        previewSubText.textContent = `Your avatar will use ${langName} signs for translations and Live Calls.`;
+      }
+
+      const previewPlayLabel = document.getElementById('previewPlayLabel');
+      if (previewPlayLabel) {
+        previewPlayLabel.textContent = `Example: "Hello" (${langName})`;
+      }
+    }
+
+    function updateToggleText(inputId, textId) {
+      const input = document.getElementById(inputId);
+      const textElem = document.getElementById(textId);
+      if (input && textElem) {
+        textElem.textContent = input.checked ? 'On' : 'Off';
+      }
+      markPreferencesDirty();
+    }
+
+    function markPreferencesDirty() {
+      isDirty = true;
+    }
+
+    async function saveUserPreferences() {
+      const inputLang = document.getElementById('selectInputLang').value;
+      const speechRec = document.getElementById('toggleSpeechRec').checked;
+      const autoPlay = document.getElementById('toggleAutoPlay').checked;
+      const speed = parseFloat(document.getElementById('sliderSpeed').value);
+      const captionLang = document.getElementById('selectCaptionLang').value;
+      const smartSugg = document.getElementById('toggleSmartSuggestions') ? document.getElementById('toggleSmartSuggestions').checked : true;
+
+      const updatedPrefs = {
+        signLanguage: selectedSignLang,
+        inputLanguage: inputLang,
+        speechRecognition: speechRec,
+        autoPlay: autoPlay,
+        speechSpeed: speed,
+        captionLanguage: captionLang,
+        smartSuggestions: smartSugg,
+        theme: 'light'
+      };
+
+      await SignifyUserStore.updateField('preferences', updatedPrefs);
+
+      if (window.SignAvatarEngine) {
+        window.SignAvatarEngine.langManager.setLanguage(selectedSignLang);
+      }
+
+      // Show Toast Notification
+      const toast = document.getElementById('saveToastBadge');
+      if (toast) {
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 3000);
+      }
+
+      isDirty = false;
+    }
+
+    async function confirmResetDefaults() {
+      if (!confirm('Reset all language and translation preferences to default values?')) return;
+
+      const defaultPrefs = {
+        signLanguage: 'isl',
+        inputLanguage: 'en',
+        speechRecognition: true,
+        autoPlay: true,
+        speechSpeed: 1.0,
+        captionLanguage: 'en',
+        theme: 'light'
+      };
+
+      await SignifyUserStore.updateField('preferences', defaultPrefs);
+      await loadUserPreferences();
+
+      // Show toast
+      const toast = document.getElementById('saveToastBadge');
+      if (toast) {
+        toast.textContent = '✓ Preferences reset to defaults';
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 3000);
+      }
+    }
+
+    function playAvatarPreviewAnimation() {
+      const progressFill = document.getElementById('previewProgressFill');
+      if (progressFill) {
+        progressFill.style.width = '0%';
+        setTimeout(() => { progressFill.style.width = '100%'; }, 50);
+        setTimeout(() => { progressFill.style.width = '0%'; }, 2500);
+      }
+
+      if (window.SignAvatarEngine) {
+        window.SignAvatarEngine.speak(0, 'Hello');
+      }
+    }
+  </script>
+</body>
+</html>
