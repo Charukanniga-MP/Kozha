@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signify — DELLAR Lab</title>
+  <meta name="description" content="DELLAR Lab — Decoupled Entity-Locus Lifecycle Association & Rebinding experimental AI tracking module for Signify.">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  
+  <script src="/user-store.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #FAF7F2;
+      --card-bg: #FFFFFF;
+      --accent: #C04A22;
+      --accent-hover: #A83E1B;
+      --accent-soft: #FFF0EB;
+      --accent-border: #FADCD0;
+      --text-dark: #1C1917;
+      --text-muted: #78716C;
+      --text-medium: #57534E;
+      --border-color: #E7E5E4;
+      --success: #16A34A;
+      --warning: #EA580C;
+      --purple: #9333EA;
+      --danger: #DC2626;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      font-family: 'DM Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Top Navigation Header */
+    .kz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 56px;
+      background: transparent;
+    }
+    .kz-header__left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .kz-header__logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: #1C1917;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .kz-header__logo span { color: var(--accent); }
+    .kz-header__nav {
+      display: flex;
+      list-style: none;
+      gap: 28px;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+    }
+    .kz-header__link {
+      text-decoration: none;
+      color: #57534E;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+    .kz-header__link:hover { color: #1C1917; }
+    .kz-header__link.is-active {
+      color: var(--accent);
+      background: #FFF0EB;
+      font-weight: 600;
+    }
+    .nav-badge {
+      background: #DC2626;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-left: -2px;
+    }
+
+    .user-nav-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      cursor: pointer;
+    }
+
+    /* Main Container Layout - Spacious Full-Desktop Width */
+    .dellar-container {
+      max-width: 1560px;
+      width: 95%;
+      margin: 10px auto 48px auto;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* Left Settings Sidebar Navigation Card */
+    .sidebar-card {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.015);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 18px;
+      border-radius: 14px;
+      color: #57534E;
+      font-weight: 500;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+
+    .sidebar-item:hover {
+      background: #FAF8F5;
+      color: #1C1917;
+    }
+
+    .sidebar-item.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      border-color: var(--accent-border);
+    }
+
+    .sidebar-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+    }
+
+    /* Main Content Area */
+    .dellar-main {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Header Section (Title + Subtitle + Experimental Card) */
+    .dellar-header-grid {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .settings-back-link {
+      color: #78716C;
+      font-size: 14.5px;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      transition: color 0.2s;
+    }
+    .settings-back-link:hover { color: #1C1917; }
+
+    .page-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: #1C1917;
+      margin: 2px 0 8px 0;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .exp-badge {
+      font-family: 'DM Sans', sans-serif;
+      background: #FAF0E6;
+      border: 1px solid #F3D7CA;
+      color: var(--accent);
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0;
+    }
+
+    .subhead-bold {
+      font-weight: 700;
+      font-size: 16.5px;
+      color: #2C2825;
+      margin-bottom: 8px;
+    }
+
+    .page-desc {
+      color: #78716C;
+      font-size: 14.5px;
+      line-height: 1.55;
+      margin: 0;
+      max-width: 780px;
+    }
+
+    /* Experimental Feature Info Card */
+    .exp-feature-card {
+      background: #FAF3EC;
+      border: 1px solid #F0E3D7;
+      border-radius: 20px;
+      padding: 20px 24px;
+    }
+    .exp-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      color: #1C1917;
+      margin-bottom: 10px;
+    }
+    .exp-info-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .exp-card-text {
+      color: #6E6761;
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* Shared Card Styling */
+    .card-base {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 22px;
+      padding: 26px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.015);
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 18px;
+      color: #1C1917;
+    }
+    .card-header-icon {
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+    }
+
+    /* Row 1: Tracking Card + Top Metrics */
+    .top-status-row {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    /* DELLAR Tracking Card */
+    .dellar-track-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 22px;
+      padding: 26px 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.015);
+    }
+    .track-card-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .track-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #FFF0EB;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .track-card-title {
+      font-weight: 700;
+      font-size: 19px;
+      color: #1C1917;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .status-dot-ready {
+      color: var(--success);
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .track-card-desc {
+      color: #78716C;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* Toggle Switch */
+    .track-card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .toggle-label-text {
+      font-weight: 700;
+      font-size: 15.5px;
+      color: #1C1917;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 54px;
+      height: 30px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #D6D3D1;
+      transition: .3s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 24px;
+      width: 24px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    input:checked + .slider {
+      background-color: var(--accent);
+    }
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+    .toggle-subtext {
+      font-size: 13px;
+      color: #A8A29E;
+    }
+
+    /* 4 Top Metric Cards Grid */
+    .metrics-quad-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .metric-card-sm {
+      background: #FFFFFF;
+      border: 1px solid #E7E5E4;
+      border-radius: 20px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.01);
+    }
+    .metric-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .metric-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon-bg-green { background: #E6F4EA; color: var(--success); }
+    .icon-bg-orange { background: #FFF0EB; color: var(--accent); }
+    .icon-bg-purple { background: #F3E8FF; color: var(--purple); }
+    .icon-bg-red { background: #FEE2E2; color: var(--danger); }
+
+    .metric-value-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: #1C1917;
+      line-height: 1;
+      margin-top: 12px;
+    }
+    .metric-label-text {
+      font-size: 13px;
+      color: #78716C;
+      font-weight: 500;
+      margin-top: 6px;
+    }
+
+    /* Main Central Grid (3 Columns) */
+    .central-grid {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Live Entity Tracking Card */
+    .camera-select-btn {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13.5px;
+      color: #57534E;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .video-viewport-box {
+      position: relative;
+      width: 100%;
+      height: 410px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #1C1917;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    }
+    .video-bg-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: brightness(0.95);
+    }
+
+    /* Canvas Landmarks Overlay */
+    .video-overlay-canvas {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+    }
+
+    /* Bounding Box Labels */
+    .entity-tag-label {
+      position: absolute;
+      padding: 4px 12px;
+      border-radius: 8px;
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+    .tag-green { background: #22C55E; }
+    .tag-orange { background: #F97316; }
+    .tag-purple { background: #A855F7; }
+
+    /* SVG Bounding Boxes Overlay */
+    .bounding-box-svg {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Live Tracking Bottom Badge */
+    .live-status-pill {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(28, 25, 23, 0.85);
+      backdrop-filter: blur(8px);
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 12;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .live-dot-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #EF4444;
+      box-shadow: 0 0 8px #EF4444;
+    }
+    .live-dot-pulse.active-green {
+      background: #22C55E;
+      box-shadow: 0 0 8px #22C55E;
+    }
+
+    /* Right Action Bar Inside Video */
+    .video-action-bar {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 12;
+    }
+    .video-act-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(28, 25, 23, 0.78);
+      backdrop-filter: blur(8px);
+      color: #FFFFFF;
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .video-act-btn:hover {
+      background: rgba(192, 74, 34, 0.9);
+      transform: scale(1.05);
+    }
+
+    /* Entity Status Card */
+    .entity-list-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .entity-row-card {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .entity-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: #E7E5E4;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .entity-thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .entity-details {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+    .entity-id-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #1C1917;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot-green { color: #22C55E; }
+    .dot-orange { color: #F97316; }
+    .dot-purple { color: #A855F7; }
+    .dot-red { color: #EF4444; }
+
+    .entity-meta-text {
+      font-size: 12.5px;
+      color: #78716C;
+    }
+    .entity-meta-text strong {
+      color: #44403C;
+    }
+
+    /* Tracking Settings Card */
+    .settings-form-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .setting-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #44403C;
+    }
+    .setting-val-tag {
+      color: #78716C;
+      font-weight: 500;
+    }
+    .custom-range-input {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .custom-select {
+      width: 100%;
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      color: #1C1917;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+    }
+    .checkbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .custom-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+      color: #44403C;
+      cursor: pointer;
+      user-select: none;
+    }
+    .custom-checkbox-label input {
+      accent-color: var(--accent);
+      width: 17px; height: 17px;
+      cursor: pointer;
+    }
+
+    /* Bottom Row (Diagnostics, Events, Use in Signify) */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    /* Diagnostics Sub-Grid */
+    .diag-subgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 6px;
+    }
+    .diag-card-mini {
+      background: #FAF8F5;
+      border: 1px solid #E7E5E4;
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .diag-val-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Instrument Serif', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #1C1917;
+    }
+    .diag-icon { color: var(--accent); }
+    .diag-label {
+      font-size: 12.5px;
+      color: #78716C;
+      font-weight: 500;
+    }
+
+    /* Recent Events List */
+    .events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .event-item-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #F5F5F4;
+    }
+    .event-time {
+      color: #A8A29E;
+      font-variant-numeric: tabular-nums;
+      width: 62px;
+    }
+    .event-entity {
+      font-weight: 700;
+      color: #1C1917;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 80px;
+    }
+    .event-msg {
+      color: #57534E;
+      flex: 1;
+    }
+
+    /* Use in Signify Box */
+    .use-signify-desc {
+      color: #78716C;
+      font-size: 14px;
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+    .btn-connect-signify {
+      background: var(--accent);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 34px;
+      padding: 14px 24px;
+      font-weight: 600;
+      font-size: 14.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(192, 74, 34, 0.25);
+    }
+    .btn-connect-signify:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+    .btn-connect-signify.connected {
+      background: #16A34A;
+      box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 1200px) {
+      .dellar-container { grid-template-columns: 1fr; }
+      .sidebar-card { display: flex; flex-row: wrap; overflow-x: auto; }
+      .central-grid { grid-template-columns: 1fr; }
+      .bottom-grid { grid-template-columns: 1fr; }
+      .top-status-row { grid-template-columns: 1fr; }
+      .dellar-header-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="kz-header" aria-label="Main navigation">
+    <div class="kz-header__left">
+      <a href="/" class="kz-header__logo">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
+          <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"/>
+          <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+          <path d="M18 8a2 2 0 0 1 2 2v4a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+        </svg>
+        Sign<span>ify</span>
+      </a>
+    </div>
+    <ul class="kz-header__nav">
+      <li><a href="/" class="kz-header__link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a></li>
+      <li><a href="/app.html" class="kz-header__link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6"/><path d="M4 14e1 0 0 1 0-2"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
+        Translate
+      </a></li>
+      <li><a href="/call.html" class="kz-header__link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        Live Call
+      </a></li>
+      <li>
+        <a href="/notifications.html" class="kz-header__link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notifications
+          <span class="nav-badge">3</span>
+        </a>
+      </li>
+      <li>
+        <a href="/profile.html" class="kz-header__link">
+          <img src="/images/luna_3d.jpg" alt="User Profile Avatar" id="headerUserAvatarImg" class="user-nav-avatar" />
+          Profile
+        </a>
+      </li>
+    </ul>
+  </header>
+
+  <!-- Outer Workspace Layout -->
+  <main class="dellar-container">
+
+    <!-- LEFT SETTINGS SIDEBAR -->
+    <aside class="sidebar-card">
+      <a href="/profile.html#profile" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <span>Profile</span>
+      </a>
+
+      <a href="/profile.html#avatar" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </span>
+        <span>Avatar</span>
+      </a>
+
+      <a href="/preferences.html" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </span>
+        <span>Language & Preferences</span>
+      </a>
+
+      <a href="/accessibility.html" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M18 9l-6 1-6-1"/><path d="M12 10v10"/><path d="M8 22l4-7 4 7"/></svg>
+        </span>
+        <span>Accessibility</span>
+      </a>
+
+      <a href="/privacy.html" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </span>
+        <span>Privacy & Security</span>
+      </a>
+
+      <a href="/about.html" class="sidebar-item">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </span>
+        <span>About</span>
+      </a>
+
+      <!-- DELLAR Lab Active Item -->
+      <a href="/dellar-lab.html" class="sidebar-item active">
+        <span class="sidebar-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55A2 2 0 0 0 6.504 23.5h10.992a2 2 0 0 0 1.784-2.95l-5.069-10.127A2 2 0 0 1 14 9.527V2"/>
+            <line x1="8.5" y1="2" x2="15.5" y2="2"/>
+          </svg>
+        </span>
+        <span>DELLAR Lab</span>
+      </a>
+    </aside>
+
+    <!-- RIGHT MAIN CONTENT WORKSPACE -->
+    <div class="dellar-main">
+
+      <!-- MAIN PAGE HEADER GRID -->
+      <div class="dellar-header-grid">
+        <div>
+          <a href="/preferences.html" class="settings-back-link">&lt; Settings</a>
+          <h1 class="page-title">
+            DELLAR Lab
+            <span class="exp-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55A2 2 0 0 0 6.504 23.5h10.992a2 2 0 0 0 1.784-2.95l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><line x1="8.5" y1="2" x2="15.5" y2="2"/></svg>
+              Experimental
+            </span>
+          </h1>
+          <div class="subhead-bold">Decoupled Entity–Locus Lifecycle Association & Rebinding</div>
+          <p class="page-desc">
+            DELLAR is an experimental AI tracking module designed to track, associate and rebind entities across video streams. This page allows you to test, visualize and analyze DELLAR in real time.
+          </p>
+        </div>
+
+        <!-- EXPERIMENTAL FEATURE CARD -->
+        <div class="exp-feature-card">
+          <div class="exp-card-header">
+            <div class="exp-info-icon">i</div>
+            Experimental Feature
+          </div>
+          <p class="exp-card-text">
+            DELLAR is an independent research module. Enabling it does not affect your normal Signify communication unless explicitly integrated into the recognition pipeline.
+          </p>
+        </div>
+      </div>
+
+      <!-- ROW 1: DELLAR TRACKING CARD + 4 TOP METRIC CARDS -->
+      <div class="top-status-row">
+        <!-- DELLAR Tracking Card -->
+        <div class="dellar-track-card">
+          <div class="track-card-left">
+            <div class="track-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <div>
+              <div class="track-card-title">
+                DELLAR Tracking
+                <span class="status-dot-ready">● Ready</span>
+              </div>
+              <div class="track-card-desc">Enable DELLAR to start real-time entity tracking using your camera.</div>
+            </div>
+          </div>
+          <div class="track-card-right">
+            <div class="toggle-row">
+              <span class="toggle-label-text">Enable DELLAR</span>
+              <label class="switch">
+                <input type="checkbox" id="dellarMasterToggle" onchange="handleMasterToggleChange(this)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="toggleSubtext" class="toggle-subtext">Currently disabled</div>
+          </div>
+        </div>
+
+        <!-- 4 Compact Metric Cards -->
+        <div class="metrics-quad-grid">
+          <!-- Metric 1: Active Entities -->
+          <div class="metric-card-sm">
+            <div class="metric-header">
+              <div class="metric-icon-wrap icon-bg-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+            </div>
+            <div>
+              <div id="valActiveEntities" class="metric-value-num">04</div>
+              <div class="metric-label-text">Active Entities</div>
+            </div>
+          </div>
+
+          <!-- Metric 2: Total Associations -->
+          <div class="metric-card-sm">
+            <div class="metric-header">
+              <div class="metric-icon-wrap icon-bg-orange">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+            </div>
+            <div>
+              <div id="valAssociations" class="metric-value-num">24</div>
+              <div class="metric-label-text">Total Associations</div>
+            </div>
+          </div>
+
+          <!-- Metric 3: Rebindings -->
+          <div class="metric-card-sm">
+            <div class="metric-header">
+              <div class="metric-icon-wrap icon-bg-purple">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              </div>
+            </div>
+            <div>
+              <div id="valRebindings" class="metric-value-num">07</div>
+              <div class="metric-label-text">Rebindings</div>
+            </div>
+          </div>
+
+          <!-- Metric 4: Lost Entities -->
+          <div class="metric-card-sm">
+            <div class="metric-header">
+              <div class="metric-icon-wrap icon-bg-red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.93 4.93l14.14 14.14"/><path d="M1.41 1.41l21.18 21.18"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/></svg>
+              </div>
+            </div>
+            <div>
+              <div id="valLostEntities" class="metric-value-num">03</div>
+              <div class="metric-label-text">Lost Entities</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN CENTRAL GRID (3 Columns) -->
+      <div class="central-grid">
+
+        <!-- COLUMN 1: LIVE ENTITY TRACKING VIDEO CARD -->
+        <div class="card-base" style="grid-column: span 1;">
+          <div class="card-title-row">
+            <div class="card-title-group">
+              <span class="card-header-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              </span>
+              Live Entity Tracking
+            </div>
+            <button class="camera-select-btn" onclick="switchCamera()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span id="cameraNameLabel">Camera: Integrated Webcam</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+
+          <!-- Video Viewport Frame -->
+          <div id="videoViewportBox" class="video-viewport-box">
+            <img src="/images/nova_3d.jpg" alt="Live Tracking Video Preview" class="video-bg-img" />
+
+            <!-- SVG Bounding Boxes Overlay -->
+            <svg id="svgBoxesLayer" class="bounding-box-svg" viewBox="0 0 600 360" preserveAspectRatio="none">
+              <!-- Bounding Box Entity 01 (Left Hand) -->
+              <rect class="box-layer-item" x="135" y="180" width="115" height="110" rx="10" fill="rgba(34, 197, 94, 0.12)" stroke="#22C55E" stroke-width="2.5" />
+              <!-- Landmark keypoints Entity 01 -->
+              <g class="landmarks-layer-item">
+                <line x1="190" y1="270" x2="160" y2="220" stroke="#22C55E" stroke-width="1.5" />
+                <line x1="190" y1="270" x2="185" y2="205" stroke="#22C55E" stroke-width="1.5" />
+                <line x1="190" y1="270" x2="210" y2="210" stroke="#22C55E" stroke-width="1.5" />
+                <line x1="190" y1="270" x2="230" y2="230" stroke="#22C55E" stroke-width="1.5" />
+                <circle cx="190" cy="270" r="4" fill="#22C55E" />
+                <circle cx="160" cy="220" r="3.5" fill="#22C55E" />
+                <circle cx="185" cy="205" r="3.5" fill="#22C55E" />
+                <circle cx="210" cy="210" r="3.5" fill="#22C55E" />
+                <circle cx="230" cy="230" r="3.5" fill="#22C55E" />
+              </g>
+
+              <!-- Bounding Box Entity 02 (Right Hand) -->
+              <rect class="box-layer-item" x="370" y="175" width="115" height="115" rx="10" fill="rgba(249, 115, 22, 0.12)" stroke="#F97316" stroke-width="2.5" />
+              <!-- Landmark keypoints Entity 02 -->
+              <g class="landmarks-layer-item">
+                <line x1="425" y1="270" x2="390" y2="225" stroke="#F97316" stroke-width="1.5" />
+                <line x1="425" y1="270" x2="415" y2="200" stroke="#F97316" stroke-width="1.5" />
+                <line x1="425" y1="270" x2="445" y2="205" stroke="#F97316" stroke-width="1.5" />
+                <line x1="425" y1="270" x2="465" y2="225" stroke="#F97316" stroke-width="1.5" />
+                <circle cx="425" cy="270" r="4" fill="#F97316" />
+                <circle cx="390" cy="225" r="3.5" fill="#F97316" />
+                <circle cx="415" cy="200" r="3.5" fill="#F97316" />
+                <circle cx="445" cy="205" r="3.5" fill="#F97316" />
+                <circle cx="465" cy="225" r="3.5" fill="#F97316" />
+              </g>
+
+              <!-- Bounding Box Entity 03 (Face / Head) -->
+              <rect class="box-layer-item" x="250" y="45" width="125" height="135" rx="14" fill="rgba(168, 85, 247, 0.12)" stroke="#A855F7" stroke-width="2.5" />
+              <!-- Face landmarks Entity 03 -->
+              <g class="landmarks-layer-item">
+                <circle cx="285" cy="85" r="3" fill="#A855F7" />
+                <circle cx="335" cy="85" r="3" fill="#A855F7" />
+                <circle cx="310" cy="108" r="3" fill="#A855F7" />
+                <circle cx="295" cy="135" r="3" fill="#A855F7" />
+                <circle cx="325" cy="135" r="3" fill="#A855F7" />
+                <path d="M 285 80 Q 310 70 335 80" fill="none" stroke="#A855F7" stroke-width="1.2" />
+                <path d="M 290 135 Q 310 145 330 135" fill="none" stroke="#A855F7" stroke-width="1.2" />
+              </g>
+            </svg>
+
+            <!-- Entity ID Badges -->
+            <div class="entity-tag-label tag-green ids-layer-item" style="left: 24%; top: 44%;">Entity 01</div>
+            <div class="entity-tag-label tag-orange ids-layer-item" style="left: 63%; top: 43%;">Entity 02</div>
+            <div class="entity-tag-label tag-purple ids-layer-item" style="left: 43%; top: 8%;">Entity 03</div>
+
+            <!-- Bottom Left Live Badge -->
+            <div class="live-status-pill">
+              <span id="liveDotIndicator" class="live-dot-pulse"></span>
+              <span id="liveTextIndicator">Live Tracking</span>
+            </div>
+
+            <!-- Right Action Bar Buttons -->
+            <div class="video-action-bar">
+              <button class="video-act-btn" onclick="toggleFullscreen()" title="Fullscreen View">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              </button>
+              <button class="video-act-btn" onclick="takeSnapshot()" title="Capture Snapshot">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </button>
+              <button class="video-act-btn" onclick="focusSettings()" title="Tracking Settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMN 2: ENTITY STATUS CARD -->
+        <div class="card-base">
+          <div class="card-title-row">
+            <div class="card-title-group">
+              <span class="card-header-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              </span>
+              Entity Status
+            </div>
+          </div>
+
+          <div class="entity-list-col">
+            <!-- Entity 01 -->
+            <div class="entity-row-card">
+              <div class="entity-thumb" style="border: 1px solid #22C55E;">
+                <img src="/images/nova_3d.jpg" style="object-position: left bottom;" />
+              </div>
+              <div class="entity-details">
+                <div class="entity-id-title"><span class="dot-green">●</span> Entity 01</div>
+                <div class="entity-meta-text">Type: <strong>Left Hand</strong></div>
+                <div class="entity-meta-text">Status: <strong>Active</strong> &bull; Conf: <strong>92%</strong></div>
+              </div>
+            </div>
+
+            <!-- Entity 02 -->
+            <div class="entity-row-card">
+              <div class="entity-thumb" style="border: 1px solid #F97316;">
+                <img src="/images/nova_3d.jpg" style="object-position: right bottom;" />
+              </div>
+              <div class="entity-details">
+                <div class="entity-id-title"><span class="dot-orange">●</span> Entity 02</div>
+                <div class="entity-meta-text">Type: <strong>Right Hand</strong></div>
+                <div class="entity-meta-text">Status: <strong>Active</strong> &bull; Conf: <strong>88%</strong></div>
+              </div>
+            </div>
+
+            <!-- Entity 03 -->
+            <div class="entity-row-card">
+              <div class="entity-thumb" style="border: 1px solid #A855F7;">
+                <img src="/images/nova_3d.jpg" style="object-position: center top;" />
+              </div>
+              <div class="entity-details">
+                <div class="entity-id-title"><span class="dot-purple">●</span> Entity 03</div>
+                <div class="entity-meta-text">Type: <strong>Face / Head</strong></div>
+                <div class="entity-meta-text">Status: <strong>Active</strong> &bull; Conf: <strong>91%</strong></div>
+              </div>
+            </div>
+
+            <!-- Entity 04 -->
+            <div class="entity-row-card" style="opacity: 0.85;">
+              <div class="entity-thumb" style="background: #E7E5E4; display: flex; align-items: center; justify-content: center;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#78716C" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div class="entity-details">
+                <div class="entity-id-title"><span class="dot-red">●</span> Entity 04</div>
+                <div class="entity-meta-text">Type: <strong>Unknown</strong></div>
+                <div class="entity-meta-text">Status: <strong style="color:#DC2626;">Lost</strong> &bull; Last seen: <strong>2.3s ago</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMN 3: TRACKING SETTINGS CARD -->
+        <div class="card-base" id="trackingSettingsCard">
+          <div class="card-title-row">
+            <div class="card-title-group">
+              <span class="card-header-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              </span>
+              Tracking Settings
+            </div>
+          </div>
+
+          <div class="settings-form-col">
+            <!-- Detection Sensitivity Slider -->
+            <div class="setting-group">
+              <div class="setting-label-row">
+                <span>Detection Sensitivity</span>
+                <span id="lblSensVal" class="setting-val-tag">70%</span>
+              </div>
+              <input type="range" min="10" max="100" value="70" class="custom-range-input" oninput="document.getElementById('lblSensVal').innerText = this.value + '%'" />
+            </div>
+
+            <!-- Rebinding Threshold Slider -->
+            <div class="setting-group">
+              <div class="setting-label-row">
+                <span>Rebinding Threshold</span>
+                <span id="lblRebindVal" class="setting-val-tag">60%</span>
+              </div>
+              <input type="range" min="10" max="100" value="60" class="custom-range-input" oninput="document.getElementById('lblRebindVal').innerText = this.value + '%'" />
+            </div>
+
+            <!-- Max Entity Count Dropdown -->
+            <div class="setting-group">
+              <div class="setting-label-row"><span>Max Entity Count</span></div>
+              <select class="custom-select" onchange="handleMaxEntityChange(this.value)">
+                <option value="3">3</option>
+                <option value="5" selected>5</option>
+                <option value="8">8</option>
+                <option value="10">10</option>
+              </select>
+            </div>
+
+            <!-- Visualization Checkboxes -->
+            <div class="setting-group">
+              <div class="setting-label-row" style="margin-bottom: 4px;"><span>Visualization</span></div>
+              <div class="checkbox-list">
+                <label class="custom-checkbox-label">
+                  <input type="checkbox" checked onchange="toggleLayer('box-layer-item', this.checked)">
+                  Show Bounding Boxes
+                </label>
+                <label class="custom-checkbox-label">
+                  <input type="checkbox" checked onchange="toggleLayer('landmarks-layer-item', this.checked)">
+                  Show Landmarks
+                </label>
+                <label class="custom-checkbox-label">
+                  <input type="checkbox" checked onchange="toggleLayer('ids-layer-item', this.checked)">
+                  Show Entity IDs
+                </label>
+                <label class="custom-checkbox-label">
+                  <input type="checkbox" checked onchange="toggleTrails(this.checked)">
+                  Show Trajectory Trails
+                </label>
+              </div>
+            </div>
+
+            <!-- Processing Mode Dropdown -->
+            <div class="setting-group">
+              <div class="setting-label-row"><span>Processing Mode</span></div>
+              <select class="custom-select">
+                <option selected>Real-time (Balanced)</option>
+                <option>High Accuracy (30fps)</option>
+                <option>Performance Mode (60fps)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM GRID (3 Columns: Diagnostics, Recent Events, Use in Signify) -->
+      <div class="bottom-grid">
+
+        <!-- CARD 1: DELLAR DIAGNOSTICS -->
+        <div class="card-base">
+          <div class="card-title-row">
+            <div class="card-title-group">
+              <span class="card-header-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </span>
+              DELLAR Diagnostics
+            </div>
+          </div>
+
+          <div class="diag-subgrid">
+            <div class="diag-card-mini">
+              <div class="diag-val-row">
+                <svg class="diag-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                18 ms
+              </div>
+              <div class="diag-label">Average Latency</div>
+            </div>
+
+            <div class="diag-card-mini">
+              <div class="diag-val-row">
+                <svg class="diag-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                24
+              </div>
+              <div class="diag-label">Associations</div>
+            </div>
+
+            <div class="diag-card-mini">
+              <div class="diag-val-row">
+                <svg class="diag-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                07
+              </div>
+              <div class="diag-label">Rebindings</div>
+            </div>
+
+            <div class="diag-card-mini">
+              <div class="diag-val-row">
+                <svg class="diag-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.93 4.93l14.14 14.14"/><path d="M1.41 1.41l21.18 21.18"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/></svg>
+                03
+              </div>
+              <div class="diag-label">Lost Entities</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: RECENT EVENTS -->
+        <div class="card-base">
+          <div class="card-title-row">
+            <div class="card-title-group">
+              <span class="card-header-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </span>
+              Recent Events
+            </div>
+          </div>
+
+          <div class="events-list">
+            <div class="event-item-row">
+              <span class="event-time">10:24:12</span>
+              <span class="event-entity"><span class="dot-green">●</span> Entity 01</span>
+              <span class="event-msg">Tracked (Left Hand)</span>
+            </div>
+            <div class="event-item-row">
+              <span class="event-time">10:24:11</span>
+              <span class="event-entity"><span class="dot-orange">●</span> Entity 02</span>
+              <span class="event-msg">Rebound after 0.8s</span>
+            </div>
+            <div class="event-item-row">
+              <span class="event-time">10:24:10</span>
+              <span class="event-entity"><span class="dot-purple">●</span> Entity 03</span>
+              <span class="event-msg">Tracked (Face)</span>
+            </div>
+            <div class="event-item-row">
+              <span class="event-time">10:24:08</span>
+              <span class="event-entity"><span class="dot-red">●</span> Entity 04</span>
+              <span class="event-msg">Lost (Out of frame)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: USE IN SIGNIFY -->
+        <div class="card-base">
+          <div class="card-title-row">
+            <div class="card-title-group">
+              <span class="card-header-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </span>
+              Use in Signify
+            </div>
+          </div>
+
+          <p class="use-signify-desc">
+            Once tested, DELLAR can be optionally integrated into the sign recognition pipeline to improve hand and entity tracking during Live Calls.
+          </p>
+
+          <button id="btnConnectPipeline" class="btn-connect-signify" onclick="togglePipelineConnection()">
+            <span id="btnConnectText">Connect to Sign Recognition</span>
+            <svg id="btnConnectArrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Master Toggle Control
+    function handleMasterToggleChange(chk) {
+      const subtext = document.getElementById('toggleSubtext');
+      const liveDot = document.getElementById('liveDotIndicator');
+      const liveText = document.getElementById('liveTextIndicator');
+
+      if (chk.checked) {
+        subtext.innerText = 'Currently enabled';
+        subtext.style.color = '#16A34A';
+        subtext.style.fontWeight = '600';
+        liveDot.classList.add('active-green');
+        liveText.innerText = 'Live Tracking (Active)';
+      } else {
+        subtext.innerText = 'Currently disabled';
+        subtext.style.color = '#A8A29E';
+        subtext.style.fontWeight = 'normal';
+        liveDot.classList.remove('active-green');
+        liveText.innerText = 'Live Tracking (Paused)';
+      }
+    }
+
+    // Visualization Checkbox Layers Toggle
+    function toggleLayer(className, isVisible) {
+      const items = document.getElementsByClassName(className);
+      for (let i = 0; i < items.length; i++) {
+        items[i].style.display = isVisible ? '' : 'none';
+      }
+    }
+
+    function toggleTrails(isVisible) {
+      console.log("Trajectory trails visibility:", isVisible);
+    }
+
+    // Switch Camera Dropdown
+    let isWebcam2 = false;
+    function switchCamera() {
+      isWebcam2 = !isWebcam2;
+      const label = document.getElementById('cameraNameLabel');
+      label.innerText = isWebcam2 ? 'Camera: External HD Webcam' : 'Camera: Integrated Webcam';
+    }
+
+    // Fullscreen Viewport Toggle
+    function toggleFullscreen() {
+      const box = document.getElementById('videoViewportBox');
+      if (!document.fullscreenElement) {
+        if (box.requestFullscreen) box.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Snapshot Function
+    function takeSnapshot() {
+      const box = document.getElementById('videoViewportBox');
+      box.style.outline = '4px solid var(--accent)';
+      setTimeout(() => box.style.outline = 'none', 300);
+    }
+
+    // Scroll to Settings
+    function focusSettings() {
+      const card = document.getElementById('trackingSettingsCard');
+      card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Max Entity Count Change
+    function handleMaxEntityChange(val) {
+      document.getElementById('valActiveEntities').innerText = '0' + val;
+    }
+
+    // Connect to Sign Recognition Pipeline Toggle
+    let isConnected = false;
+    function togglePipelineConnection() {
+      isConnected = !isConnected;
+      const btn = document.getElementById('btnConnectPipeline');
+      const txt = document.getElementById('btnConnectText');
+      const arrow = document.getElementById('btnConnectArrow');
+
+      if (isConnected) {
+        btn.classList.add('connected');
+        txt.innerText = '✓ Connected to Sign Recognition';
+        arrow.style.display = 'none';
+      } else {
+        btn.classList.remove('connected');
+        txt.innerText = 'Connect to Sign Recognition';
+        arrow.style.display = 'inline';
+      }
+    }
+  </script>
+</body>
+</html>
