@@ -6,7 +6,7 @@
       "email": "charu@gmail.com",
       "phone": "9876543210",
       "role": "Sign Language User",
-      "avatar": "/images/luna_3d.jpg"
+      "avatar": "/images/ava_3d.jpg"
     },
     "contacts": [
       {
@@ -75,6 +75,86 @@
       }
     ],
     "callHistory": [
+      {
+        "id": "h_1791027432344",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1791026003783",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1791024430807",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1791024245295",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1791024213190",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1791024149588",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1791023786270",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1791000401053",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790960713639",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1790930138485",
+        "name": "Keerthi",
+        "phone": "9834567290",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
       {
         "id": "h_1790874450914",
         "name": "Keerthi",
@@ -221,19 +301,42 @@
       }
     ],
     "avatarSettings": {
-      "selectedAvatar": "luna",
+      "selectedAvatar": "ava",
       "skinTone": "#F5D6BA",
       "hairStyle": "style_1",
       "hairColor": "#29231F",
       "eyeColor": "#16A34A",
       "outfit": "outfit_green",
-      "pose": 0
+      "pose": 0,
+      "avatarImage": "/images/ava_3d.jpg"
     },
     "preferences": {
       "language": "en",
       "signLanguage": "bsl",
       "subtitles": true,
       "theme": "light"
+    },
+    "conversations": {
+      "c_luna": [
+        {
+          "id": "init_1790957540897",
+          "senderId": "c_luna",
+          "receiverId": "charu@gmail.com",
+          "type": "text",
+          "content": "Hey! Feel free to send text, emojis, voice notes, photos, videos, PDFs, interactive polls, or live location here!",
+          "timestamp": "Just now"
+        }
+      ],
+      "usr_keerthi": [
+        {
+          "id": "init_1791024727856",
+          "senderId": "usr_keerthi",
+          "receiverId": "charu@gmail.com",
+          "type": "text",
+          "content": "Hey! Feel free to send text, emojis, voice notes, photos, videos, PDFs, interactive polls, or live location here!",
+          "timestamp": "Just now"
+        }
+      ]
     }
   },
   "keerthi@gmail.com": {
@@ -280,6 +383,94 @@
       }
     ],
     "callHistory": [
+      {
+        "id": "h_1791027434571",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1791026005717",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1791024432866",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1791024243270",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1791024215376",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1791024151785",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1791023789660",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "missed",
+        "avatar": null
+      },
+      {
+        "id": "h_1791023728833",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1791023702957",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "outgoing",
+        "avatar": null
+      },
+      {
+        "id": "h_1791000438870",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
+      {
+        "id": "h_1790930140904",
+        "name": "Charu",
+        "phone": "6382472844",
+        "time": "Just now",
+        "type": "incoming",
+        "avatar": null
+      },
       {
         "id": "h_1790874449139",
         "name": "Charu",
@@ -548,6 +739,44 @@
       "signLanguage": "bsl",
       "subtitles": true,
       "theme": "light"
+    },
+    "conversations": {
+      "c_luna": [
+        {
+          "id": "init_1791000094027",
+          "senderId": "c_luna",
+          "receiverId": "usr_charu",
+          "type": "text",
+          "content": "Hey! Feel free to send text, emojis, voice notes, photos, videos, PDFs, interactive polls, or live location here!",
+          "timestamp": "Just now"
+        },
+        {
+          "id": "msg_1791000098656",
+          "senderId": "usr_charu",
+          "receiverId": "c_luna",
+          "type": "text",
+          "content": "Hii",
+          "timestamp": "Just now"
+        },
+        {
+          "id": "msg_1791000108791",
+          "senderId": "usr_charu",
+          "receiverId": "c_luna",
+          "type": "audio",
+          "attachmentUrl": "blob:http://127.0.0.1:8000/45a93413-426f-4d93-9aa3-51a1711760ed",
+          "duration": "00:05",
+          "timestamp": "Just now"
+        },
+        {
+          "id": "msg_1791000117121",
+          "senderId": "usr_charu",
+          "receiverId": "c_luna",
+          "type": "live_location",
+          "lat": 12.9716,
+          "lng": 77.5946,
+          "timestamp": "Just now"
+        }
+      ]
     }
   }
 }

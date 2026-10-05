@@ -1,0 +1,62 @@
+{
+  "1BxsZaltRyQg1xuD_iSe9jztfxZesc8N3": {
+    "id": "1BxsZaltRyQg1xuD_iSe9jztfxZesc8N3",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": ".git",
+    "mime": "application\\/vnd.google-apps.folder"
+  },
+  "1-pU1_OS53gk6iTYvbF9qCZfsph7tNyJ7": {
+    "id": "1-pU1_OS53gk6iTYvbF9qCZfsph7tNyJ7",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": "demo",
+    "mime": "application\\/vnd.google-apps.folder"
+  },
+  "19CdQY2BCeGYXWwTMV0ah785x9-pOt0rD": {
+    "id": "19CdQY2BCeGYXWwTMV0ah785x9-pOt0rD",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": "plots",
+    "mime": "application\\/vnd.google-apps.folder"
+  },
+  "1Hu2yo0edGssRrhfDduhU6ivwcpuWlVDp": {
+    "id": "1Hu2yo0edGssRrhfDduhU6ivwcpuWlVDp",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": "research",
+    "mime": "application\\/vnd.google-apps.folder"
+  },
+  "1HcHeeoHjEZuoLprV2ZQv06OrnNIwIt1n": {
+    "id": "1HcHeeoHjEZuoLprV2ZQv06OrnNIwIt1n",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": "scratch",
+    "mime": "application\\/vnd.google-apps.folder"
+  },
+  "1jknnbymV_uKMXGEZdLTHy0stX2xi0jjW": {
+    "id": "1jknnbymV_uKMXGEZdLTHy0stX2xi0jjW",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": "scripts",
+    "mime": "application\\/vnd.google-apps.folder"
+  },
+  "1mNVuasArYC1RjP-IaIOx2m22zPPKVyo0": {
+    "id": "1mNVuasArYC1RjP-IaIOx2m22zPPKVyo0",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": "src",
+    "mime": "application\\/vnd.google-apps.folder"
+  },
+  "1bFuyMJ1Z9nmtxrRl1eWHNe530TBNJW5B": {
+    "id": "1bFuyMJ1Z9nmtxrRl1eWHNe530TBNJW5B",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": "tests",
+    "mime": "application\\/vnd.google-apps.folder"
+  },
+  "1GZDF9VzH0MTS1LSK_94DsvCAQIMh_QCR": {
+    "id": "1GZDF9VzH0MTS1LSK_94DsvCAQIMh_QCR",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": ".gitignore",
+    "mime": "text\\/plain"
+  },
+  "1220CnyhGM3-iDWI-YnYvj9hoVqNs2ADu": {
+    "id": "1220CnyhGM3-iDWI-YnYvj9hoVqNs2ADu",
+    "parent": "1TuBdM5CUznobaf65eL4UIjytFvtlzcrr",
+    "name": "README.md",
+    "mime": "text\\/markdown"
+  }
+}

@@ -1447,9 +1447,18 @@
               <div id="predictorPillsContainer" class="predictor-pills-list"></div>
             </div>
 
-            <div style="font-size: 12px; font-weight: 700; color: #57534E; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              <span>Type Text to Translate / Sign</span>
+            <div style="font-size: 12px; font-weight: 700; color: #57534E; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C04A22" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>Type Text to Translate / Sign</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                <span style="color: #78716C;">Sign as:</span>
+                <select id="signSenderSelect" style="padding: 3px 6px; border: 1px solid #D6D3D1; border-radius: 8px; font-size: 11px; font-weight: 600; background: white; color: #1C1917; outline: none; cursor: pointer;">
+                  <option value="local">Charu (Luna)</option>
+                  <option value="remote">Keerthi (Anna)</option>
+                </select>
+              </div>
             </div>
             <form onsubmit="handleParticipantsInputSubmit(event)" style="display: flex; gap: 8px;">
               <input 
@@ -2096,6 +2105,22 @@
 
       initSpeechRecognition();
       listenCrossTabEvents();
+
+      // Check for incoming autoCall query parameters (e.g. from Notifications "Call Back")
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('autoCall') === 'true') {
+        const targetContactId = urlParams.get('contactId');
+        const targetPhone = urlParams.get('phone');
+        const targetName = urlParams.get('name') || 'Contact';
+
+        if (targetContactId && contacts.some(c => c.id === targetContactId)) {
+          startOutgoingCall(targetContactId);
+        } else if (targetPhone) {
+          startOutgoingCallByPhone(targetPhone, targetName);
+        } else if (targetContactId) {
+          startOutgoingCallByPhone(targetContactId, targetName);
+        }
+      }
     });
 
     function switchUserRole(name, phone) {
@@ -2446,6 +2471,11 @@
       document.getElementById('box1NameLabel').textContent = localName;
       document.getElementById('box2NameLabel').textContent = remoteName;
 
+      const optLocal = document.querySelector('#signSenderSelect option[value="local"]');
+      if (optLocal) optLocal.textContent = `${localName} (Luna)`;
+      const optRemote = document.querySelector('#signSenderSelect option[value="remote"]');
+      if (optRemote) optRemote.textContent = `${remoteName} (Anna)`;
+
       renderParticipantsPanel();
       updateCallViewUI();
 
@@ -2690,14 +2720,8 @@
       const msg = input.value.trim();
       if (!msg) return;
 
-      appendChatBubble(currentUser.name, msg, true);
-
-      callChannel.postMessage({
-        type: 'CHAT_MESSAGE',
-        senderId: tabId,
-        senderName: currentUser.name,
-        message: msg
-      });
+      appendChatBubble(currentUser ? currentUser.name : 'You', msg, true);
+      handleLocalSpokenText(msg);
 
       input.value = '';
     }
@@ -2791,9 +2815,22 @@
       const text = input.value.trim();
       if (!text) return;
 
-      handleLocalSpokenText(text);
-      if (typeof appendChatBubble === 'function') {
+      const senderSelect = document.getElementById('signSenderSelect');
+      const signTarget = senderSelect ? senderSelect.value : 'local';
+
+      if (signTarget === 'remote') {
+        const remoteName = activeCallRemote ? activeCallRemote.name : 'Keerthi';
+        appendChatBubble(remoteName, text, false);
+        handleRemoteSpokenText(remoteName, text);
+        callChannel.postMessage({
+          type: 'REMOTE_SIM_SPEECH',
+          senderId: tabId,
+          text: text,
+          speakerName: remoteName
+        });
+      } else {
         appendChatBubble(currentUser ? currentUser.name : 'You', text, true);
+        handleLocalSpokenText(text);
       }
       input.value = '';
     }
@@ -2812,6 +2849,16 @@
       if (window.LiveCallChatPredictor) {
         LiveCallChatPredictor.onIncomingSpeechOrMessage(currentUser ? currentUser.name : 'You', currentUser ? currentUser.id : '', text);
       }
+
+      // Relay real microphone speech input to DELLAR service
+      try {
+        const token = localStorage.getItem('token') || '';
+        fetch('/api/dellar/process-speech', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ text })
+        }).catch(() => {});
+      } catch(e){}
 
       callChannel.postMessage({
         type: 'LIVE_SPEECH',
@@ -3092,6 +3139,24 @@
           case 'LIVE_SPEECH':
             if (callState === 'active') {
               handleRemoteSpokenText(data.speakerName, data.text);
+              appendChatBubble(data.speakerName, data.text, false);
+            }
+            break;
+
+          case 'REMOTE_SIM_SPEECH':
+            if (callState === 'active') {
+              handleLocalSpokenText(data.text);
+              appendChatBubble(data.speakerName || 'Remote Party', data.text, true);
+            }
+            break;
+
+          case 'CHAT_MESSAGE':
+            if (callState === 'active') {
+              appendChatBubble(data.senderName, data.message, false);
+              handleRemoteSpokenText(data.senderName, data.message);
+              if (window.LiveCallChatPredictor) {
+                LiveCallChatPredictor.onIncomingSpeechOrMessage(data.senderName || 'Remote Party', data.senderId || '', data.message || '');
+              }
             }
             break;
 
@@ -3143,15 +3208,6 @@
               const remoteImg = document.getElementById('remoteWebcamFrameImg');
               if (remoteImg) remoteImg.classList.add('hidden');
               document.getElementById('annaWrapper').classList.remove('hidden');
-            }
-            break;
-
-          case 'CHAT_MESSAGE':
-            if (callState === 'active') {
-              appendChatBubble(data.senderName, data.message, false);
-              if (window.LiveCallChatPredictor) {
-                LiveCallChatPredictor.onIncomingSpeechOrMessage(data.senderName || 'Remote Party', data.senderId || '', data.message || '');
-              }
             }
             break;
 

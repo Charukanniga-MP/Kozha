@@ -24,13 +24,20 @@ _CHAT2HAMNOSYS_ROOT = Path(__file__).resolve().parent.parent / "backend" / "chat
 if str(_CHAT2HAMNOSYS_ROOT) not in sys.path:
     sys.path.insert(0, str(_CHAT2HAMNOSYS_ROOT))
 
+_DELLAR_ROOT = Path(__file__).resolve().parent.parent / "backend" / "dellar"
+_DELLAR_SRC = _DELLAR_ROOT / "src"
+if str(_DELLAR_ROOT) not in sys.path:
+    sys.path.insert(0, str(_DELLAR_ROOT))
+if str(_DELLAR_SRC) not in sys.path:
+    sys.path.insert(0, str(_DELLAR_SRC))
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from collections import OrderedDict
 from threading import Lock
 import json
@@ -1649,6 +1656,55 @@ def api_update_user_data(req: UserDataUpdateRequest, request: Request):
     return {"ok": True, "data": updated_data}
 
 
+
+import dellar_service as _dellar_service
+
+class DellarToggleRequest(BaseModel):
+    enabled: bool
+    user_id: Optional[str] = None
+
+class DellarSignProcessRequest(BaseModel):
+    landmarks: Optional[List[Any]] = None
+    user_id: Optional[str] = None
+
+class DellarSpeechProcessRequest(BaseModel):
+    text: Optional[str] = None
+    user_id: Optional[str] = None
+
+@app.get("/api/dellar/status")
+def api_dellar_status(request: Request, user_id: Optional[str] = None):
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header[7:].strip() if auth_header.lower().startswith("bearer ") else ""
+    user = _auth.get_user_by_token(token) if token else None
+    session_id = user_id or (user.get("email") if user else "default_user")
+    return _dellar_service.dellar_service.get_status(session_id)
+
+@app.post("/api/dellar/toggle")
+def api_dellar_toggle(req: DellarToggleRequest, request: Request):
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header[7:].strip() if auth_header.lower().startswith("bearer ") else ""
+    user = _auth.get_user_by_token(token) if token else None
+    session_id = req.user_id or (user.get("email") if user else "default_user")
+    if req.enabled:
+        return _dellar_service.dellar_service.start_session(session_id)
+    else:
+        return _dellar_service.dellar_service.stop_session(session_id)
+
+@app.post("/api/dellar/process-sign")
+def api_dellar_process_sign(req: DellarSignProcessRequest, request: Request):
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header[7:].strip() if auth_header.lower().startswith("bearer ") else ""
+    user = _auth.get_user_by_token(token) if token else None
+    session_id = req.user_id or (user.get("email") if user else "default_user")
+    return _dellar_service.dellar_service.process_sign(session_id, req.landmarks)
+
+@app.post("/api/dellar/process-speech")
+def api_dellar_process_speech(req: DellarSpeechProcessRequest, request: Request):
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header[7:].strip() if auth_header.lower().startswith("bearer ") else ""
+    user = _auth.get_user_by_token(token) if token else None
+    session_id = req.user_id or (user.get("email") if user else "default_user")
+    return _dellar_service.dellar_service.process_speech(session_id, req.text)
 
 # HTTP 404 handler: browser navigations get the designed 404.html (same
 # header/footer as every other page). API clients and asset requests

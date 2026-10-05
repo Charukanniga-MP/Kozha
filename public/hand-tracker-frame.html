@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Isolated MediaPipe Hand Tracker</title>
+  <!-- MediaPipe Hands runs in its own clean Emscripten environment without CWASA collisions -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body style="margin:0; overflow:hidden; background:transparent;">
+  <canvas id="internalCanvas" style="display:none;"></canvas>
+  <script>
+    let hands = null;
+    let isProcessing = false;
+    let internalCanvas = null;
+    let internalCtx = null;
+
+    function initTracker() {
+      try {
+        if (!window.Hands) {
+          setTimeout(initTracker, 150);
+          return;
+        }
+
+        internalCanvas = document.getElementById('internalCanvas');
+        internalCtx = internalCanvas.getContext('2d', { willReadFrequently: false });
+
+        hands = new window.Hands({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+          maxNumHands: 2,
+          modelComplexity: 0, // Lite model for ultra-low latency real-time tracking
+          minDetectionConfidence: 0.45,
+          minTrackingConfidence: 0.45
+        });
+
+        hands.onResults((results) => {
+          if (window.parent && typeof window.parent.onHandResults === 'function') {
+            window.parent.onHandResults(results);
+          }
+        });
+
+        window.isHandsReady = true;
+        console.log("[HandTrackerFrame] MediaPipe Hands initialized successfully in isolated sandbox!");
+        if (window.parent && typeof window.parent.onHandTrackerReady === 'function') {
+          window.parent.onHandTrackerReady();
+        }
+      } catch (err) {
+        console.error("[HandTrackerFrame] Failed to initialize Hands:", err);
+      }
+    }
+
+    window.processVideoFrame = async function(sourceEl) {
+      if (!hands || !window.isHandsReady || isProcessing) return;
+      if (!sourceEl) return;
+
+      // Ensure readyState is valid if HTMLVideoElement
+      if (typeof sourceEl.readyState === 'number' && sourceEl.readyState < 2) return;
+
+      const w = sourceEl.videoWidth || sourceEl.width || 640;
+      const h = sourceEl.videoHeight || sourceEl.height || 480;
+      if (w <= 0 || h <= 0) return;
+
+      try {
+        isProcessing = true;
+        if (internalCanvas.width !== w || internalCanvas.height !== h) {
+          internalCanvas.width = w;
+          internalCanvas.height = h;
+        }
+        internalCtx.drawImage(sourceEl, 0, 0, w, h);
+        await hands.send({ image: internalCanvas });
+      } catch (e) {
+        // drop frame if busy or aborting
+      } finally {
+        isProcessing = false;
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', initTracker);
+  </script>
+</body>
+</html>

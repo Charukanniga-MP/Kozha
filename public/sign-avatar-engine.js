@@ -161,11 +161,13 @@
         if (!res.ok) return;
         const xmlText = await res.text();
         const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+        const serializer = new XMLSerializer();
         const signs = Array.from(doc.querySelectorAll('hns_sign'));
         for (const s of signs) {
           const gloss = (s.getAttribute('gloss') || '').trim().toLowerCase();
           if (!gloss) continue;
-          this.glossToSign.set(gloss, s.outerHTML);
+          const sXml = s.outerHTML || serializer.serializeToString(s);
+          this.glossToSign.set(gloss, sXml);
         }
         this.rebuildBaseIndex();
       } catch (e) {
@@ -179,11 +181,13 @@
         if (!res.ok) return;
         const xmlText = await res.text();
         const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+        const serializer = new XMLSerializer();
         const signs = Array.from(doc.querySelectorAll('hns_sign'));
         for (const s of signs) {
           const gloss = (s.getAttribute('gloss') || '').trim().toUpperCase();
           if (gloss.length === 1 && gloss >= 'A' && gloss <= 'Z') {
-            this.letterToSign.set(gloss, s.outerHTML);
+            const sXml = s.outerHTML || serializer.serializeToString(s);
+            this.letterToSign.set(gloss, sXml);
           }
         }
       } catch (e) {
@@ -231,61 +235,96 @@
       const missingTokens = [];
       const wordDetails = [];
 
-      for (const token of rawTokens) {
-        let hnsXml = null;
-        let matchType = 'none';
+      const lookupPhrase = (phrase) => {
+        const p = phrase.toLowerCase().trim();
+        // 1. Exact Gloss
+        if (this.glossToSign.has(p)) return { xml: this.glossToSign.get(p), type: 'exact', gloss: p };
+        const pUnder = p.replace(/\s+/g, '_');
+        if (this.glossToSign.has(pUnder)) return { xml: this.glossToSign.get(pUnder), type: 'exact', gloss: pUnder };
+        const pHyphen = p.replace(/\s+/g, '-');
+        if (this.glossToSign.has(pHyphen)) return { xml: this.glossToSign.get(pHyphen), type: 'exact', gloss: pHyphen };
 
-        // 1. Exact Gloss Match
-        if (this.glossToSign.has(token)) {
-          hnsXml = this.glossToSign.get(token);
-          matchType = 'exact';
-        } 
-        // 2. Concept Mapping Match
-        else {
-          const tBase = glossBase(token);
-          if (this.conceptToGloss.has(tBase)) {
-            const gloss = this.conceptToGloss.get(tBase);
-            if (this.glossToSign.has(gloss)) {
-              hnsXml = this.glossToSign.get(gloss);
-              matchType = 'concept';
-            }
+        // 2. Base form
+        const b = glossBase(p);
+        if (this.baseToGloss.has(b)) {
+          const g = this.baseToGloss.get(b);
+          if (this.glossToSign.has(g)) return { xml: this.glossToSign.get(g), type: 'base', gloss: g };
+        }
+
+        // 3. Concept map
+        if (this.conceptToGloss.has(b)) {
+          const g = this.conceptToGloss.get(b);
+          if (this.glossToSign.has(g)) return { xml: this.glossToSign.get(g), type: 'concept', gloss: g };
+        }
+
+        // 4. Fuzzy similarity for single words
+        if (p.length > 3) {
+          let bestBase = null, bestScore = 0;
+          for (const k of this.baseToGloss.keys()) {
+            const s = similarity(b, k);
+            if (s > bestScore) { bestScore = s; bestBase = k; }
           }
-          // 3. Base Gloss Match
-          if (!hnsXml && this.baseToGloss.has(tBase)) {
-            const gloss = this.baseToGloss.get(tBase);
-            if (this.glossToSign.has(gloss)) {
-              hnsXml = this.glossToSign.get(gloss);
-              matchType = 'base';
-            }
-          }
-          // 4. Fuzzy Match
-          if (!hnsXml) {
-            let bestBase = null, bestScore = 0;
-            for (const b of this.baseToGloss.keys()) {
-              const s = similarity(tBase, b);
-              if (s > bestScore) { bestScore = s; bestBase = b; }
-            }
-            if (bestBase && bestScore >= 0.82) {
-              const gloss = this.baseToGloss.get(bestBase);
-              if (this.glossToSign.has(gloss)) {
-                hnsXml = this.glossToSign.get(gloss);
-                matchType = 'fuzzy';
-              }
-            }
+          if (bestBase && bestScore >= 0.82) {
+            const g = this.baseToGloss.get(bestBase);
+            if (this.glossToSign.has(g)) return { xml: this.glossToSign.get(g), type: 'fuzzy', gloss: g };
           }
         }
 
-        if (hnsXml) {
-          mappedBlocks.push(hnsXml);
-          wordDetails.push({ word: token, type: matchType, xml: hnsXml });
+        return null;
+      };
+
+      let i = 0;
+      while (i < rawTokens.length) {
+        let matched = null;
+        let consumed = 1;
+
+        // Try 3-word n-gram
+        if (i + 3 <= rawTokens.length) {
+          const tri = rawTokens.slice(i, i + 3).join(' ');
+          matched = lookupPhrase(tri);
+          if (matched) consumed = 3;
+        }
+
+        // Try 2-word n-gram
+        if (!matched && i + 2 <= rawTokens.length) {
+          const bi = rawTokens.slice(i, i + 2).join(' ');
+          matched = lookupPhrase(bi);
+          if (matched) consumed = 2;
+        }
+
+        // Try 1-word token
+        if (!matched) {
+          const single = rawTokens[i];
+          matched = lookupPhrase(single);
+          consumed = 1;
+        }
+
+        if (matched) {
+          mappedBlocks.push(matched.xml);
+          wordDetails.push({
+            word: rawTokens.slice(i, i + consumed).join(' '),
+            type: matched.type,
+            gloss: matched.gloss,
+            xml: matched.xml
+          });
+          i += consumed;
         } else {
-          // 5. Fallback to Fingerspelling
+          const token = rawTokens[i];
+          // If it's a stopword in a multi-token sentence, skip it gracefully
+          if (STOPWORDS.has(token) && rawTokens.length > 1) {
+            wordDetails.push({ word: token, type: 'omitted' });
+            i++;
+            continue;
+          }
+
+          // Fallback to Fingerspelling
           const fingerBlocks = [];
           for (const char of token.toUpperCase()) {
             if (this.letterToSign.has(char)) {
               fingerBlocks.push(this.letterToSign.get(char));
             }
           }
+
           if (fingerBlocks.length > 0) {
             mappedBlocks.push(...fingerBlocks);
             wordDetails.push({ word: token, type: 'fingerspell', xmls: fingerBlocks });
@@ -293,6 +332,7 @@
             missingTokens.push(token);
             wordDetails.push({ word: token, type: 'missing' });
           }
+          i++;
         }
       }
 
@@ -319,18 +359,28 @@
     constructor() {
       this.langManager = new SignLanguageManager();
       this.isCwasaReady = false;
+      this.isMeshReady = false;
+      this.cwasaMounted = false;
       this.avatars = {
-        0: { id: 'luna', state: 'IDLE', queue: [], currentItem: null },
-        1: { id: 'anna', state: 'IDLE', queue: [], currentItem: null }
+        0: { id: 'luna', state: 'LOADING', ready: false, queue: [], currentItem: null, lastText: '', fallbackTimer: null },
+        1: { id: 'anna', state: 'LOADING', ready: false, queue: [], currentItem: null, lastText: '', fallbackTimer: null }
       };
       this.stateListeners = [];
     }
 
     addStateListener(cb) {
-      if (typeof cb === 'function') this.stateListeners.push(cb);
+      if (typeof cb === 'function') {
+        this.stateListeners.push(cb);
+        if (this.isMeshReady) {
+          try { cb(0, 'IDLE', { ready: true, avatar: this.avatars[0].id }); } catch (e) {}
+          if (this.avatars[1] && this.avatars[1].ready) {
+            try { cb(1, 'IDLE', { ready: true, avatar: this.avatars[1].id }); } catch (e) {}
+          }
+        }
+      }
     }
 
-    notifyStateChange(avIndex, state, info) {
+    notifyStateChange(avIndex, state, info = {}) {
       if (this.avatars[avIndex]) {
         this.avatars[avIndex].state = state;
       }
@@ -364,49 +414,98 @@
     }
 
     mountCwasa() {
-      if (this.isCwasaReady || !window.CWASA) return;
+      if (this.cwasaMounted || !window.CWASA) return;
+      this.cwasaMounted = true;
+
+      // Register CWASA lifecycle hooks
+      if (window.CWASA.addHook) {
+        window.CWASA.addHook('avatarready', (evt) => {
+          console.log('[AvatarAnimationEngine] *** AVATAR MESH BOUND & READY (avatarready hook fired) ***', evt);
+          this.isCwasaReady = true;
+          this.isMeshReady = true;
+
+          const avIdx = (evt && typeof evt.av === 'number') ? evt.av : null;
+          const targets = avIdx !== null ? [avIdx] : [0, 1];
+          targets.forEach(idx => {
+            if (this.avatars[idx]) {
+              this.avatars[idx].ready = true;
+              this.notifyStateChange(idx, 'IDLE', { ready: true, avatar: this.avatars[idx].id });
+              if (this.avatars[idx].queue.length > 0) {
+                this.processQueue(idx);
+              }
+            }
+          });
+        }, '*');
+
+        window.CWASA.addHook('animidle', (evt) => {
+          const avIdx = (evt && typeof evt.av === 'number') ? evt.av : 0;
+          const av = this.avatars[avIdx];
+          if (av && av.state === 'SIGNING') {
+            if (av.fallbackTimer) {
+              clearTimeout(av.fallbackTimer);
+              av.fallbackTimer = null;
+            }
+            av.currentItem = null;
+            if (av.queue.length > 0) {
+              av.state = 'IDLE';
+              this.processQueue(avIdx);
+            } else {
+              av.state = 'IDLE';
+              this.notifyStateChange(avIdx, 'IDLE', { text: av.lastText, avatar: av.id });
+            }
+          }
+        }, '*');
+
+        window.CWASA.addHook('animactive', (evt) => {
+          const avIdx = (evt && typeof evt.av === 'number') ? evt.av : 0;
+          const av = this.avatars[avIdx];
+          if (av && av.currentItem) {
+            this.notifyStateChange(avIdx, 'SIGNING', {
+              text: av.currentItem.rawText,
+              avatar: av.id
+            });
+          }
+        }, '*');
+      }
+
       try {
+        const hasAv1 = !!document.querySelector('.CWASAAvatar.av1');
+        const avSettings = [
+          {
+            width: hasAv1 ? 440 : 720,
+            height: hasAv1 ? 340 : 540,
+            avList: 'avsfull',
+            initAv: 'luna',
+            ambIdle: true,
+            allowFrameSteps: false,
+            allowSiGMLText: false
+          }
+        ];
+
+        if (hasAv1) {
+          avSettings.push({
+            width: 440,
+            height: 340,
+            avList: 'avsfull',
+            initAv: 'anna',
+            ambIdle: true,
+            allowFrameSteps: false,
+            allowSiGMLText: false
+          });
+        }
+
         window.CWASA.init({
           useClientConfig: false,
           useCwaConfig: true,
-          avSettings: [
-            {
-              width: 440,
-              height: 340,
-              avList: 'avsfull',
-              initAv: 'luna',
-              ambIdle: true,
-              allowFrameSteps: false,
-              allowSiGMLText: false
-            },
-            {
-              width: 440,
-              height: 340,
-              avList: 'avsfull',
-              initAv: 'anna',
-              ambIdle: true,
-              allowFrameSteps: false,
-              allowSiGMLText: false
-            }
-          ]
+          avSettings: avSettings
         });
 
         if (window.CWASA.ready && typeof window.CWASA.ready.then === 'function') {
           window.CWASA.ready.then(() => {
-            this.isCwasaReady = true;
-            console.log('[AvatarAnimationEngine] CWASA 3D WebGL Avatars Ready');
-            this.notifyStateChange(0, 'IDLE', { ready: true });
-            this.notifyStateChange(1, 'IDLE', { ready: true });
+            console.log('[AvatarAnimationEngine] CWASA core ready; awaiting 3D avatar mesh…');
           }).catch(err => {
             console.warn('[AvatarAnimationEngine] CWASA init warning:', err);
-            this.isCwasaReady = true;
           });
-        } else {
-          setTimeout(() => {
-            this.isCwasaReady = true;
-            this.notifyStateChange(0, 'IDLE', { ready: true });
-            this.notifyStateChange(1, 'IDLE', { ready: true });
-          }, 500);
         }
       } catch (err) {
         console.error('[AvatarAnimationEngine] CWASA init exception:', err);
@@ -414,17 +513,34 @@
     }
 
     /**
+     * Switch CWASA avatar model (luna, anna, marc, francoise)
+     */
+    switchAvatar(avName, avIndex = 0) {
+      if (this.avatars[avIndex]) {
+        this.avatars[avIndex].id = avName;
+      }
+      this.isMeshReady = false;
+      const menu = document.querySelector(`.menuAv.av${avIndex}`);
+      if (menu) {
+        menu.value = avName;
+        menu.dispatchEvent(new Event('change'));
+      }
+      this.notifyStateChange(avIndex, 'PROCESSING', { avatar: avName, text: `Loading ${avName}…` });
+    }
+
+    /**
      * Enqueue speech text to be signed by a specific avatar
      * @param {number} avIndex 0 for Luna (Box 1), 1 for Anna (Box 2)
      * @param {string} text Speech or text phrase
      */
-    speak(avIndex, text) {
+    speak(avIndex = 0, text) {
       if (!text || !text.trim()) return;
 
       const av = this.avatars[avIndex];
       if (!av) return;
 
-      this.notifyStateChange(avIndex, 'PROCESSING', { text });
+      av.lastText = text;
+      this.notifyStateChange(avIndex, 'PROCESSING', { text, avatar: av.id });
 
       const sequence = this.langManager.generateSequence(text);
 
@@ -433,10 +549,11 @@
         this.notifyStateChange(avIndex, 'ERROR', {
           text,
           message: 'Sign animation unavailable for this phrase.',
-          missingTokens: sequence.missingTokens
+          missingTokens: sequence.missingTokens,
+          avatar: av.id
         });
         setTimeout(() => {
-          this.notifyStateChange(avIndex, 'IDLE', {});
+          this.notifyStateChange(avIndex, 'IDLE', { avatar: av.id });
         }, 3000);
         return sequence;
       }
@@ -447,11 +564,29 @@
       return sequence;
     }
 
-    processQueue(avIndex) {
+    /**
+     * Replay last spoken sign phrase
+     */
+    replay(avIndex = 0) {
+      const av = this.avatars[avIndex];
+      if (av && av.lastText) {
+        return this.speak(avIndex, av.lastText);
+      }
+    }
+
+    processQueue(avIndex = 0) {
       const av = this.avatars[avIndex];
       if (!av || av.state === 'SIGNING') return;
       if (av.queue.length === 0) {
-        this.notifyStateChange(avIndex, 'IDLE', {});
+        if (av.ready || this.isMeshReady) {
+          this.notifyStateChange(avIndex, 'IDLE', { avatar: av.id });
+        }
+        return;
+      }
+
+      // Guard: If 3D mesh is still binding in WebGL, hold in queue until avatarready hook fires
+      if (!av.ready && !this.isMeshReady) {
+        console.log(`[AvatarAnimationEngine] 3D mesh av${avIndex} still binding, queued sign for avatarready event…`);
         return;
       }
 
@@ -461,28 +596,38 @@
       this.notifyStateChange(avIndex, 'SIGNING', {
         text: item.rawText,
         sequence: item,
-        lang: item.lang
+        lang: item.lang,
+        avatar: av.id
       });
 
-      if (window.CWASA && this.isCwasaReady) {
+      if (window.CWASA && (this.isMeshReady || av.ready)) {
+        try {
+          if (typeof window.CWASA.stopSiGML === 'function') {
+            window.CWASA.stopSiGML(avIndex);
+          }
+        } catch (_e) {}
         try {
           window.CWASA.playSiGMLText(item.sigmlXml, avIndex);
         } catch (e) {
-          console.error('[AvatarAnimationEngine] playSiGMLText error:', e);
+          console.error(`[AvatarAnimationEngine] playSiGMLText error for av${avIndex}:`, e);
         }
       }
 
-      // Estimate animation playback duration (approx 650ms per sign block)
+      // Estimate animation playback duration (approx 850ms per sign block)
       const tokenCount = item.wordDetails.length || 1;
-      const durationMs = Math.max(2000, tokenCount * 700);
+      const durationMs = Math.max(2500, tokenCount * 900);
 
-      setTimeout(() => {
-        av.currentItem = null;
-        if (av.queue.length > 0) {
-          av.state = 'IDLE';
-          this.processQueue(avIndex);
-        } else {
-          this.notifyStateChange(avIndex, 'IDLE', { text: item.rawText });
+      if (av.fallbackTimer) clearTimeout(av.fallbackTimer);
+      av.fallbackTimer = setTimeout(() => {
+        if (av.state === 'SIGNING') {
+          av.currentItem = null;
+          if (av.queue.length > 0) {
+            av.state = 'IDLE';
+            this.processQueue(avIndex);
+          } else {
+            av.state = 'IDLE';
+            this.notifyStateChange(avIndex, 'IDLE', { text: item.rawText, avatar: av.id });
+          }
         }
       }, durationMs);
     }

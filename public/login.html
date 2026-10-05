@@ -374,17 +374,30 @@
       background: #FAF8F5;
       border: 1px solid #D6D3D1;
       border-radius: 8px;
-      padding: 8px;
+      padding: 8px 12px;
       font-size: 12px;
       font-weight: 600;
       color: #292524;
       cursor: pointer;
-      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-preset-quick svg {
+      color: #57534E;
+      transition: color 0.2s ease;
+      flex-shrink: 0;
     }
     .btn-preset-quick:hover {
       border-color: var(--accent);
       color: var(--accent);
       background: #FFF;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .btn-preset-quick:hover svg {
+      color: var(--accent);
     }
 
     /* Register Modal Screen */
@@ -462,15 +475,33 @@
 
       <div class="feature-list">
         <div class="feature-item">
-          <div class="feature-icon-circle">🌐</div>
+          <div class="feature-icon-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+          </div>
           <span>3 sign languages</span>
         </div>
         <div class="feature-item">
-          <div class="feature-icon-circle">🎙️</div>
+          <div class="feature-icon-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </div>
           <span>On-device speech recognition</span>
         </div>
         <div class="feature-item">
-          <div class="feature-icon-circle">🎓</div>
+          <div class="feature-icon-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+          </div>
           <span>Free for educators, always</span>
         </div>
       </div>
@@ -537,8 +568,14 @@
         <div class="preset-section">
           <div class="preset-section-title">Quick Test Login Profiles:</div>
           <div class="preset-btns-row">
-            <button class="btn-preset-quick" onclick="loginPreset('Charu', 'charu@gmail.com', '6382472844')">👤 Charu (6382472844)</button>
-            <button class="btn-preset-quick" onclick="loginPreset('Keerthi', 'keerthi@gmail.com', '9834567290')">👤 Keerthi (9834567290)</button>
+            <button class="btn-preset-quick" onclick="loginPreset('Charu', 'charu@gmail.com', '6382472844')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Charu (6382472844)</span>
+            </button>
+            <button class="btn-preset-quick" onclick="loginPreset('Keerthi', 'keerthi@gmail.com', '9834567290')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Keerthi (9834567290)</span>
+            </button>
           </div>
         </div>
 
